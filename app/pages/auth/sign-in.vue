@@ -11,7 +11,20 @@ useSeoMeta({
   description: 'Login to your account to continue',
 })
 
+const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+
+// Redirect if already logged in
+const { isAuthenticated } = useSession()
+watch(isAuthenticated, (authenticated) => {
+  if (authenticated) {
+    const redirect = route.query.redirect as string | undefined
+    router.push(redirect || ROUTES.start)
+  }
+}, { immediate: true })
+
+const { mutateAsync: login, asyncStatus, error: loginError } = useLogin()
 
 const fields = [{
   name: 'email',
@@ -34,13 +47,13 @@ const providers = [{
   label: 'Google',
   icon: 'i-simple-icons-google',
   onClick: () => {
-    toast.add({ title: 'Google', description: 'Login with Google' })
+    toast.add({ title: 'Google', description: 'Login with Google (coming soon)' })
   },
 }, {
   label: 'GitHub',
   icon: 'i-simple-icons-github',
   onClick: () => {
-    toast.add({ title: 'GitHub', description: 'Login with GitHub' })
+    toast.add({ title: 'GitHub', description: 'Login with GitHub (coming soon)' })
   },
 }]
 
@@ -51,9 +64,27 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Submitted', payload)
+// Computed error message from API
+const apiError = computed(() => {
+  if (!loginError.value)
+    return null
+  const err = loginError.value as { data?: { statusMessage?: string }, message?: string }
+  return err.data?.statusMessage || err.message || 'Login failed'
+})
+
+const onSubmit = (payload: FormSubmitEvent<Schema>) => {
+  login({ email: payload.data.email, password: payload.data.password })
+    .then(() => {
+      toast.add({ title: 'Welcome back!', color: 'success' })
+      const redirect = route.query.redirect as string | undefined
+      router.push(redirect || ROUTES.start)
+    })
+    .catch(() => {
+      // Error is captured in loginError ref
+    })
 }
+
+const isLoading = computed(() => asyncStatus.value === 'loading')
 </script>
 
 <template>
@@ -63,6 +94,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
     :providers="providers"
     title="Welcome back"
     icon="i-lucide-lock"
+    :submit="{ loading: isLoading }"
     @submit="onSubmit"
   >
     <template #description>
@@ -72,6 +104,14 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
       >
         Sign up
       </ULink>.
+    </template>
+
+    <template v-if="apiError" #validation>
+      <UAlert
+        color="error"
+        :title="apiError"
+        icon="i-lucide-alert-circle"
+      />
     </template>
 
     <template #password-hint>

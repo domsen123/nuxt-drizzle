@@ -1,11 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
+    '@nuxtjs/seo',
     '@nuxt/image',
     '@nuxt/ui',
-    '@nuxt/content',
+    // '@nuxt/content',
     '@vueuse/nuxt',
     'nuxt-og-image',
+    '@pinia/nuxt',
+    '@pinia/colada-nuxt',
+    'nuxt-mcp-dev',
   ],
 
   devtools: {
@@ -14,8 +18,10 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/docs': { redirect: '/docs/getting-started', prerender: false },
+  imports: {
+    dirs: [
+      'features/**/composables',
+    ],
   },
 
   compatibilityDate: '2024-07-11',
