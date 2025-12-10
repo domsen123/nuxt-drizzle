@@ -1,5 +1,6 @@
 import type { Session, User } from '../../database/schema'
 import type { DatabaseClient } from '../../infrastructure/database/client'
+import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
 import { and, eq, gt, lt } from 'drizzle-orm'
@@ -20,9 +21,10 @@ export interface AuthServiceResult {
 
 export interface CreateAuthServiceDeps {
   db: DatabaseClient
+  emailService: EmailService
 }
 
-export const createAuthService = ({ db }: CreateAuthServiceDeps) => {
+export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) => {
   const hashPassword = (password: string): Promise<string> => {
     return bcrypt.hash(password, BCRYPT_COST)
   }
@@ -222,19 +224,18 @@ export const createAuthService = ({ db }: CreateAuthServiceDeps) => {
         expiresAt,
       })
 
-    // Mock email - log to console
+    // Send password reset email
     const resetLink = `${config.site.url}/auth/reset-password?token=${token}`
-    console.log(`\n${'='.repeat(80)}`)
-    console.log('PASSWORD RESET EMAIL (Mock)')
-    console.log('='.repeat(80))
-    console.log(`To: ${user.email}`)
-    console.log(`Subject: Reset your password`)
-    console.log(`\nHello ${user.name || 'there'},`)
-    console.log(`\nYou requested to reset your password. Click the link below to continue:`)
-    console.log(`\n${resetLink}`)
-    console.log(`\nThis link will expire in ${PASSWORD_RESET_TOKEN_EXPIRY_HOURS} hour(s).`)
-    console.log(`\nIf you didn't request this, you can safely ignore this email.`)
-    console.log(`${'='.repeat(80)}\n`)
+
+    const result = await emailService.sendPasswordReset(user.email, {
+      userName: user.name ?? undefined,
+      resetLink,
+      expiresInHours: PASSWORD_RESET_TOKEN_EXPIRY_HOURS,
+    })
+
+    if (!result.success) {
+      console.error(`[Password Reset] Failed to send email to ${user.email}:`, result.error)
+    }
 
     return { success: true }
   }

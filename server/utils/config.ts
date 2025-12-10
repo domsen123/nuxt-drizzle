@@ -51,6 +51,16 @@ export const config = {
   security: {
     auth_secret: process.env.NUXT_AUTH_SECRET || '',
   },
+  email: {
+    provider: (process.env.NUXT_EMAIL_PROVIDER || 'console') as 'console' | 'smtp',
+    smtp: {
+      host: process.env.NUXT_SMTP_HOST || '',
+      port: Number.parseInt(process.env.NUXT_SMTP_PORT || '587'),
+      user: process.env.NUXT_SMTP_USER || '',
+      pass: process.env.NUXT_SMTP_PASS || '',
+      from: process.env.NUXT_SMTP_FROM || 'noreply@example.com',
+    },
+  },
 }
 
 export default config
