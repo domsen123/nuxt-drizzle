@@ -1,0 +1,41 @@
+{
+  "name": "nuxt-ui-template-saas",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.23.0",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck",
+    "docker:up": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:clean": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up -d",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.79",
+    "@iconify-json/simple-icons": "^1.2.62",
+    "@nuxt/content": "^3.9.0",
+    "@nuxt/image": "^2.0.0",
+    "@nuxt/ui": "^4.2.1",
+    "@standard-schema/spec": "^1.0.0",
+    "@vueuse/nuxt": "^14.1.0",
+    "better-sqlite3": "^12.5.0",
+    "nuxt": "^4.2.2",
+    "nuxt-og-image": "^5.1.12",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.6.1",
+    "drizzle-kit": "^0.31.8",
+    "eslint": "^9.39.1",
+    "nuxt-mcp-dev": "^0.3.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.1.8"
+  }
+}
