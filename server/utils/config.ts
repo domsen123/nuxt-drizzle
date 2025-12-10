@@ -18,7 +18,7 @@ process.env.NODE_ENV = process.env.NUXT_SITE_ENV || 'development'
 const requiredEnvVars = [
   'NUXT_SITE_NAME',
   'NUXT_SITE_ENV',
-  'NUXT_SITE_URL',
+  'NUXT_PUBLIC_SITE_URL',
   'NUXT_DATABASE_HOST',
   'NUXT_DATABASE_PORT',
   'NUXT_DATABASE_USER',
@@ -37,7 +37,7 @@ export const config = {
   site: {
     name: process.env.NUXT_SITE_NAME || '',
     env: process.env.NUXT_SITE_ENV || '',
-    url: process.env.NUXT_SITE_URL || '',
+    url: process.env.NUXT_PUBLIC_SITE_URL || '',
   },
   database: {
     host: process.env.NUXT_DATABASE_HOST || 'localhost',

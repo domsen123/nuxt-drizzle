@@ -67,7 +67,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
   >
     <template #description>
       Don't have an account? <ULink
-        to="/signup"
+        :to="ROUTES.auth.signUp"
         class="text-primary font-medium"
       >
         Sign up
@@ -76,7 +76,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
 
     <template #password-hint>
       <ULink
-        to="/"
+        :to="ROUTES.auth.forgotPassword"
         class="text-primary font-medium"
         tabindex="-1"
       >
@@ -86,7 +86,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
 
     <template #footer>
       By signing in, you agree to our <ULink
-        to="/"
+        :to="ROUTES.legal.termsOfService"
         class="text-primary font-medium"
       >
         Terms of Service
