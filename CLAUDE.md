@@ -101,3 +101,6 @@ See `ARCHITECTURE.md` for comprehensive vertical slice architecture documentatio
   - **./app**: ~app/
   - **./server**: ~~server/
   - **./shared**: ~~shared/
+- zod: keep in mind that we are on zod v4. (use context7)
+  - use trim() for strings to avoid leading/trailing spaces
+  - 

@@ -25,3 +25,26 @@ export interface AuthResponse {
 export interface SessionResponse {
   user: AuthUser | null
 }
+
+export interface ForgotPasswordCredentials {
+  email: string
+}
+
+export interface ResetPasswordCredentials {
+  token: string
+  password: string
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean
+  message: string
+}
+
+export interface ResetPasswordResponse {
+  success: boolean
+  message: string
+}
+
+export interface ValidateResetTokenResponse {
+  valid: boolean
+}

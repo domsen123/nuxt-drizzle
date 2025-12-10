@@ -1,4 +1,14 @@
-import type { AuthResponse, LoginCredentials, RegisterCredentials, SessionResponse } from '../types/auth.types'
+import type {
+  AuthResponse,
+  ForgotPasswordCredentials,
+  ForgotPasswordResponse,
+  LoginCredentials,
+  RegisterCredentials,
+  ResetPasswordCredentials,
+  ResetPasswordResponse,
+  SessionResponse,
+  ValidateResetTokenResponse,
+} from '../types/auth.types'
 
 export const authApi = {
   login: (credentials: LoginCredentials): Promise<AuthResponse> =>
@@ -20,4 +30,21 @@ export const authApi = {
 
   getSession: (): Promise<SessionResponse> =>
     $fetch('/api/auth/session'),
+
+  forgotPassword: (credentials: ForgotPasswordCredentials): Promise<ForgotPasswordResponse> =>
+    $fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      body: credentials,
+    }),
+
+  resetPassword: (credentials: ResetPasswordCredentials): Promise<ResetPasswordResponse> =>
+    $fetch('/api/auth/reset-password', {
+      method: 'POST',
+      body: credentials,
+    }),
+
+  validateResetToken: (token: string): Promise<ValidateResetTokenResponse> =>
+    $fetch('/api/auth/validate-reset-token', {
+      query: { token },
+    }),
 }
