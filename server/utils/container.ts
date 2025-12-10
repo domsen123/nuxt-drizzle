@@ -1,11 +1,13 @@
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
+import * as schema from '../database/schema'
 import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
 import { getDatabase } from '../infrastructure/database/client'
+import { createItemService } from '../infrastructure/database/item-service'
 import { config } from './config'
 
 // Lazy initialization helper
@@ -52,6 +54,29 @@ const getAuthService = lazy(() =>
   }),
 )
 
+// ItemService instances - one per table
+const getUsersItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.users }),
+)
+const getOrganisationsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.organisations }),
+)
+const getTeamsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.teams }),
+)
+const getOrganisationMembersItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.organisationMembers }),
+)
+const getTeamMembersItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.teamMembers }),
+)
+const getSessionsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.sessions }),
+)
+const getPasswordResetTokensItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -59,5 +84,14 @@ export const container = {
   },
   get emailService(): EmailService {
     return getEmailService()
+  },
+  items: {
+    get users() { return getUsersItemService() },
+    get organisations() { return getOrganisationsItemService() },
+    get teams() { return getTeamsItemService() },
+    get organisationMembers() { return getOrganisationMembersItemService() },
+    get teamMembers() { return getTeamMembersItemService() },
+    get sessions() { return getSessionsItemService() },
+    get passwordResetTokens() { return getPasswordResetTokensItemService() },
   },
 }

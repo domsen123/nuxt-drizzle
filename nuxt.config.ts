@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
     'nuxt-mcp-dev',
+    '@nuxt/test-utils/module',
   ],
 
   devtools: {

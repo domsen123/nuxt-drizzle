@@ -1,11 +1,17 @@
 import { relations } from 'drizzle-orm'
+import { organisationMembers } from './organisation-members'
+import { organisations } from './organisations'
 import { passwordResetTokens } from './password-reset-tokens'
 import { sessions } from './sessions'
+import { teamMembers } from './team-members'
+import { teams } from './teams'
 import { users } from './users'
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   passwordResetTokens: many(passwordResetTokens),
+  organisationMemberships: many(organisationMembers),
+  teamMemberships: many(teamMembers),
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -18,6 +24,41 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
   user: one(users, {
     fields: [passwordResetTokens.userId],
+    references: [users.id],
+  }),
+}))
+
+export const organisationsRelations = relations(organisations, ({ many }) => ({
+  teams: many(teams),
+  members: many(organisationMembers),
+}))
+
+export const teamsRelations = relations(teams, ({ one, many }) => ({
+  organisation: one(organisations, {
+    fields: [teams.organisationId],
+    references: [organisations.id],
+  }),
+  members: many(teamMembers),
+}))
+
+export const organisationMembersRelations = relations(organisationMembers, ({ one }) => ({
+  organisation: one(organisations, {
+    fields: [organisationMembers.organisationId],
+    references: [organisations.id],
+  }),
+  user: one(users, {
+    fields: [organisationMembers.userId],
+    references: [users.id],
+  }),
+}))
+
+export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamMembers.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [teamMembers.userId],
     references: [users.id],
   }),
 }))
