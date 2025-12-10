@@ -5,6 +5,7 @@ import {
   and,
   count,
   eq,
+  getTableColumns,
   gt,
   gte,
   ilike,
@@ -56,8 +57,149 @@ interface LogicalFilter<T> {
 // Combined filter type
 export type Filter<T> = FieldFilter<T> & LogicalFilter<T>
 
+// Field selection types (Directus-style string array)
+type FieldsOption = string[] // ['id', 'name', '-password', 'author.name']
+
+interface ParsedFields {
+  include: Set<string>
+  exclude: Set<string>
+  relations: Map<string, string[]> // Prepared for Phase 2
+}
+
+// Parse fields array into include/exclude sets
+const parseFields = (fields: string[]): ParsedFields => {
+  const include = new Set<string>()
+  const exclude = new Set<string>()
+  const relations = new Map<string, string[]>()
+
+  for (const field of fields) {
+    if (field.startsWith('-')) {
+      exclude.add(field.slice(1))
+    }
+    else if (field.includes('.')) {
+      // Relation fields like 'author.name' or 'members.user.name'
+      const parts = field.split('.')
+      const relation = parts[0]
+      const nested = parts.slice(1).join('.')
+      if (relation && nested) {
+        if (!relations.has(relation))
+          relations.set(relation, [])
+        relations.get(relation)!.push(nested)
+      }
+    }
+    else if (field === '*') {
+      // Wildcard for all fields - handled by not specifying columns
+      continue
+    }
+    else {
+      include.add(field)
+    }
+  }
+
+  return { include, exclude, relations }
+}
+
+// Relational query config for Drizzle's db.query API
+interface RelationalQueryConfig {
+  columns?: Record<string, boolean>
+  with?: Record<string, RelationalQueryConfig | true>
+}
+
+// Recursively build relational query config from fields array
+const buildRelationalQuery = (fields: string[]): RelationalQueryConfig => {
+  const config: RelationalQueryConfig = {}
+  const columns: Record<string, boolean> = {}
+  const relations = new Map<string, string[]>()
+
+  for (const field of fields) {
+    if (field === '*') {
+      // Wildcard for all columns - don't specify columns (Drizzle returns all)
+      continue
+    }
+    else if (field.includes('.')) {
+      // Relation field: 'organisation.name' or 'members.user.name'
+      const parts = field.split('.')
+      const relation = parts[0]
+      const rest = parts.slice(1).join('.')
+      if (relation && rest) {
+        if (!relations.has(relation))
+          relations.set(relation, [])
+        relations.get(relation)!.push(rest)
+      }
+    }
+    else {
+      // Direct column
+      columns[field] = true
+    }
+  }
+
+  // Add columns if any specified
+  if (Object.keys(columns).length > 0) {
+    config.columns = columns
+  }
+
+  // Recursively build nested relations
+  if (relations.size > 0) {
+    config.with = {}
+    for (const [relation, nestedFields] of relations) {
+      if (nestedFields.length === 1 && nestedFields[0] === '*') {
+        // Wildcard: include all columns from relation
+        config.with[relation] = true
+      }
+      else {
+        // Recursively build nested config
+        config.with[relation] = buildRelationalQuery(nestedFields)
+      }
+    }
+  }
+
+  return config
+}
+
+// Check if fields contain any relation requests
+const hasRelationFields = (fields?: string[]): boolean => {
+  if (!fields)
+    return false
+  return fields.some(f => f.includes('.'))
+}
+
+// Build column selection object from fields array
+const buildColumnSelection = <T extends PgTable<TableConfig>>(
+  table: T,
+  fields?: FieldsOption,
+): Record<string, PgColumn> | undefined => {
+  if (!fields || fields.length === 0)
+    return undefined // Select all
+
+  const allColumns = getTableColumns(table) as Record<string, PgColumn>
+  const { include, exclude } = parseFields(fields)
+
+  // Include mode: only specified fields
+  if (include.size > 0) {
+    const selected: Record<string, PgColumn> = {}
+    for (const field of include) {
+      if (allColumns[field]) {
+        selected[field] = allColumns[field]
+      }
+    }
+    return Object.keys(selected).length > 0 ? selected : undefined
+  }
+
+  // Exclude mode: all fields except excluded
+  if (exclude.size > 0) {
+    const selected = { ...allColumns }
+    for (const field of exclude) {
+      delete selected[field]
+    }
+    return selected
+  }
+
+  return undefined
+}
+
 interface QueryOptions<T> {
   filter?: Filter<T>
+  fields?: FieldsOption
   limit?: number
   offset?: number
 }
@@ -65,11 +207,13 @@ interface QueryOptions<T> {
 interface CreateItemServiceDeps<T extends PgTable<TableConfig>> {
   db: DatabaseClient
   table: T
+  tableName?: string // Prepared for Phase 2 relation fetching
 }
 
 export const createItemService = <T extends PgTable<TableConfig>>({
   db,
   table,
+  tableName,
 }: CreateItemServiceDeps<T>) => {
   type Select = SelectModel<T>
   type Insert = InsertData<T>
@@ -158,7 +302,35 @@ export const createItemService = <T extends PgTable<TableConfig>>({
   }
 
   const findMany = async (options: QueryOptions<Select> = {}): Promise<Select[]> => {
-    let query = db.select().from(table as any).$dynamic()
+    // Check if relations are requested
+    if (hasRelationFields(options.fields) && tableName) {
+      // Use Drizzle's relational query API for relation support
+      const queryConfig = buildRelationalQuery(options.fields!)
+      const queryBuilder = (db.query as any)[tableName]
+
+      if (!queryBuilder) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Table "${tableName}" not found in db.query. Ensure schema is passed to drizzle().`,
+        })
+      }
+
+      return await queryBuilder.findMany({
+        columns: queryConfig.columns,
+        with: queryConfig.with,
+        where: options.filter ? () => buildWhereClause(options.filter!) : undefined,
+        limit: options.limit,
+        offset: options.offset,
+      })
+    }
+
+    // Fall back to standard query builder (no relations)
+    const columns = buildColumnSelection(table, options.fields)
+
+    // Use selected columns or select all
+    let query = columns
+      ? db.select(columns).from(table as any).$dynamic()
+      : db.select().from(table as any).$dynamic()
 
     if (options.filter) {
       const whereClause = buildWhereClause(options.filter)

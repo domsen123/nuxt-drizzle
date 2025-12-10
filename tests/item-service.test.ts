@@ -5,13 +5,14 @@ import * as schema from '../server/database/schema'
 import { getDatabase } from '../server/infrastructure/database/client'
 import { createItemService } from '../server/infrastructure/database/item-service'
 
-import { createOrganisationData, createTeamData, createUserData } from './factories'
+import { createOrganisationData, createTeamData, createTeamMemberData, createUserData } from './factories'
 
 describe('itemService', () => {
   const db = getDatabase('app')
-  const organisationsService = createItemService({ db, table: schema.organisations })
-  const usersService = createItemService({ db, table: schema.users })
-  const teamsService = createItemService({ db, table: schema.teams })
+  const organisationsService = createItemService({ db, table: schema.organisations, tableName: 'organisations' })
+  const usersService = createItemService({ db, table: schema.users, tableName: 'users' })
+  const teamsService = createItemService({ db, table: schema.teams, tableName: 'teams' })
+  const teamMembersService = createItemService({ db, table: schema.teamMembers, tableName: 'teamMembers' })
 
   describe('create', () => {
     it('creates a record with auto-generated id and timestamps', async () => {
@@ -252,6 +253,203 @@ describe('itemService', () => {
         filter: { organisationId: org.id },
       })
       expect(remainingTeams).toHaveLength(0)
+    })
+  })
+
+  describe('findMany with fields', () => {
+    it('selects specific fields with include', async () => {
+      const data = createOrganisationData()
+      const org = await organisationsService.create(data)
+
+      const [result] = await organisationsService.findMany({
+        fields: ['id', 'name'],
+        filter: { id: org.id },
+      })
+
+      expect(result.id).toBe(org.id)
+      expect(result.name).toBe(data.name)
+      expect(result).not.toHaveProperty('slug')
+      expect(result).not.toHaveProperty('createdAt')
+      expect(result).not.toHaveProperty('updatedAt')
+    })
+
+    it('excludes fields with - prefix', async () => {
+      const data = createOrganisationData()
+      const org = await organisationsService.create(data)
+
+      const [result] = await organisationsService.findMany({
+        fields: ['-createdAt', '-updatedAt'],
+        filter: { id: org.id },
+      })
+
+      expect(result.id).toBe(org.id)
+      expect(result.name).toBe(data.name)
+      expect(result.slug).toBe(data.slug)
+      expect(result).not.toHaveProperty('createdAt')
+      expect(result).not.toHaveProperty('updatedAt')
+    })
+
+    it('returns all fields when fields is empty array', async () => {
+      const data = createOrganisationData()
+      const org = await organisationsService.create(data)
+
+      const [result] = await organisationsService.findMany({
+        fields: [],
+        filter: { id: org.id },
+      })
+
+      expect(result.id).toBe(org.id)
+      expect(result.name).toBe(data.name)
+      expect(result.slug).toBe(data.slug)
+      expect(result.createdAt).toBeInstanceOf(Date)
+      expect(result.updatedAt).toBeInstanceOf(Date)
+    })
+
+    it('returns all fields when fields is not provided', async () => {
+      const data = createOrganisationData()
+      const org = await organisationsService.create(data)
+
+      const [result] = await organisationsService.findMany({
+        filter: { id: org.id },
+      })
+
+      expect(result.id).toBe(org.id)
+      expect(result.name).toBe(data.name)
+      expect(result.slug).toBe(data.slug)
+      expect(result.createdAt).toBeInstanceOf(Date)
+      expect(result.updatedAt).toBeInstanceOf(Date)
+    })
+
+    it('combines fields with filter and pagination', async () => {
+      const orgs = await organisationsService.createMany([
+        createOrganisationData({ slug: 'alpha' }),
+        createOrganisationData({ slug: 'beta' }),
+        createOrganisationData({ slug: 'gamma' }),
+      ])
+
+      const results = await organisationsService.findMany({
+        fields: ['id', 'slug'],
+        filter: { id: { _in: orgs.map(o => o.id) } },
+        limit: 2,
+      })
+
+      expect(results).toHaveLength(2)
+      results.forEach((result) => {
+        expect(result).toHaveProperty('id')
+        expect(result).toHaveProperty('slug')
+        expect(result).not.toHaveProperty('name')
+        expect(result).not.toHaveProperty('createdAt')
+      })
+    })
+
+    it('ignores invalid field names', async () => {
+      const data = createOrganisationData()
+      const org = await organisationsService.create(data)
+
+      const [result] = await organisationsService.findMany({
+        fields: ['id', 'nonExistentField'],
+        filter: { id: org.id },
+      })
+
+      expect(result.id).toBe(org.id)
+      expect(result).not.toHaveProperty('nonExistentField')
+      expect(result).not.toHaveProperty('name')
+    })
+  })
+
+  describe('findMany with relations', () => {
+    it('fetches relation with specific fields', async () => {
+      const orgData = createOrganisationData()
+      const org = await organisationsService.create(orgData)
+      const teamData = createTeamData(org.id)
+      const team = await teamsService.create(teamData)
+
+      const [result] = await teamsService.findMany({
+        fields: ['id', 'name', 'organisation.name', 'organisation.slug'],
+        filter: { id: team.id },
+      }) as any[]
+
+      expect(result.id).toBe(team.id)
+      expect(result.name).toBe(teamData.name)
+      expect(result.organisation).toBeDefined()
+      expect(result.organisation.name).toBe(orgData.name)
+      expect(result.organisation.slug).toBe(orgData.slug)
+      expect(result.organisation).not.toHaveProperty('id')
+      expect(result.organisation).not.toHaveProperty('createdAt')
+    })
+
+    it('fetches relation with wildcard (*)', async () => {
+      const orgData = createOrganisationData()
+      const org = await organisationsService.create(orgData)
+      const team = await teamsService.create(createTeamData(org.id))
+
+      const [result] = await teamsService.findMany({
+        fields: ['id', 'organisation.*'],
+        filter: { id: team.id },
+      }) as any[]
+
+      expect(result.id).toBe(team.id)
+      expect(result).not.toHaveProperty('name') // Only id was requested for team
+      expect(result.organisation.id).toBe(org.id)
+      expect(result.organisation.name).toBe(orgData.name)
+      expect(result.organisation.slug).toBe(orgData.slug)
+      expect(result.organisation.createdAt).toBeInstanceOf(Date)
+      expect(result.organisation.updatedAt).toBeInstanceOf(Date)
+    })
+
+    it('fetches nested relations (multi-level)', async () => {
+      const userData = createUserData()
+      const user = await usersService.create(userData)
+      const org = await organisationsService.create(createOrganisationData())
+      const team = await teamsService.create(createTeamData(org.id))
+      await teamMembersService.create(createTeamMemberData(team.id, user.id))
+
+      const [result] = await teamsService.findMany({
+        fields: ['id', 'name', 'members.user.name', 'members.user.email'],
+        filter: { id: team.id },
+      }) as any[]
+
+      expect(result.id).toBe(team.id)
+      expect(result.members).toHaveLength(1)
+      expect(result.members[0].user.name).toBe(userData.name)
+      expect(result.members[0].user.email).toBe(userData.email)
+      expect(result.members[0].user).not.toHaveProperty('id')
+      expect(result.members[0].user).not.toHaveProperty('passwordHash')
+    })
+
+    it('combines relation fields with filter and pagination', async () => {
+      const orgData = createOrganisationData()
+      const org = await organisationsService.create(orgData)
+      await teamsService.createMany([
+        createTeamData(org.id),
+        createTeamData(org.id),
+        createTeamData(org.id),
+      ])
+
+      const results = await teamsService.findMany({
+        fields: ['id', 'name', 'organisation.name'],
+        filter: { organisationId: org.id },
+        limit: 2,
+      }) as any[]
+
+      expect(results).toHaveLength(2)
+      results.forEach((result) => {
+        expect(result.organisation.name).toBe(orgData.name)
+      })
+    })
+
+    it('falls back to standard query when no relations requested', async () => {
+      const org = await organisationsService.create(createOrganisationData())
+      const team = await teamsService.create(createTeamData(org.id))
+
+      // Without relation fields, should use standard query (no organisation property)
+      const [result] = await teamsService.findMany({
+        fields: ['id', 'name'],
+        filter: { id: team.id },
+      })
+
+      expect(result.id).toBe(team.id)
+      expect(result).not.toHaveProperty('organisation')
     })
   })
 })

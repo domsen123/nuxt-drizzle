@@ -56,25 +56,25 @@ const getAuthService = lazy(() =>
 
 // ItemService instances - one per table
 const getUsersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.users }),
+  createItemService({ db: getDatabase('app'), table: schema.users, tableName: 'users' }),
 )
 const getOrganisationsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.organisations }),
+  createItemService({ db: getDatabase('app'), table: schema.organisations, tableName: 'organisations' }),
 )
 const getTeamsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.teams }),
+  createItemService({ db: getDatabase('app'), table: schema.teams, tableName: 'teams' }),
 )
 const getOrganisationMembersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.organisationMembers }),
+  createItemService({ db: getDatabase('app'), table: schema.organisationMembers, tableName: 'organisationMembers' }),
 )
 const getTeamMembersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.teamMembers }),
+  createItemService({ db: getDatabase('app'), table: schema.teamMembers, tableName: 'teamMembers' }),
 )
 const getSessionsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.sessions }),
+  createItemService({ db: getDatabase('app'), table: schema.sessions, tableName: 'sessions' }),
 )
 const getPasswordResetTokensItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens }),
+  createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens, tableName: 'passwordResetTokens' }),
 )
 
 // Public exports
