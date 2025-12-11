@@ -1,11 +1,13 @@
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
+import type { RbacService } from '../features/rbac/rbac.service'
 import * as schema from '../database/schema'
 import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
+import { createRbacService } from '../features/rbac/rbac.service'
 import { getDatabase } from '../infrastructure/database/client'
 import { createItemService } from '../infrastructure/database/item-service'
 import { config } from './config'
@@ -76,6 +78,24 @@ const getSessionsItemService = lazy(() =>
 const getPasswordResetTokensItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens, tableName: 'passwordResetTokens' }),
 )
+const getRolesItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.roles, tableName: 'roles' }),
+)
+const getRolePermissionsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.rolePermissions, tableName: 'rolePermissions' }),
+)
+const getUserRolesItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.userRoles, tableName: 'userRoles' }),
+)
+
+// RBAC Service (depends on ItemServices above)
+const getRbacService = lazy(() =>
+  createRbacService({
+    rolesItemService: getRolesItemService(),
+    rolePermissionsItemService: getRolePermissionsItemService(),
+    userRolesItemService: getUserRolesItemService(),
+  }),
+)
 
 // Public exports
 export const container = {
@@ -85,6 +105,9 @@ export const container = {
   get emailService(): EmailService {
     return getEmailService()
   },
+  get rbacService(): RbacService {
+    return getRbacService()
+  },
   items: {
     get users() { return getUsersItemService() },
     get organisations() { return getOrganisationsItemService() },
@@ -93,5 +116,8 @@ export const container = {
     get teamMembers() { return getTeamMembersItemService() },
     get sessions() { return getSessionsItemService() },
     get passwordResetTokens() { return getPasswordResetTokensItemService() },
+    get roles() { return getRolesItemService() },
+    get rolePermissions() { return getRolePermissionsItemService() },
+    get userRoles() { return getUserRolesItemService() },
   },
 }
