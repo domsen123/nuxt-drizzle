@@ -30,12 +30,6 @@ const state = reactive<Schema>({
   slug: props.organisation?.slug ?? '',
 })
 
-// Character counts
-const nameCharCount = computed(() => state.name.length)
-const slugCharCount = computed(() => state.slug.length)
-const nameCharRemaining = computed(() => NAME_MAX_LENGTH - nameCharCount.value)
-const isNameNearLimit = computed(() => nameCharRemaining.value <= 20)
-
 const generateSlug = (name: string): string =>
   name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, SLUG_MAX_LENGTH)
 
@@ -95,26 +89,41 @@ const previewUrl = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Header with context -->
-    <div class="flex items-center gap-3 pb-2 border-b border-default">
-      <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-        <UIcon
-          :name="isEditMode ? 'i-lucide-pencil' : 'i-lucide-building-2'"
-          class="size-5 text-primary"
-        />
+  <UForm
+    id="organisation-form"
+    :schema="schema"
+    :state="state"
+    class="space-y-4"
+    @submit="onSubmit"
+  >
+    <!-- Header Card -->
+    <UPageCard
+      :title="isEditMode ? 'Edit Organisation' : 'New Organisation'"
+      :description="isEditMode ? 'Update the organisation details below.' : 'Fill in the details to create a new organisation.'"
+      variant="naked"
+      orientation="horizontal"
+      class="mb-4"
+    >
+      <div class="flex gap-2 lg:ms-auto">
+        <UButton
+          variant="ghost"
+          color="neutral"
+          :disabled="isLoading"
+          @click="emit('cancel')"
+        >
+          Cancel
+        </UButton>
+        <UButton
+          form="organisation-form"
+          type="submit"
+          :loading="isLoading"
+        >
+          {{ isEditMode ? 'Save Changes' : 'Create Organisation' }}
+        </UButton>
       </div>
-      <div>
-        <h3 class="text-base font-semibold text-highlighted">
-          {{ isEditMode ? 'Edit Organisation' : 'New Organisation' }}
-        </h3>
-        <p class="text-sm text-muted">
-          {{ isEditMode ? 'Update the organisation details below' : 'Fill in the details to create a new organisation' }}
-        </p>
-      </div>
-    </div>
+    </UPageCard>
 
-    <!-- Error Alert with better styling -->
+    <!-- Error Alert -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="opacity-0 -translate-y-1"
@@ -129,52 +138,49 @@ const previewUrl = computed(() => {
         variant="subtle"
         icon="i-lucide-alert-triangle"
         :title="apiError"
-        :close-button="{ icon: 'i-lucide-x', color: 'error', variant: 'link' }"
         class="animate-shake"
       />
     </Transition>
 
-    <UForm
-      :schema="schema"
-      :state="state"
-      class="space-y-5"
-      @submit="onSubmit"
-    >
+    <!-- Form Fields Card -->
+    <UPageCard variant="subtle">
       <!-- Name Field -->
       <UFormField
-        label="Organisation Name"
         name="name"
+        label="Organisation Name"
+        description="Will appear on receipts, invoices, and other communication."
         required
-        :hint="isNameNearLimit ? `${nameCharRemaining} characters remaining` : undefined"
-        :ui="{ hint: isNameNearLimit && nameCharRemaining <= 10 ? 'text-warning' : undefined }"
+        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <template #description>
-          <span class="text-dimmed">The display name for your organisation</span>
-        </template>
-        <UInput
-          v-model="state.name"
-          placeholder="Acme Corporation"
-          icon="i-lucide-building"
-          size="lg"
-          :maxlength="NAME_MAX_LENGTH"
-          autocomplete="organization"
-        />
+        <div class="w-full max-w-sm">
+          <UInput
+            v-model="state.name"
+            placeholder="Acme Corporation"
+            autocomplete="organization"
+            :maxlength="NAME_MAX_LENGTH"
+          />
+        </div>
       </UFormField>
+
+      <USeparator />
 
       <!-- Slug Field -->
       <UFormField
-        label="URL Slug"
         name="slug"
+        label="URL Slug"
         required
+        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <template #description>
-          <span class="text-dimmed">
-            A unique identifier used in URLs
-            <template v-if="!isEditMode && slugManuallyEdited">
-              <span class="mx-1 text-muted">-</span>
+          <span>
+            A unique identifier used in URLs.
+            <template v-if="isEditMode">
+              <span class="text-muted">(Cannot be changed)</span>
+            </template>
+            <template v-else-if="slugManuallyEdited">
               <button
                 type="button"
-                class="text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1"
+                class="text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1 ms-1"
                 @click="resetSlugAutoGeneration"
               >
                 <UIcon name="i-lucide-refresh-cw" class="size-3" />
@@ -183,79 +189,36 @@ const previewUrl = computed(() => {
             </template>
           </span>
         </template>
-        <UInput
-          v-model="state.slug"
-          placeholder="acme-corp"
-          icon="i-lucide-link"
-          size="lg"
-          :maxlength="SLUG_MAX_LENGTH"
-          :disabled="isEditMode"
-          @input="onSlugInput"
-        >
-          <template v-if="isEditMode" #trailing>
-            <UTooltip text="Slug cannot be changed after creation">
+        <div class="w-full max-w-sm">
+          <UInput
+            v-model="state.slug"
+            placeholder="acme-corp"
+            :maxlength="SLUG_MAX_LENGTH"
+            :disabled="isEditMode"
+            @input="onSlugInput"
+          >
+            <template v-if="isEditMode" #trailing>
               <UIcon name="i-lucide-lock" class="size-4 text-muted" />
-            </UTooltip>
-          </template>
-        </UInput>
-        <template #hint>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-dimmed">{{ slugCharCount }}/{{ SLUG_MAX_LENGTH }}</span>
-          </div>
-        </template>
-      </UFormField>
-
-      <!-- URL Preview -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-if="previewUrl"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg bg-elevated border border-muted"
-        >
-          <UIcon name="i-lucide-globe" class="size-4 text-muted shrink-0" />
-          <span class="text-sm text-dimmed">Preview:</span>
-          <code class="text-sm font-mono text-highlighted">{{ previewUrl }}</code>
+            </template>
+          </UInput>
+          <!-- URL Preview -->
+          <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <p v-if="previewUrl" class="mt-2 text-xs text-muted">
+              <UIcon name="i-lucide-globe" class="size-3 inline-block me-1" />
+              {{ previewUrl }}
+            </p>
+          </Transition>
         </div>
-      </Transition>
-
-      <!-- Divider -->
-      <USeparator />
-
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-3 justify-end pt-2">
-        <UButton
-          variant="ghost"
-          color="neutral"
-          size="lg"
-          :disabled="isLoading"
-          @click="emit('cancel')"
-        >
-          <template #leading>
-            <UIcon name="i-lucide-x" class="size-4" />
-          </template>
-          Cancel
-        </UButton>
-
-        <UButton
-          type="submit"
-          size="lg"
-          :loading="isLoading"
-          :disabled="isLoading"
-        >
-          <template v-if="!isLoading" #leading>
-            <UIcon :name="isEditMode ? 'i-lucide-save' : 'i-lucide-plus'" class="size-4" />
-          </template>
-          {{ isEditMode ? 'Save Changes' : 'Create Organisation' }}
-        </UButton>
-      </div>
-    </UForm>
-  </div>
+      </UFormField>
+    </UPageCard>
+  </UForm>
 </template>
 
 <style scoped>

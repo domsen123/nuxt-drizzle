@@ -98,7 +98,7 @@ See `ARCHITECTURE.md` for comprehensive vertical slice architecture documentatio
 - use arrow functions if possible
 - use `pnpm lint --fix` and `pnpm typecheck` after code changes to ensure code quality
 - common alias:
-  - **./app**: ~app/
+  - **./app**: ~/
   - **./server**: ~~server/
   - **./shared**: ~~shared/
 - zod: keep in mind that we are on zod v4. (use context7)

@@ -1,12 +1,14 @@
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
+import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { RbacService } from '../features/rbac/rbac.service'
 import * as schema from '../database/schema'
 import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
+import { createOrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import { createRbacService } from '../features/rbac/rbac.service'
 import { getDatabase } from '../infrastructure/database/client'
 import { createItemService } from '../infrastructure/database/item-service'
@@ -97,6 +99,17 @@ const getRbacService = lazy(() =>
   }),
 )
 
+// Organisation Members Service
+const getOrganisationMembersService = lazy(() =>
+  createOrganisationMembersService({
+    organisationMembersItemService: getOrganisationMembersItemService(),
+    usersItemService: getUsersItemService(),
+    organisationsItemService: getOrganisationsItemService(),
+    rolesItemService: getRolesItemService(),
+    rbacService: getRbacService(),
+  }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -107,6 +120,9 @@ export const container = {
   },
   get rbacService(): RbacService {
     return getRbacService()
+  },
+  get organisationMembersService(): OrganisationMembersService {
+    return getOrganisationMembersService()
   },
   items: {
     get users() { return getUsersItemService() },
