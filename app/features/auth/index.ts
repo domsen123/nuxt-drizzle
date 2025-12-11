@@ -1,5 +1,5 @@
 // API (if needed externally)
-export { authApi } from './api/auth.api'
+export { useAuthApi } from './api/auth.api'
 
 export { authKeys } from './api/auth.keys'
 export { useLogin, useLogout, useRegister } from './composables/useAuthMutations'

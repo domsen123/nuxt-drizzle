@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { AdminOrganisation } from '../types/admin.types'
 
 defineProps<{
   organisations: AdminOrganisation[]
   loading?: boolean
 }>()
+
+const router = useRouter()
+
+const onSelect = (_e: Event, row: TableRow<AdminOrganisation>) => {
+  router.push(ROUTES.admin.organisationEdit(row.original.id))
+}
 
 const columns: TableColumn<AdminOrganisation>[] = [
   { accessorKey: 'name', header: 'Name' },
@@ -27,6 +33,8 @@ const formatDate = (dateString: string) => {
     :columns="columns"
     :data="organisations"
     :loading="loading"
+    class="cursor-pointer"
+    @select="onSelect"
   >
     <template #name-cell="{ row }">
       <div class="flex items-center gap-2">

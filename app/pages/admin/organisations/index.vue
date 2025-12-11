@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AdminOrganisationList from '~/features/admin/components/AdminOrganisationList.vue'
+
 definePageMeta({
   layout: 'admin',
   middleware: ['admin'],
@@ -22,13 +24,20 @@ const isLoading = computed(() => status.value === 'pending')
         </template>
 
         <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            color="neutral"
-            variant="ghost"
-            :loading="isLoading"
-            @click="refresh()"
-          />
+          <div class="flex items-center gap-2">
+            <UButton
+              icon="i-lucide-refresh-cw"
+              color="neutral"
+              variant="ghost"
+              :loading="isLoading"
+              @click="refresh()"
+            />
+            <UButton
+              icon="i-lucide-plus"
+              label="Create"
+              :to="ROUTES.admin.organisationCreate"
+            />
+          </div>
         </template>
       </UDashboardNavbar>
     </template>

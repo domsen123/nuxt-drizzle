@@ -25,6 +25,13 @@ export default defineNuxtConfig({
     ],
   },
 
+  components: {
+    dirs: ['~/components', {
+      path: '~/features/**/components',
+      pathPrefix: false,
+    }],
+  },
+
   compatibilityDate: '2024-07-11',
 
   nitro: {

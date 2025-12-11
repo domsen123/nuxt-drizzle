@@ -1,8 +1,10 @@
 import { useQuery } from '@pinia/colada'
-import { authApi } from '../api/auth.api'
+import { useAuthApi } from '../api/auth.api'
 import { authKeys } from '../api/auth.keys'
 
 export const useSession = () => {
+  const authApi = useAuthApi()
+
   const query = useQuery({
     key: authKeys.session(),
     query: () => authApi.getSession(),

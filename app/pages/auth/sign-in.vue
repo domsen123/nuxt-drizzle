@@ -60,9 +60,8 @@ const providers = [{
 const schema = z.object({
   email: z.email('Invalid email'),
   password: z.string().min(8, 'Must be at least 8 characters'),
+  remember: z.boolean().optional().default(false),
 })
-
-type Schema = z.output<typeof schema>
 
 // Computed error message from API
 const apiError = computed(() => {
@@ -72,8 +71,8 @@ const apiError = computed(() => {
   return err.data?.statusMessage || err.message || 'Login failed'
 })
 
-const onSubmit = (payload: FormSubmitEvent<Schema>) => {
-  login({ email: payload.data.email, password: payload.data.password })
+const onSubmit = (payload: FormSubmitEvent<z.input<typeof schema>>) => {
+  login({ email: payload.data.email, password: payload.data.password, remember: payload.data.remember ?? false })
     .then(() => {
       toast.add({ title: 'Welcome back!', color: 'success' })
       const redirect = route.query.redirect as string | undefined

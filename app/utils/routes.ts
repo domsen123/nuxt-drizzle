@@ -13,5 +13,7 @@ export const ROUTES = {
   admin: {
     home: '/admin',
     organisations: '/admin/organisations',
+    organisationCreate: '/admin/organisations/create',
+    organisationEdit: (id: string) => `/admin/organisations/${id}/edit`,
   },
 } as const

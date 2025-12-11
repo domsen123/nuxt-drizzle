@@ -1,9 +1,11 @@
 import type { Ref } from 'vue'
 import { useQuery } from '@pinia/colada'
-import { authApi } from '../api/auth.api'
+import { useAuthApi } from '../api/auth.api'
 import { authKeys } from '../api/auth.keys'
 
 export const useValidateResetToken = (token: Ref<string | null>) => {
+  const authApi = useAuthApi()
+
   return useQuery({
     key: () => [...authKeys.all, 'validate-reset-token', token.value] as const,
     query: () => {

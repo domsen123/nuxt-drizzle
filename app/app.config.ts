@@ -4,5 +4,10 @@ export default defineAppConfig({
       primary: 'fuchsia',
       neutral: 'slate',
     },
+    input: {
+      slots: {
+        root: 'w-full',
+      },
+    },
   },
 })

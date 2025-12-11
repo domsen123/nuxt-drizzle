@@ -5,11 +5,12 @@ import type {
   ResetPasswordCredentials,
 } from '../types/auth.types'
 import { useMutation, useQueryCache } from '@pinia/colada'
-import { authApi } from '../api/auth.api'
+import { useAuthApi } from '../api/auth.api'
 import { authKeys } from '../api/auth.keys'
 
 export const useLogin = () => {
   const queryCache = useQueryCache()
+  const authApi = useAuthApi()
 
   return useMutation({
     mutation: (credentials: LoginCredentials) => authApi.login(credentials),
@@ -21,6 +22,7 @@ export const useLogin = () => {
 
 export const useRegister = () => {
   const queryCache = useQueryCache()
+  const authApi = useAuthApi()
 
   return useMutation({
     mutation: (credentials: RegisterCredentials) => authApi.register(credentials),
@@ -32,6 +34,7 @@ export const useRegister = () => {
 
 export const useLogout = () => {
   const queryCache = useQueryCache()
+  const authApi = useAuthApi()
 
   return useMutation({
     mutation: () => authApi.logout(),
@@ -42,6 +45,8 @@ export const useLogout = () => {
 }
 
 export const useForgotPassword = () => {
+  const authApi = useAuthApi()
+
   return useMutation({
     mutation: (credentials: ForgotPasswordCredentials) => authApi.forgotPassword(credentials),
   })
@@ -49,6 +54,7 @@ export const useForgotPassword = () => {
 
 export const useResetPassword = () => {
   const queryCache = useQueryCache()
+  const authApi = useAuthApi()
 
   return useMutation({
     mutation: (credentials: ResetPasswordCredentials) => authApi.resetPassword(credentials),

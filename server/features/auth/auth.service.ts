@@ -9,7 +9,8 @@ import { passwordResetTokens, sessions, users } from '../../database/schema'
 import { config } from '../../utils/config'
 
 const BCRYPT_COST = 12
-const SESSION_EXPIRY_DAYS = 30
+const SESSION_EXPIRY_SHORT_DAYS = 1
+const SESSION_EXPIRY_LONG_DAYS = 30
 const SESSION_REFRESH_THRESHOLD_DAYS = 7
 const PASSWORD_RESET_TOKEN_EXPIRY_HOURS = 1
 
@@ -42,9 +43,10 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     return safeUser
   }
 
-  const createSession = async (userId: string): Promise<{ session: Session, token: string }> => {
+  const createSession = async (userId: string, remember: boolean = false): Promise<{ session: Session, token: string }> => {
     const token = generateSessionToken()
-    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    const expiryDays = remember ? SESSION_EXPIRY_LONG_DAYS : SESSION_EXPIRY_SHORT_DAYS
+    const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000)
 
     const [session] = await db
       .insert(sessions)
@@ -112,7 +114,7 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     }
   }
 
-  const login = async (email: string, password: string): Promise<AuthServiceResult> => {
+  const login = async (email: string, password: string, remember: boolean = false): Promise<AuthServiceResult> => {
     const [user] = await db
       .select()
       .from(users)
@@ -135,7 +137,7 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
       })
     }
 
-    const { session, token } = await createSession(user.id)
+    const { session, token } = await createSession(user.id, remember)
 
     return {
       user: omitPasswordHash(user),
@@ -169,7 +171,7 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
   }
 
   const refreshSession = async (sessionId: string): Promise<Session> => {
-    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_LONG_DAYS * 24 * 60 * 60 * 1000)
 
     const [session] = await db
       .update(sessions)

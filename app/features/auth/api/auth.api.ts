@@ -10,41 +10,46 @@ import type {
   ValidateResetTokenResponse,
 } from '../types/auth.types'
 
-export const authApi = {
-  login: (credentials: LoginCredentials): Promise<AuthResponse> =>
-    $fetch('/api/auth/login', {
-      method: 'POST',
-      body: credentials,
-    }),
+export const useAuthApi = () => {
+  // useRequestFetch automatically forwards cookies during SSR
+  const fetch = useRequestFetch()
 
-  register: (credentials: RegisterCredentials): Promise<AuthResponse> =>
-    $fetch('/api/auth/register', {
-      method: 'POST',
-      body: credentials,
-    }),
+  return {
+    login: (credentials: LoginCredentials): Promise<AuthResponse> =>
+      fetch('/api/auth/login', {
+        method: 'POST',
+        body: credentials,
+      }),
 
-  logout: (): Promise<{ success: boolean }> =>
-    $fetch('/api/auth/logout', {
-      method: 'POST',
-    }),
+    register: (credentials: RegisterCredentials): Promise<AuthResponse> =>
+      fetch('/api/auth/register', {
+        method: 'POST',
+        body: credentials,
+      }),
 
-  getSession: (): Promise<SessionResponse> =>
-    $fetch('/api/auth/session'),
+    logout: (): Promise<{ success: boolean }> =>
+      fetch('/api/auth/logout', {
+        method: 'POST',
+      }),
 
-  forgotPassword: (credentials: ForgotPasswordCredentials): Promise<ForgotPasswordResponse> =>
-    $fetch('/api/auth/forgot-password', {
-      method: 'POST',
-      body: credentials,
-    }),
+    getSession: (): Promise<SessionResponse> =>
+      fetch('/api/auth/session'),
 
-  resetPassword: (credentials: ResetPasswordCredentials): Promise<ResetPasswordResponse> =>
-    $fetch('/api/auth/reset-password', {
-      method: 'POST',
-      body: credentials,
-    }),
+    forgotPassword: (credentials: ForgotPasswordCredentials): Promise<ForgotPasswordResponse> =>
+      fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        body: credentials,
+      }),
 
-  validateResetToken: (token: string): Promise<ValidateResetTokenResponse> =>
-    $fetch('/api/auth/validate-reset-token', {
-      query: { token },
-    }),
+    resetPassword: (credentials: ResetPasswordCredentials): Promise<ResetPasswordResponse> =>
+      fetch('/api/auth/reset-password', {
+        method: 'POST',
+        body: credentials,
+      }),
+
+    validateResetToken: (token: string): Promise<ValidateResetTokenResponse> =>
+      fetch('/api/auth/validate-reset-token', {
+        query: { token },
+      }),
+  }
 }
