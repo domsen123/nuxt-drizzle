@@ -3,6 +3,7 @@ const router = useRouter()
 const toast = useToast()
 
 const { user, isAuthenticated, isLoading } = useSession()
+const { isGlobalAdmin } = usePermissions()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 
 const items = computed(() => [])
@@ -21,18 +22,31 @@ const handleLogout = () => {
 const isLoggingOut = computed(() => logoutStatus.value === 'loading')
 
 // User dropdown items
-const userMenuItems = computed(() => [
-  [{
+const userMenuItems = computed(() => {
+  const accountItem = [{
     label: user.value?.email ?? '',
     slot: 'account',
     disabled: true,
-  }],
-  [{
+  }]
+
+  const adminItem = [{
+    label: 'Admin Dashboard',
+    icon: 'i-lucide-shield',
+    to: ROUTES.admin.home,
+  }]
+
+  const signOutItem = [{
     label: 'Sign out',
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
-  }],
-])
+  }]
+
+  if (isGlobalAdmin.value) {
+    return [accountItem, adminItem, signOutItem]
+  }
+
+  return [accountItem, signOutItem]
+})
 </script>
 
 <template>
@@ -118,6 +132,16 @@ const userMenuItems = computed(() => [
         <div class="px-2.5 py-2 text-sm text-muted">
           Signed in as {{ user.email }}
         </div>
+        <UButton
+          v-if="isGlobalAdmin"
+          label="Admin Dashboard"
+          color="neutral"
+          variant="subtle"
+          icon="i-lucide-shield"
+          :to="ROUTES.admin.home"
+          block
+          class="mb-3"
+        />
         <UButton
           label="Sign out"
           color="neutral"

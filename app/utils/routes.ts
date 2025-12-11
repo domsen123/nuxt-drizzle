@@ -10,4 +10,8 @@ export const ROUTES = {
     termsOfService: '/terms-of-service',
     privacyPolicy: '/privacy-policy',
   },
+  admin: {
+    home: '/admin',
+    organisations: '/admin/organisations',
+  },
 } as const

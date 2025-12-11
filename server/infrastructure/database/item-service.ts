@@ -3,7 +3,9 @@ import type { PgColumn, PgTable, TableConfig } from 'drizzle-orm/pg-core'
 import type { DatabaseClient } from './client'
 import {
   and,
+  asc,
   count,
+  desc,
   eq,
   getTableColumns,
   gt,
@@ -59,6 +61,9 @@ export type Filter<T> = FieldFilter<T> & LogicalFilter<T>
 
 // Field selection types (Directus-style string array)
 type FieldsOption = string[] // ['id', 'name', '-password', 'author.name']
+
+// Sort options (Directus-style: 'name' for ASC, '-name' for DESC)
+type SortOption = string[] // ['name', '-createdAt'] -> name ASC, createdAt DESC
 
 interface ParsedFields {
   include: Set<string>
@@ -200,6 +205,7 @@ const buildColumnSelection = <T extends PgTable<TableConfig>>(
 interface QueryOptions<T> {
   filter?: Filter<T>
   fields?: FieldsOption
+  sort?: SortOption
   limit?: number
   offset?: number
 }
@@ -301,6 +307,20 @@ export const createItemService = <T extends PgTable<TableConfig>>({
     return and(...conditions)
   }
 
+  // Build ORDER BY clause from sort array
+  const buildOrderByClause = (sortFields: string[]): SQL[] => {
+    const orderBy: SQL[] = []
+    for (const field of sortFields) {
+      const isDesc = field.startsWith('-')
+      const fieldName = isDesc ? field.slice(1) : field
+      const column = (table as any)[fieldName] as PgColumn | undefined
+      if (column) {
+        orderBy.push(isDesc ? desc(column) : asc(column))
+      }
+    }
+    return orderBy
+  }
+
   const findMany = async (options: QueryOptions<Select> = {}): Promise<Select[]> => {
     // Check if relations are requested
     if (hasRelationFields(options.fields) && tableName) {
@@ -319,6 +339,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
         columns: queryConfig.columns,
         with: queryConfig.with,
         where: options.filter ? () => buildWhereClause(options.filter!) : undefined,
+        orderBy: options.sort && options.sort.length > 0 ? buildOrderByClause(options.sort) : undefined,
         limit: options.limit,
         offset: options.offset,
       })
@@ -336,6 +357,12 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       const whereClause = buildWhereClause(options.filter)
       if (whereClause)
         query = query.where(whereClause)
+    }
+
+    if (options.sort && options.sort.length > 0) {
+      const orderBy = buildOrderByClause(options.sort)
+      if (orderBy.length > 0)
+        query = query.orderBy(...orderBy)
     }
 
     if (options.limit !== undefined)
