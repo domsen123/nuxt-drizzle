@@ -16,5 +16,11 @@ export const ROUTES = {
     organisationCreate: '/admin/organisations/create',
     organisationEdit: (id: string) => `/admin/organisations/${id}`,
     organisationMembers: (id: string) => `/admin/organisations/${id}/members`,
+    users: '/admin/users',
+    userEdit: (id: string) => `/admin/users/${id}`,
+  },
+  settings: {
+    profile: '/settings',
+    security: '/settings/security',
   },
 } as const

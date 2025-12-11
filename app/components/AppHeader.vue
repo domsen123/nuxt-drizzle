@@ -29,6 +29,12 @@ const userMenuItems = computed(() => {
     disabled: true,
   }]
 
+  const settingsItem = [{
+    label: 'Settings',
+    icon: 'i-lucide-settings',
+    to: ROUTES.settings.profile,
+  }]
+
   const adminItem = [{
     label: 'Admin Dashboard',
     icon: 'i-lucide-shield',
@@ -42,10 +48,10 @@ const userMenuItems = computed(() => {
   }]
 
   if (isGlobalAdmin.value) {
-    return [accountItem, adminItem, signOutItem]
+    return [accountItem, settingsItem, adminItem, signOutItem]
   }
 
-  return [accountItem, signOutItem]
+  return [accountItem, settingsItem, signOutItem]
 })
 </script>
 
@@ -132,6 +138,15 @@ const userMenuItems = computed(() => {
         <div class="px-2.5 py-2 text-sm text-muted">
           Signed in as {{ user.email }}
         </div>
+        <UButton
+          label="Settings"
+          color="neutral"
+          variant="subtle"
+          icon="i-lucide-settings"
+          :to="ROUTES.settings.profile"
+          block
+          class="mb-3"
+        />
         <UButton
           v-if="isGlobalAdmin"
           label="Admin Dashboard"

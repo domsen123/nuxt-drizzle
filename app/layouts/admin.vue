@@ -17,6 +17,11 @@ const navItems: NavigationMenuItem[][] = [
       to: ROUTES.admin.home,
     },
     {
+      label: 'Users',
+      icon: 'i-lucide-users',
+      to: ROUTES.admin.users,
+    },
+    {
       label: 'Organisations',
       icon: 'i-lucide-building-2',
       to: ROUTES.admin.organisations,

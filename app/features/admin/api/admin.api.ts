@@ -1,8 +1,12 @@
 import type {
   AdminOrganisationResponse,
   AdminOrganisationsResponse,
+  AdminUserResponse,
+  AdminUsersQueryParams,
+  AdminUsersResponse,
   CreateOrganisationInput,
   UpdateOrganisationInput,
+  UpdateUserInput,
 } from '../types/admin.types'
 
 export const adminApi = {
@@ -22,5 +26,23 @@ export const adminApi = {
     $fetch(`/api/admin/organisations/${id}`, {
       method: 'PUT',
       body: data,
+    }),
+
+  // Users
+  getUsers: (params?: AdminUsersQueryParams): Promise<AdminUsersResponse> =>
+    $fetch('/api/admin/users', { query: params }),
+
+  getUser: (id: string): Promise<AdminUserResponse> =>
+    $fetch(`/api/admin/users/${id}`),
+
+  updateUser: (id: string, data: UpdateUserInput): Promise<AdminUserResponse> =>
+    $fetch(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  deleteUser: (id: string): Promise<{ success: boolean }> =>
+    $fetch(`/api/admin/users/${id}`, {
+      method: 'DELETE',
     }),
 }

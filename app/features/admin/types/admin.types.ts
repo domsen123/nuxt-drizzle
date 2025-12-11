@@ -24,3 +24,32 @@ export interface UpdateOrganisationInput {
   name: string
   slug: string
 }
+
+// User types
+export interface AdminUser {
+  id: string
+  email: string
+  name: string | null
+  emailVerified: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[]
+  total: number
+}
+
+export interface AdminUserResponse {
+  user: AdminUser
+}
+
+export interface UpdateUserInput {
+  name: string | null
+  email: string
+  emailVerified: boolean
+}
+
+export interface AdminUsersQueryParams {
+  search?: string
+}
