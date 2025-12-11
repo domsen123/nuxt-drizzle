@@ -4,6 +4,7 @@ import type { EmailService } from '../features/email/email.service'
 import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { ProfileService } from '../features/profile/profile.service'
 import type { RbacService } from '../features/rbac/rbac.service'
+import type { EventBus } from '../infrastructure/events'
 import * as schema from '../database/schema'
 import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
@@ -14,6 +15,7 @@ import { createProfileService } from '../features/profile/profile.service'
 import { createRbacService } from '../features/rbac/rbac.service'
 import { getDatabase } from '../infrastructure/database/client'
 import { createItemService } from '../infrastructure/database/item-service'
+import { createEventBus } from '../infrastructure/events'
 import { config } from './config'
 
 // Lazy initialization helper
@@ -45,6 +47,9 @@ const getEmailProvider = lazy((): EmailProvider => {
   return createConsoleEmailProvider()
 })
 
+// Event Bus
+const getEventBus = lazy(() => createEventBus())
+
 // Services
 const getEmailService = lazy(() =>
   createEmailService({
@@ -62,34 +67,34 @@ const getAuthService = lazy(() =>
 
 // ItemService instances - one per table
 const getUsersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.users, tableName: 'users' }),
+  createItemService({ db: getDatabase('app'), table: schema.users, tableName: 'users', eventBus: getEventBus() }),
 )
 const getOrganisationsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.organisations, tableName: 'organisations' }),
+  createItemService({ db: getDatabase('app'), table: schema.organisations, tableName: 'organisations', eventBus: getEventBus() }),
 )
 const getTeamsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.teams, tableName: 'teams' }),
+  createItemService({ db: getDatabase('app'), table: schema.teams, tableName: 'teams', eventBus: getEventBus() }),
 )
 const getOrganisationMembersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.organisationMembers, tableName: 'organisationMembers' }),
+  createItemService({ db: getDatabase('app'), table: schema.organisationMembers, tableName: 'organisationMembers', eventBus: getEventBus() }),
 )
 const getTeamMembersItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.teamMembers, tableName: 'teamMembers' }),
+  createItemService({ db: getDatabase('app'), table: schema.teamMembers, tableName: 'teamMembers', eventBus: getEventBus() }),
 )
 const getSessionsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.sessions, tableName: 'sessions' }),
+  createItemService({ db: getDatabase('app'), table: schema.sessions, tableName: 'sessions', eventBus: getEventBus() }),
 )
 const getPasswordResetTokensItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens, tableName: 'passwordResetTokens' }),
+  createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens, tableName: 'passwordResetTokens', eventBus: getEventBus() }),
 )
 const getRolesItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.roles, tableName: 'roles' }),
+  createItemService({ db: getDatabase('app'), table: schema.roles, tableName: 'roles', eventBus: getEventBus() }),
 )
 const getRolePermissionsItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.rolePermissions, tableName: 'rolePermissions' }),
+  createItemService({ db: getDatabase('app'), table: schema.rolePermissions, tableName: 'rolePermissions', eventBus: getEventBus() }),
 )
 const getUserRolesItemService = lazy(() =>
-  createItemService({ db: getDatabase('app'), table: schema.userRoles, tableName: 'userRoles' }),
+  createItemService({ db: getDatabase('app'), table: schema.userRoles, tableName: 'userRoles', eventBus: getEventBus() }),
 )
 
 // RBAC Service (depends on ItemServices above)
@@ -135,6 +140,9 @@ export const container = {
   },
   get profileService(): ProfileService {
     return getProfileService()
+  },
+  get eventBus(): EventBus {
+    return getEventBus()
   },
   items: {
     get users() { return getUsersItemService() },

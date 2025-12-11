@@ -1,5 +1,6 @@
 import type { SQL } from 'drizzle-orm'
 import type { PgColumn, PgTable, TableConfig } from 'drizzle-orm/pg-core'
+import type { EventBus } from '../events'
 import type { DatabaseClient } from './client'
 import {
   and,
@@ -22,6 +23,7 @@ import {
   or,
 } from 'drizzle-orm'
 import { ulid } from 'ulid'
+import { buildEventKey } from '../events'
 
 // Type helpers
 type SelectModel<T extends PgTable<TableConfig>> = T['$inferSelect']
@@ -213,19 +215,40 @@ interface QueryOptions<T> {
 interface CreateItemServiceDeps<T extends PgTable<TableConfig>> {
   db: DatabaseClient
   table: T
-  tableName?: string // Prepared for Phase 2 relation fetching
+  tableName?: string // Used for relation fetching and event emission
+  eventBus?: EventBus
 }
 
 export const createItemService = <T extends PgTable<TableConfig>>({
   db,
   table,
   tableName,
+  eventBus,
 }: CreateItemServiceDeps<T>) => {
   type Select = SelectModel<T>
   type Insert = InsertData<T>
   type Update = UpdateData<T>
 
   const idColumn = (table as any).id as PgColumn
+
+  // Event emission helper
+  const emitEvent = (
+    operation: 'created' | 'updated' | 'deleted',
+    data: Select | Select[],
+  ) => {
+    if (!eventBus || !tableName)
+      return
+    const key = buildEventKey(tableName, operation)
+    eventBus.emit(key, {
+      tableName,
+      operation,
+      timestamp: new Date(),
+      data,
+      metadata: Array.isArray(data)
+        ? { count: data.length, ids: data.map((d: any) => d.id) }
+        : undefined,
+    })
+  }
 
   // Build SQL WHERE clause from filter object
   const buildWhereClause = (filter: Filter<Select>): SQL | undefined => {
@@ -393,6 +416,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       .insert(table)
       .values({ id: ulid(), ...data, createdAt: now, updatedAt: now } as any)
       .returning()
+    emitEvent('created', result as Select)
     return result as Select
   }
 
@@ -406,7 +430,9 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       createdAt: now,
       updatedAt: now,
     }))
-    return await db.insert(table).values(values as any).returning() as Select[]
+    const results = await db.insert(table).values(values as any).returning() as Select[]
+    emitEvent('created', results)
+    return results
   }
 
   const update = async (id: string, data: Update): Promise<Select> => {
@@ -417,6 +443,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       .returning()
     if (!result)
       throw createError({ statusCode: 404, statusMessage: 'Record not found' })
+    emitEvent('updated', result as Select)
     return result as Select
   }
 
@@ -425,6 +452,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       return []
     const results: Select[] = []
     for (const id of ids) {
+      // Note: update() already emits individual events
       results.push(await update(id, data))
     }
     return results
@@ -434,6 +462,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
     const [result] = await db.delete(table).where(eq(idColumn, id)).returning()
     if (!result)
       throw createError({ statusCode: 404, statusMessage: 'Record not found' })
+    emitEvent('deleted', result as Select)
     return result as Select
   }
 
@@ -442,6 +471,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       return []
     const results: Select[] = []
     for (const id of ids) {
+      // Note: remove() already emits individual events
       results.push(await remove(id))
     }
     return results
