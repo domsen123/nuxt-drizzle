@@ -23,4 +23,7 @@ export const ROUTES = {
     profile: '/settings',
     security: '/settings/security',
   },
+  errors: {
+    unauthorized: '/401',
+  },
 } as const

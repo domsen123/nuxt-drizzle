@@ -10,14 +10,18 @@ useSeoMeta({
   title: 'Users - Admin',
 })
 
-const search = ref('')
-const searchDebounced = refDebounced(search, 300)
+const {
+  search,
+  page,
+  perPage,
+  offset,
+  queryParams,
+} = usePagination({
+  defaultPerPage: 10,
+  defaultSort: [{ key: 'createdAt', direction: 'desc' }],
+})
 
-const queryParams = computed(() => ({
-  search: searchDebounced.value || undefined,
-}))
-
-const { users, total, status, error, refresh } = useAdminUsers(queryParams)
+const { users, total: apiTotal, status, error, refresh } = useAdminUsers(queryParams)
 
 const isLoading = computed(() => status.value === 'pending')
 </script>
@@ -52,7 +56,7 @@ const isLoading = computed(() => status.value === 'pending')
               Users
             </h1>
             <p class="text-muted">
-              {{ total }} user{{ total !== 1 ? 's' : '' }} total
+              {{ apiTotal }} user{{ apiTotal !== 1 ? 's' : '' }} total
             </p>
           </div>
         </div>
@@ -90,6 +94,22 @@ const isLoading = computed(() => status.value === 'pending')
           :users="users"
           :loading="isLoading"
         />
+
+        <!-- Pagination -->
+        <div v-if="apiTotal > 0" class="mt-6 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-muted">
+              Showing {{ offset + 1 }}-{{ Math.min(offset + perPage, apiTotal) }} of {{ apiTotal }}
+            </span>
+          </div>
+          <UPagination
+            v-model:page="page"
+            :total="apiTotal"
+            :items-per-page="perPage"
+            show-edges
+            @update:page="page = $event"
+          />
+        </div>
       </div>
     </template>
   </UDashboardPanel>

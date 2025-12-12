@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createEventBus, buildEventKey } from '../server/infrastructure/events'
-import { createItemService } from '../server/infrastructure/database/item-service'
-import { getDatabase } from '../server/infrastructure/database/client'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as schema from '../server/database/schema'
+import { getDatabase } from '../server/infrastructure/database/client'
+import { createItemService } from '../server/infrastructure/database/item-service'
+import { buildEventKey, createEventBus } from '../server/infrastructure/events'
 import { createOrganisationData } from './factories'
 
-describe('Event Bus', () => {
+describe('event Bus', () => {
   describe('buildEventKey', () => {
     it('should build correct event key format', () => {
       expect(buildEventKey('users', 'created')).toBe('users:created')
@@ -47,7 +47,7 @@ describe('Event Bus', () => {
   })
 })
 
-describe('ItemService Event Emission', () => {
+describe('itemService Event Emission', () => {
   let eventBus: ReturnType<typeof createEventBus>
   let organisationsService: ReturnType<typeof createItemService<typeof schema.organisations>>
 

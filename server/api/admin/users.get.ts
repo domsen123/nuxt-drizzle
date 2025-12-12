@@ -6,6 +6,16 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   const search = query.search as string | undefined
+  const sort = query.sort as string | string[] | undefined
+  const limit = query.limit ? Number(query.limit) : undefined
+  const offset = query.offset ? Number(query.offset) : undefined
+
+  // Parse sort parameter - can be comma-separated string or array
+  const sortArray = typeof sort === 'string'
+    ? sort.split(',').filter(Boolean)
+    : Array.isArray(sort)
+      ? sort
+      : ['-createdAt'] // Default sort
 
   // Build filter for search (name or email)
   const filter = search
@@ -17,14 +27,20 @@ export default defineEventHandler(async (event) => {
       }
     : undefined
 
-  const users = await container.items.users.findMany({
-    filter,
-    sort: ['-createdAt'],
-    fields: ['id', 'email', 'name', 'emailVerified', 'createdAt', 'updatedAt'],
-  })
+  // Fetch users and count in parallel
+  const [users, total] = await Promise.all([
+    container.items.users.findMany({
+      filter,
+      sort: sortArray,
+      fields: ['id', 'email', 'name', 'emailVerified', 'createdAt', 'updatedAt'],
+      limit,
+      offset,
+    }),
+    container.items.users.count(filter),
+  ])
 
   return {
     users,
-    total: users.length,
+    total,
   }
 })

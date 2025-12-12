@@ -1,6 +1,5 @@
 export default defineNuxtRouteMiddleware(async () => {
   const { isAuthenticated, status, refresh } = useSession()
-  const toast = useToast()
 
   // Wait for session if pending
   if (status.value === 'pending') {
@@ -24,12 +23,6 @@ export default defineNuxtRouteMiddleware(async () => {
   }
 
   if (!isGlobalAdmin.value) {
-    toast.add({
-      title: 'Access Denied',
-      description: 'You do not have permission to access the admin area.',
-      color: 'error',
-      icon: 'i-lucide-shield-x',
-    })
-    return navigateTo(ROUTES.start)
+    return navigateTo(ROUTES.errors.unauthorized)
   }
 })

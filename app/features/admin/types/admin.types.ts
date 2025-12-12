@@ -52,4 +52,7 @@ export interface UpdateUserInput {
 
 export interface AdminUsersQueryParams {
   search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
 }
