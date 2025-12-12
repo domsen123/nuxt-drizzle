@@ -1,11 +1,13 @@
+import type { MaybeRefOrGetter } from 'vue'
+import type { AdminOrganisationsQueryParams } from '../types/admin.types'
 import { useQuery } from '@pinia/colada'
 import { adminApi } from '../api/admin.api'
 import { adminKeys } from '../api/admin.keys'
 
-export const useAdminOrganisations = () => {
+export const useAdminOrganisations = (params?: MaybeRefOrGetter<AdminOrganisationsQueryParams>) => {
   const query = useQuery({
-    key: adminKeys.organisations(),
-    query: () => adminApi.getOrganisations(),
+    key: () => adminKeys.organisations(toValue(params)),
+    query: () => adminApi.getOrganisations(toValue(params)),
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
 

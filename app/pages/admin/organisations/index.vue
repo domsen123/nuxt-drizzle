@@ -10,7 +10,18 @@ useSeoMeta({
   title: 'Organisations - Admin',
 })
 
-const { organisations, total, status, error, refresh } = useAdminOrganisations()
+const {
+  search,
+  page,
+  perPage,
+  offset,
+  queryParams,
+} = usePagination({
+  defaultPerPage: 10,
+  defaultSort: [{ key: 'createdAt', direction: 'desc' }],
+})
+
+const { organisations, total: apiTotal, status, error, refresh } = useAdminOrganisations(queryParams)
 
 const isLoading = computed(() => status.value === 'pending')
 </script>
@@ -50,9 +61,29 @@ const isLoading = computed(() => status.value === 'pending')
               Organisations
             </h1>
             <p class="text-muted">
-              {{ total }} organisation{{ total !== 1 ? 's' : '' }} total
+              {{ apiTotal }} organisation{{ apiTotal !== 1 ? 's' : '' }} total
             </p>
           </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-4">
+          <UInput
+            v-model="search"
+            icon="i-lucide-search"
+            placeholder="Search by name or slug..."
+          >
+            <template #trailing>
+              <UButton
+                v-show="search !== ''"
+                color="neutral"
+                variant="link"
+                icon="i-lucide-x"
+                :padded="false"
+                @click="search = ''"
+              />
+            </template>
+          </UInput>
         </div>
 
         <UAlert
@@ -68,6 +99,22 @@ const isLoading = computed(() => status.value === 'pending')
           :organisations="organisations"
           :loading="isLoading"
         />
+
+        <!-- Pagination -->
+        <div v-if="apiTotal > 0" class="mt-6 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-muted">
+              Showing {{ offset + 1 }}-{{ Math.min(offset + perPage, apiTotal) }} of {{ apiTotal }}
+            </span>
+          </div>
+          <UPagination
+            v-model:page="page"
+            :total="apiTotal"
+            :items-per-page="perPage"
+            show-edges
+            @update:page="page = $event"
+          />
+        </div>
       </div>
     </template>
   </UDashboardPanel>

@@ -1,5 +1,6 @@
 import type {
   AdminOrganisationResponse,
+  AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
   AdminUserResponse,
   AdminUsersQueryParams,
@@ -10,8 +11,8 @@ import type {
 } from '../types/admin.types'
 
 export const adminApi = {
-  getOrganisations: (): Promise<AdminOrganisationsResponse> =>
-    $fetch('/api/admin/organisations'),
+  getOrganisations: (params?: AdminOrganisationsQueryParams): Promise<AdminOrganisationsResponse> =>
+    $fetch('/api/admin/organisations', { query: params }),
 
   getOrganisation: (id: string): Promise<AdminOrganisationResponse> =>
     $fetch(`/api/admin/organisations/${id}`),

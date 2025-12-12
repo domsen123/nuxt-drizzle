@@ -56,3 +56,10 @@ export interface AdminUsersQueryParams {
   limit?: number
   offset?: number
 }
+
+export interface AdminOrganisationsQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
