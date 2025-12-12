@@ -1,0 +1,65 @@
+import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
+import { container } from '~~/server/utils/container'
+
+export default defineEventHandler(async (event) => {
+  await requireSuperAdmin(event)
+
+  const organisationId = getRouterParam(event, 'id')
+  const teamId = getRouterParam(event, 'teamId')
+
+  if (!organisationId) {
+    throw createError({ statusCode: 400, statusMessage: 'Organisation ID is required' })
+  }
+  if (!teamId) {
+    throw createError({ statusCode: 400, statusMessage: 'Team ID is required' })
+  }
+
+  // Verify team exists and belongs to organisation
+  const team = await container.items.teams.findOne({
+    _and: [
+      { id: { _eq: teamId } },
+      { organisationId: { _eq: organisationId } },
+    ],
+  })
+
+  if (!team) {
+    throw createError({ statusCode: 404, statusMessage: 'Team not found' })
+  }
+
+  // Fetch team members
+  const members = await container.items.teamMembers.findMany({
+    filter: { teamId: { _eq: teamId } },
+    sort: ['createdAt'],
+  })
+
+  if (members.length === 0) {
+    return { members: [], total: 0 }
+  }
+
+  // Fetch user details
+  const userIds = members.map(m => m.userId)
+  const users = await container.items.users.findMany({
+    filter: { id: { _in: userIds } },
+  })
+  const usersMap = new Map(users.map(u => [u.id, u]))
+
+  // Map members with user details
+  const membersWithUsers = members.map(member => ({
+    id: member.id,
+    teamId: member.teamId,
+    userId: member.userId,
+    role: member.role,
+    createdAt: member.createdAt,
+    updatedAt: member.updatedAt,
+    user: {
+      id: usersMap.get(member.userId)?.id ?? member.userId,
+      email: usersMap.get(member.userId)?.email ?? 'unknown',
+      name: usersMap.get(member.userId)?.name ?? null,
+    },
+  }))
+
+  return {
+    members: membersWithUsers,
+    total: membersWithUsers.length,
+  }
+})

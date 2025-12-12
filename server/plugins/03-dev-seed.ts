@@ -93,6 +93,72 @@ const seedMemberships = async (
   return created
 }
 
+const seedTeams = async (organisations: { id: string }[]) => {
+  console.log('[Dev Seed] Creating teams for organisations...')
+
+  const teams = []
+
+  for (const org of organisations) {
+    const teamCount = faker.number.int({ min: 5, max: 8 })
+
+    for (let i = 0; i < teamCount; i++) {
+      teams.push({
+        name: `${faker.commerce.department()} Team`,
+        organisationId: org.id,
+      })
+    }
+  }
+
+  const created = await container.items.teams.createMany(teams)
+  console.log(`[Dev Seed] Created ${created.length} teams`)
+  return created
+}
+
+const seedTeamMemberships = async (
+  teams: { id: string, organisationId: string }[],
+  memberships: { userId: string, organisationId: string }[],
+) => {
+  console.log('[Dev Seed] Creating team memberships...')
+
+  const teamMemberships: { teamId: string, userId: string, role: string }[] = []
+  const existingPairs = new Set<string>()
+
+  // Group org members by organisation for efficient lookup
+  const membersByOrg = new Map<string, string[]>()
+  for (const m of memberships) {
+    if (!membersByOrg.has(m.organisationId)) {
+      membersByOrg.set(m.organisationId, [])
+    }
+    membersByOrg.get(m.organisationId)!.push(m.userId)
+  }
+
+  for (const team of teams) {
+    const orgMembers = membersByOrg.get(team.organisationId) || []
+    if (orgMembers.length === 0)
+      continue
+
+    const memberCount = faker.number.int({ min: 5, max: Math.min(10, orgMembers.length) })
+    const selectedMembers = faker.helpers.arrayElements(orgMembers, memberCount)
+
+    selectedMembers.forEach((userId, index) => {
+      const pairKey = `${team.id}-${userId}`
+      if (existingPairs.has(pairKey))
+        return
+      existingPairs.add(pairKey)
+
+      teamMemberships.push({
+        teamId: team.id,
+        userId,
+        role: index === 0 ? 'lead' : 'member',
+      })
+    })
+  }
+
+  const created = await container.items.teamMembers.createMany(teamMemberships)
+  console.log(`[Dev Seed] Created ${created.length} team memberships`)
+  return created
+}
+
 export default defineNitroPlugin(async () => {
   // Only run in development mode
   if (!import.meta.dev) {
@@ -114,7 +180,9 @@ export default defineNitroPlugin(async () => {
 
   const organisations = await seedOrganisations()
   const users = await seedUsers()
-  await seedMemberships(users, organisations)
+  const memberships = await seedMemberships(users, organisations)
+  const teams = await seedTeams(organisations)
+  await seedTeamMemberships(teams, memberships)
 
   console.log('[Dev Seed] Development seeding complete!')
 })

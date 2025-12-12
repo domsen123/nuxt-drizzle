@@ -32,6 +32,11 @@ const links = computed<NavigationMenuItem[][]>(() => [[
     icon: 'i-lucide-users',
     to: ROUTES.admin.organisationMembers(organisationId.value),
   },
+  {
+    label: 'Teams',
+    icon: 'i-lucide-users-round',
+    to: ROUTES.admin.organisationTeams(organisationId.value),
+  },
 ]])
 </script>
 
