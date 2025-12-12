@@ -5,29 +5,26 @@ import { container } from '~~/server/utils/container'
 const schema = z.object({
   name: z.string().trim().min(1).max(100),
   slug: z.string().trim().min(1).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  ownerId: z.string().trim().optional(),
 })
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
+  const user = event.context.user!
 
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  // Check if slug already exists
-  const existing = await container.items.organisations.findOne({
-    slug: { _eq: data.slug },
+  // Use provided ownerId or default to current admin user
+  const creatorUserId = data.ownerId || user.id
+
+  const result = await container.organisationsService.create({
+    name: data.name,
+    slug: data.slug,
+    creatorUserId,
   })
 
-  if (existing) {
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'An organisation with this slug already exists',
-    })
-  }
-
-  const organisation = await container.items.organisations.create(data)
-
   return {
-    organisation,
+    organisation: result,
   }
 })

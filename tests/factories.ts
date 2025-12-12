@@ -23,13 +23,11 @@ export const createUserData = (overrides = {}) => ({
 export const createOrganisationMemberData = (organisationId: string, userId: string, overrides = {}) => ({
   organisationId,
   userId,
-  role: faker.helpers.arrayElement(['member', 'admin', 'owner']),
   ...overrides,
 })
 
 export const createTeamMemberData = (teamId: string, userId: string, overrides = {}) => ({
   teamId,
   userId,
-  role: faker.helpers.arrayElement(['member', 'lead']),
   ...overrides,
 })

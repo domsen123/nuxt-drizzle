@@ -78,7 +78,7 @@ const getActionsMenu = (member: TeamMember): DropdownMenuItem[] => [
         </div>
 
         <div class="flex items-center gap-3">
-          <UBadge v-if="member.role === 'lead'" color="primary" variant="subtle">
+          <UBadge v-if="member.role?.name === 'Lead'" color="primary" variant="subtle">
             Lead
           </UBadge>
 

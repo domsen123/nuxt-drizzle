@@ -83,7 +83,6 @@ const seedMemberships = async (
       memberships.push({
         userId: user.id,
         organisationId: org.id,
-        role: faker.helpers.arrayElement(['member', 'admin']),
       })
     }
   }
@@ -120,7 +119,7 @@ const seedTeamMemberships = async (
 ) => {
   console.log('[Dev Seed] Creating team memberships...')
 
-  const teamMemberships: { teamId: string, userId: string, role: string }[] = []
+  const teamMemberships: { teamId: string, userId: string }[] = []
   const existingPairs = new Set<string>()
 
   // Group org members by organisation for efficient lookup
@@ -137,10 +136,10 @@ const seedTeamMemberships = async (
     if (orgMembers.length === 0)
       continue
 
-    const memberCount = faker.number.int({ min: 5, max: Math.min(10, orgMembers.length) })
+    const memberCount = faker.number.int({ min: 1, max: Math.min(10, orgMembers.length) })
     const selectedMembers = faker.helpers.arrayElements(orgMembers, memberCount)
 
-    selectedMembers.forEach((userId, index) => {
+    selectedMembers.forEach((userId) => {
       const pairKey = `${team.id}-${userId}`
       if (existingPairs.has(pairKey))
         return
@@ -149,7 +148,6 @@ const seedTeamMemberships = async (
       teamMemberships.push({
         teamId: team.id,
         userId,
-        role: index === 0 ? 'lead' : 'member',
       })
     })
   }

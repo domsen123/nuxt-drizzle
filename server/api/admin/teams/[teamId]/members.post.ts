@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
+import { getSystemRoleId } from '~~/server/features/rbac/rbac.seed'
 import { container } from '~~/server/utils/container'
 
 const addMemberSchema = z.object({
@@ -67,11 +68,24 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
   }
 
+  // Get default team member role
+  const memberRoleId = await getSystemRoleId(container.items.roles, 'Member', 'team')
+  if (!memberRoleId) {
+    throw createError({ statusCode: 500, statusMessage: 'Default team role not found' })
+  }
+
   // Create team member
   const member = await container.items.teamMembers.create({
     teamId,
     userId,
-    role: 'member',
+  })
+
+  // Assign default team role via RBAC
+  await container.rbacService.assignRole({
+    userId,
+    roleId: memberRoleId,
+    scope: 'team',
+    scopeId: teamId,
   })
 
   return {
@@ -79,7 +93,7 @@ export default defineEventHandler(async (event) => {
       id: member.id,
       teamId: member.teamId,
       userId: member.userId,
-      role: member.role,
+      role: { id: memberRoleId, name: 'Member' },
       createdAt: member.createdAt,
       updatedAt: member.updatedAt,
       user: {

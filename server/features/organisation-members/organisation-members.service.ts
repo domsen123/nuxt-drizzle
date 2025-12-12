@@ -182,7 +182,6 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
     const member = await organisationMembersItemService.create({
       organisationId,
       userId,
-      role: role.name.toLowerCase(), // Legacy field, kept for compatibility
     })
 
     // Assign RBAC role
@@ -232,8 +231,24 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
       throw createError({ statusCode: 400, statusMessage: 'Role must be organisation-scoped' })
     }
 
-    // Get current roles and remove them
+    // Check if this would demote the last owner
     const currentRoles = await rbacService.getUserRoles(userId, 'organisation', organisationId)
+    const isCurrentlyOwner = currentRoles.some(r => r.name.toLowerCase() === 'owner')
+
+    if (isCurrentlyOwner && newRole.name.toLowerCase() !== 'owner') {
+      // Check if there are other owners
+      const allMembers = await listMembers(organisationId)
+      const owners = allMembers.filter(m => m.role?.name.toLowerCase() === 'owner')
+
+      if (owners.length === 1) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Cannot demote the last owner. Assign another owner first.',
+        })
+      }
+    }
+
+    // Remove current roles
     for (const role of currentRoles) {
       await rbacService.removeRole(userId, role.id, 'organisation', organisationId)
     }
@@ -244,11 +259,6 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
       roleId: newRoleId,
       scope: 'organisation',
       scopeId: organisationId,
-    })
-
-    // Update legacy field
-    await organisationMembersItemService.update(member.id, {
-      role: newRole.name.toLowerCase(),
     })
 
     const user = await usersItemService.readOne(userId)

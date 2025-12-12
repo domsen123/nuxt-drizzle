@@ -34,20 +34,28 @@ export default defineEventHandler(async (event) => {
   })
   const usersMap = new Map(users.map(u => [u.id, u]))
 
-  // Map members with user details
-  const membersWithUsers = members.map(member => ({
-    id: member.id,
-    teamId: member.teamId,
-    userId: member.userId,
-    role: member.role,
-    createdAt: member.createdAt,
-    updatedAt: member.updatedAt,
-    user: {
-      id: usersMap.get(member.userId)?.id ?? member.userId,
-      email: usersMap.get(member.userId)?.email ?? 'unknown',
-      name: usersMap.get(member.userId)?.name ?? null,
-    },
-  }))
+  // Fetch RBAC roles for each member
+  const memberRoles = await Promise.all(
+    members.map(m => container.rbacService.getUserRoles(m.userId, 'team', teamId)),
+  )
+
+  // Map members with user details and RBAC role
+  const membersWithUsers = members.map((member, idx) => {
+    const primaryRole = memberRoles[idx]?.[0]
+    return {
+      id: member.id,
+      teamId: member.teamId,
+      userId: member.userId,
+      role: primaryRole ? { id: primaryRole.id, name: primaryRole.name } : null,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+      user: {
+        id: usersMap.get(member.userId)?.id ?? member.userId,
+        email: usersMap.get(member.userId)?.email ?? 'unknown',
+        name: usersMap.get(member.userId)?.name ?? null,
+      },
+    }
+  })
 
   return {
     members: membersWithUsers,

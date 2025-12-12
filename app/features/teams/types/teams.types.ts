@@ -21,11 +21,16 @@ export interface TeamMemberUser {
   name: string | null
 }
 
+export interface TeamMemberRole {
+  id: string
+  name: string
+}
+
 export interface TeamMember {
   id: string
   teamId: string
   userId: string
-  role: 'member' | 'lead'
+  role: TeamMemberRole | null
   createdAt: string
   updatedAt: string
   user: TeamMemberUser
