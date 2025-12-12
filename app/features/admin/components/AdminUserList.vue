@@ -67,70 +67,85 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
 
 const columns: TableColumn<AdminUser>[] = [
   { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'emailVerified', header: 'Verified' },
   { accessorKey: 'createdAt', header: 'Created' },
-  { accessorKey: 'actions', header: '' },
+  { id: 'actions' },
 ]
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
     month: 'short',
     day: 'numeric',
+    year: 'numeric',
   })
 }
 </script>
 
 <template>
-  <UTable
-    :columns="columns"
-    :data="users"
-    :loading="loading"
-    class="cursor-pointer"
-    @select="onSelect"
+  <UPageCard
+    variant="subtle"
+    :ui="{
+      container: 'p-0 sm:p-0 gap-y-0',
+      wrapper: 'items-stretch',
+    }"
   >
-    <template #name-cell="{ row }">
-      <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-user" class="text-muted" />
-        <span class="font-medium">{{ row.original.name || 'No name' }}</span>
-      </div>
-    </template>
+    <UTable
+      :columns="columns"
+      :data="users"
+      :loading="loading"
+      :ui="{
+        tr: 'hover:bg-elevated transition-colors cursor-pointer',
+      }"
+      @select="onSelect"
+    >
+      <template #name-cell="{ row }">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+            <UIcon name="i-lucide-user" class="size-5 text-primary" />
+          </div>
+          <div class="text-sm">
+            <p class="text-highlighted font-medium">
+              {{ row.original.name || 'No name' }}
+            </p>
+            <p class="text-muted text-xs">
+              {{ row.original.email }}
+            </p>
+          </div>
+        </div>
+      </template>
 
-    <template #email-cell="{ row }">
-      <span class="text-muted">{{ row.original.email }}</span>
-    </template>
+      <template #emailVerified-cell="{ row }">
+        <UBadge
+          :color="row.original.emailVerified ? 'success' : 'neutral'"
+          variant="subtle"
+        >
+          {{ row.original.emailVerified ? 'Verified' : 'Unverified' }}
+        </UBadge>
+      </template>
 
-    <template #emailVerified-cell="{ row }">
-      <UBadge
-        :color="row.original.emailVerified ? 'success' : 'neutral'"
-        variant="subtle"
-      >
-        {{ row.original.emailVerified ? 'Verified' : 'Unverified' }}
-      </UBadge>
-    </template>
+      <template #createdAt-cell="{ row }">
+        {{ formatDate(row.original.createdAt) }}
+      </template>
 
-    <template #createdAt-cell="{ row }">
-      {{ formatDate(row.original.createdAt) }}
-    </template>
+      <template #actions-cell="{ row }">
+        <div class="flex justify-end">
+          <UDropdownMenu :items="getActionsItems(row.original)" :content="{ align: 'end' }">
+            <UButton
+              icon="i-lucide-ellipsis-vertical"
+              color="neutral"
+              variant="ghost"
+              @click.stop
+            />
+          </UDropdownMenu>
+        </div>
+      </template>
 
-    <template #actions-cell="{ row }">
-      <div class="flex justify-end" @click.stop>
-        <UDropdownMenu :items="getActionsItems(row.original)">
-          <UButton
-            icon="i-lucide-more-horizontal"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-          />
-        </UDropdownMenu>
-      </div>
-    </template>
-
-    <template #empty>
-      <div class="text-center py-8 text-muted">
-        No users found
-      </div>
-    </template>
-  </UTable>
+      <template #empty>
+        <div class="py-12 text-center text-muted">
+          <UIcon name="i-lucide-user" class="size-8 mx-auto mb-2 opacity-50" />
+          <p>No users found</p>
+        </div>
+      </template>
+    </UTable>
+  </UPageCard>
 </template>
