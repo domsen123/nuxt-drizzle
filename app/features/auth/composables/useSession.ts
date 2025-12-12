@@ -15,10 +15,16 @@ export const useSession = () => {
   const isAuthenticated = computed(() => !!user.value)
   const isLoading = computed(() => query.status.value === 'pending')
 
+  // Impersonation state
+  const impersonation = computed(() => query.data.value?.impersonation ?? null)
+  const isImpersonating = computed(() => !!impersonation.value)
+
   return {
     ...query,
     user,
     isAuthenticated,
     isLoading,
+    impersonation,
+    isImpersonating,
   }
 }

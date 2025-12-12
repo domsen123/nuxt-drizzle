@@ -1,3 +1,4 @@
+import type { ImpersonationService } from '../features/admin/impersonation.service'
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
@@ -6,6 +7,7 @@ import type { ProfileService } from '../features/profile/profile.service'
 import type { RbacService } from '../features/rbac/rbac.service'
 import type { EventBus } from '../infrastructure/events'
 import * as schema from '../database/schema'
+import { createImpersonationService } from '../features/admin/impersonation.service'
 import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
@@ -62,6 +64,12 @@ const getAuthService = lazy(() =>
   createAuthService({
     db: getDatabase('app'),
     emailService: getEmailService(),
+  }),
+)
+
+const getImpersonationService = lazy(() =>
+  createImpersonationService({
+    db: getDatabase('app'),
   }),
 )
 
@@ -131,6 +139,9 @@ export const container = {
   },
   get emailService(): EmailService {
     return getEmailService()
+  },
+  get impersonationService(): ImpersonationService {
+    return getImpersonationService()
   },
   get rbacService(): RbacService {
     return getRbacService()

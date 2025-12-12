@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { useStopImpersonation } from '~/features/admin/composables/useImpersonation'
 
 const router = useRouter()
 const toast = useToast()
 const route = useRoute()
 
-const { user } = useSession()
+const { user, isImpersonating } = useSession()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
+const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
 
 // Sidebar navigation items
 const navItems: NavigationMenuItem[][] = [
@@ -40,26 +42,61 @@ const handleLogout = () => {
     })
 }
 
+const handleStopImpersonation = () => {
+  stopImpersonation()
+    .then(() => {
+      toast.add({
+        title: 'Impersonation ended',
+        description: 'You are now back to your admin account.',
+        color: 'success',
+      })
+      router.push(ROUTES.admin.users)
+    })
+    .catch(() => {
+      toast.add({
+        title: 'Failed to stop impersonation',
+        description: 'Please try again.',
+        color: 'error',
+      })
+    })
+}
+
+const isLoggingOut = computed(() => logoutStatus.value === 'loading')
+const isStoppingImpersonation = computed(() => stopImpersonationStatus.value === 'loading')
+
 // User menu items
-const userMenuItems = computed(() => [
-  [{
+const userMenuItems = computed(() => {
+  const accountItem = [{
     label: user.value?.email ?? '',
     slot: 'account',
     disabled: true,
-  }],
-  [{
+  }]
+
+  const stopImpersonationItem = [{
+    label: isStoppingImpersonation.value ? 'Stopping...' : 'Stop Impersonating',
+    icon: 'i-lucide-user-x',
+    onSelect: handleStopImpersonation,
+    disabled: isStoppingImpersonation.value,
+  }]
+
+  const backToAppItem = [{
     label: 'Back to App',
     icon: 'i-lucide-arrow-left',
     to: ROUTES.start,
-  }],
-  [{
+  }]
+
+  const signOutItem = [{
     label: 'Sign out',
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
-  }],
-])
+  }]
 
-const isLoggingOut = computed(() => logoutStatus.value === 'loading')
+  if (isImpersonating.value) {
+    return [accountItem, stopImpersonationItem, backToAppItem, signOutItem]
+  }
+
+  return [accountItem, backToAppItem, signOutItem]
+})
 
 // Compute active state for nav items
 const navItemsWithActive = computed(() =>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { TableColumn, TableRow } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import type { AdminUser } from '../types/admin.types'
+import { useStartImpersonation } from '../composables/useImpersonation'
 
 defineProps<{
   users: AdminUser[]
@@ -8,9 +9,60 @@ defineProps<{
 }>()
 
 const router = useRouter()
+const toast = useToast()
+const { user } = useSession()
+const { mutateAsync: startImpersonation, asyncStatus: impersonationStatus } = useStartImpersonation()
+
+const impersonatingUserId = ref<string | null>(null)
 
 const onSelect = (_e: Event, row: TableRow<AdminUser>) => {
   router.push(ROUTES.admin.userEdit(row.original.id))
+}
+
+const handleImpersonate = async (userId: string) => {
+  impersonatingUserId.value = userId
+  try {
+    await startImpersonation(userId)
+    toast.add({
+      title: 'Impersonation started',
+      description: 'You are now viewing the app as this user.',
+      color: 'success',
+    })
+    router.push(ROUTES.start)
+  }
+  catch {
+    toast.add({
+      title: 'Failed to impersonate',
+      description: 'Could not start impersonation. Please try again.',
+      color: 'error',
+    })
+  }
+  finally {
+    impersonatingUserId.value = null
+  }
+}
+
+const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
+  const isSelf = user.value?.id === row.id
+  const isImpersonating = impersonatingUserId.value === row.id && impersonationStatus.value === 'loading'
+
+  return [
+    [
+      {
+        label: 'View Details',
+        icon: 'i-lucide-eye',
+        onSelect: () => router.push(ROUTES.admin.userEdit(row.id)),
+      },
+    ],
+    [
+      {
+        label: isImpersonating ? 'Impersonating...' : 'Impersonate',
+        icon: 'i-lucide-user-check',
+        disabled: isSelf || isImpersonating,
+        onSelect: () => handleImpersonate(row.id),
+      },
+    ],
+  ]
 }
 
 const columns: TableColumn<AdminUser>[] = [
@@ -18,6 +70,7 @@ const columns: TableColumn<AdminUser>[] = [
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'emailVerified', header: 'Verified' },
   { accessorKey: 'createdAt', header: 'Created' },
+  { accessorKey: 'actions', header: '' },
 ]
 
 const formatDate = (dateString: string) => {
@@ -59,6 +112,19 @@ const formatDate = (dateString: string) => {
 
     <template #createdAt-cell="{ row }">
       {{ formatDate(row.original.createdAt) }}
+    </template>
+
+    <template #actions-cell="{ row }">
+      <div class="flex justify-end" @click.stop>
+        <UDropdownMenu :items="getActionsItems(row.original)">
+          <UButton
+            icon="i-lucide-more-horizontal"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+          />
+        </UDropdownMenu>
+      </div>
     </template>
 
     <template #empty>

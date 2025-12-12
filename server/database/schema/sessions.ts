@@ -9,6 +9,9 @@ export const sessions = pgTable('sessions', {
   ipAddress: text('ip_address'),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  // Impersonation fields
+  impersonatingUserId: text('impersonating_user_id').references(() => users.id, { onDelete: 'cascade' }),
+  originalSessionId: text('original_session_id'),
 })
 
 export type Session = typeof sessions.$inferSelect

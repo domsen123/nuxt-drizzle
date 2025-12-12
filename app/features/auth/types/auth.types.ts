@@ -23,8 +23,14 @@ export interface AuthResponse {
   user: AuthUser
 }
 
+export interface ImpersonationInfo {
+  originalUserId: string
+  originalSessionId: string | null
+}
+
 export interface SessionResponse {
   user: AuthUser | null
+  impersonation: ImpersonationInfo | null
 }
 
 export interface ForgotPasswordCredentials {

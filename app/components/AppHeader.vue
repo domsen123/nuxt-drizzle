@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useStopImpersonation } from '~/features/admin/composables/useImpersonation'
+
 const router = useRouter()
 const toast = useToast()
 
-const { user, isAuthenticated, isLoading } = useSession()
+const { user, isAuthenticated, isLoading, isImpersonating } = useSession()
 const { isGlobalAdmin } = usePermissions()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
+const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
 
 const items = computed(() => [])
 
@@ -19,7 +22,27 @@ const handleLogout = () => {
     })
 }
 
+const handleStopImpersonation = () => {
+  stopImpersonation()
+    .then(() => {
+      toast.add({
+        title: 'Impersonation ended',
+        description: 'You are now back to your admin account.',
+        color: 'success',
+      })
+      router.push(ROUTES.admin.users)
+    })
+    .catch(() => {
+      toast.add({
+        title: 'Failed to stop impersonation',
+        description: 'Please try again.',
+        color: 'error',
+      })
+    })
+}
+
 const isLoggingOut = computed(() => logoutStatus.value === 'loading')
+const isStoppingImpersonation = computed(() => stopImpersonationStatus.value === 'loading')
 
 // User dropdown items
 const userMenuItems = computed(() => {
@@ -27,6 +50,13 @@ const userMenuItems = computed(() => {
     label: user.value?.email ?? '',
     slot: 'account',
     disabled: true,
+  }]
+
+  const stopImpersonationItem = [{
+    label: isStoppingImpersonation.value ? 'Stopping...' : 'Stop Impersonating',
+    icon: 'i-lucide-user-x',
+    onSelect: handleStopImpersonation,
+    disabled: isStoppingImpersonation.value,
   }]
 
   const settingsItem = [{
@@ -46,6 +76,11 @@ const userMenuItems = computed(() => {
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
   }]
+
+  // When impersonating, show stop impersonation option prominently
+  if (isImpersonating.value) {
+    return [accountItem, stopImpersonationItem, settingsItem, signOutItem]
+  }
 
   if (isGlobalAdmin.value) {
     return [accountItem, settingsItem, adminItem, signOutItem]
@@ -139,6 +174,17 @@ const userMenuItems = computed(() => {
           Signed in as {{ user.email }}
         </div>
         <UButton
+          v-if="isImpersonating"
+          label="Stop Impersonating"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-user-x"
+          :loading="isStoppingImpersonation"
+          block
+          class="mb-3"
+          @click="handleStopImpersonation"
+        />
+        <UButton
           label="Settings"
           color="neutral"
           variant="subtle"
@@ -148,7 +194,7 @@ const userMenuItems = computed(() => {
           class="mb-3"
         />
         <UButton
-          v-if="isGlobalAdmin"
+          v-if="isGlobalAdmin && !isImpersonating"
           label="Admin Dashboard"
           color="neutral"
           variant="subtle"
