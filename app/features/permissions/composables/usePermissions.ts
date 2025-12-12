@@ -1,9 +1,10 @@
 import { useQuery } from '@pinia/colada'
-import { permissionsApi } from '../api/permissions.api'
+import { usePermissionsApi } from '../api/permissions.api'
 import { permissionsKeys } from '../api/permissions.keys'
 
 export const usePermissions = () => {
   const { isAuthenticated } = useSession()
+  const permissionsApi = usePermissionsApi()
 
   const query = useQuery({
     key: permissionsKeys.my(),

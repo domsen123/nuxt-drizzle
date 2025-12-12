@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware((to) => {
   // Skip middleware for auth pages
   if (to.path.startsWith('/auth/')) {
     return
@@ -11,16 +11,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  // Get session - this will use cached data if available
-  const { isAuthenticated, status, refresh } = useSession()
-
-  // If query hasn't loaded yet, wait for it
-  if (status.value === 'pending') {
-    await refresh()
-  }
+  // Use pre-fetched server auth state (safe in middleware - no inject() warning)
+  const { isAuthenticated } = useServerAuth()
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated.value) {
+  if (!isAuthenticated) {
     return navigateTo({
       path: ROUTES.auth.signIn,
       query: { redirect: to.fullPath },

@@ -11,16 +11,23 @@ import {
 import OrganisationMemberInviteModal from '~/features/organisation-members/components/OrganisationMemberInviteModal.vue'
 import OrganisationMembersList from '~/features/organisation-members/components/OrganisationMembersList.vue'
 
+const route = useRoute()
 const toast = useToast()
 
-// Inject organisation data from parent layout
-const { organisation, organisationId } = inject<{
+// Try to inject organisation data from parent layout, with fallback for SSR
+const injected = inject<{
   organisation: Ref<AdminOrganisation | null>
   organisationId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-}>('adminOrganisation')!
+} | null>('adminOrganisation', null)
+
+// Fallback: compute organisationId from route if inject fails during SSR
+const organisationId = computed(() => injected?.organisationId.value ?? (route.params.id as string))
+
+// Use injected organisation if available
+const organisation = computed(() => injected?.organisation.value ?? null)
 
 // Fetch members
 const { members, total, status: membersStatus, error: membersError, refresh } = useAdminOrganisationMembers(organisationId)

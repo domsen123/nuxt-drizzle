@@ -1,10 +1,12 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { AdminUsersQueryParams } from '../types/admin.types'
 import { useQuery } from '@pinia/colada'
-import { adminApi } from '../api/admin.api'
+import { useAdminApi } from '../api/admin.api'
 import { adminKeys } from '../api/admin.keys'
 
 export const useAdminUsers = (params?: MaybeRefOrGetter<AdminUsersQueryParams>) => {
+  const adminApi = useAdminApi()
+
   const query = useQuery({
     key: () => adminKeys.users(toValue(params)),
     query: () => adminApi.getUsers(toValue(params)),

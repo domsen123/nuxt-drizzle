@@ -1,9 +1,11 @@
 import type { MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@pinia/colada'
-import { adminApi } from '../api/admin.api'
+import { useAdminApi } from '../api/admin.api'
 import { adminKeys } from '../api/admin.keys'
 
 export const useAdminUser = (id: MaybeRefOrGetter<string>) => {
+  const adminApi = useAdminApi()
+
   const query = useQuery({
     key: () => adminKeys.user(toValue(id)),
     query: () => adminApi.getUser(toValue(id)),

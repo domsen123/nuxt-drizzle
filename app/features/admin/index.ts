@@ -1,4 +1,4 @@
-export { adminApi } from './api/admin.api'
+export { useAdminApi } from './api/admin.api'
 export { adminKeys } from './api/admin.keys'
 export { useAdminOrganisation } from './composables/useAdminOrganisation'
 export { useCreateOrganisation, useUpdateOrganisation } from './composables/useAdminOrganisationMutations'

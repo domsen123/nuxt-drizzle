@@ -1,13 +1,9 @@
-export default defineNuxtRouteMiddleware(async () => {
-  const { isAuthenticated, status, refresh } = useSession()
-
-  // Wait for session if pending
-  if (status.value === 'pending') {
-    await refresh()
-  }
+export default defineNuxtRouteMiddleware(() => {
+  // Use pre-fetched server auth state (safe in middleware - no inject() warning)
+  const { isAuthenticated, isGlobalAdmin } = useServerAuth()
 
   // Must be authenticated first
-  if (!isAuthenticated.value) {
+  if (!isAuthenticated) {
     return navigateTo({
       path: ROUTES.auth.signIn,
       query: { redirect: ROUTES.admin.home },
@@ -15,14 +11,7 @@ export default defineNuxtRouteMiddleware(async () => {
   }
 
   // Check admin permissions
-  const { isGlobalAdmin, status: permStatus, refresh: refreshPerms } = usePermissions()
-
-  // Wait for permissions if pending
-  if (permStatus.value === 'pending') {
-    await refreshPerms()
-  }
-
-  if (!isGlobalAdmin.value) {
+  if (!isGlobalAdmin) {
     return navigateTo(ROUTES.errors.unauthorized)
   }
 })

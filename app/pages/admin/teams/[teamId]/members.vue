@@ -9,16 +9,23 @@ import {
 import TeamMemberAddModal from '~/features/teams/components/TeamMemberAddModal.vue'
 import TeamMembersList from '~/features/teams/components/TeamMembersList.vue'
 
+const route = useRoute()
 const toast = useToast()
 
-// Inject team data from parent layout
-const { team, teamId } = inject<{
+// Try to inject team data from parent layout, with fallback for SSR
+const injected = inject<{
   team: Ref<TeamWithOrganisation | null>
   teamId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-}>('adminTeamById')!
+} | null>('adminTeamById', null)
+
+// Fallback: compute teamId from route if inject fails during SSR
+const teamId = computed(() => injected?.teamId.value ?? (route.params.teamId as string))
+
+// Use injected team if available
+const team = computed(() => injected?.team.value ?? null)
 
 // Fetch team members
 const { members, total, status: membersStatus, error: membersError, refresh } = useTeamMembersById(teamId)

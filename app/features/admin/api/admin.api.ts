@@ -10,40 +10,48 @@ import type {
   UpdateUserInput,
 } from '../types/admin.types'
 
-export const adminApi = {
-  getOrganisations: (params?: AdminOrganisationsQueryParams): Promise<AdminOrganisationsResponse> =>
-    $fetch('/api/admin/organisations', { query: params }),
+/**
+ * Admin API wrapper that uses useRequestFetch for SSR cookie forwarding.
+ * Must be called within a composable or component setup context.
+ */
+export const useAdminApi = () => {
+  const fetch = useRequestFetch()
 
-  getOrganisation: (id: string): Promise<AdminOrganisationResponse> =>
-    $fetch(`/api/admin/organisations/${id}`),
+  return {
+    getOrganisations: (params?: AdminOrganisationsQueryParams): Promise<AdminOrganisationsResponse> =>
+      fetch('/api/admin/organisations', { query: params }),
 
-  createOrganisation: (data: CreateOrganisationInput): Promise<AdminOrganisationResponse> =>
-    $fetch('/api/admin/organisations', {
-      method: 'POST',
-      body: data,
-    }),
+    getOrganisation: (id: string): Promise<AdminOrganisationResponse> =>
+      fetch(`/api/admin/organisations/${id}`),
 
-  updateOrganisation: (id: string, data: UpdateOrganisationInput): Promise<AdminOrganisationResponse> =>
-    $fetch(`/api/admin/organisations/${id}`, {
-      method: 'PUT',
-      body: data,
-    }),
+    createOrganisation: (data: CreateOrganisationInput): Promise<AdminOrganisationResponse> =>
+      fetch('/api/admin/organisations', {
+        method: 'POST',
+        body: data,
+      }),
 
-  // Users
-  getUsers: (params?: AdminUsersQueryParams): Promise<AdminUsersResponse> =>
-    $fetch('/api/admin/users', { query: params }),
+    updateOrganisation: (id: string, data: UpdateOrganisationInput): Promise<AdminOrganisationResponse> =>
+      fetch(`/api/admin/organisations/${id}`, {
+        method: 'PUT',
+        body: data,
+      }),
 
-  getUser: (id: string): Promise<AdminUserResponse> =>
-    $fetch(`/api/admin/users/${id}`),
+    // Users
+    getUsers: (params?: AdminUsersQueryParams): Promise<AdminUsersResponse> =>
+      fetch('/api/admin/users', { query: params }),
 
-  updateUser: (id: string, data: UpdateUserInput): Promise<AdminUserResponse> =>
-    $fetch(`/api/admin/users/${id}`, {
-      method: 'PUT',
-      body: data,
-    }),
+    getUser: (id: string): Promise<AdminUserResponse> =>
+      fetch(`/api/admin/users/${id}`),
 
-  deleteUser: (id: string): Promise<{ success: boolean }> =>
-    $fetch(`/api/admin/users/${id}`, {
-      method: 'DELETE',
-    }),
+    updateUser: (id: string, data: UpdateUserInput): Promise<AdminUserResponse> =>
+      fetch(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        body: data,
+      }),
+
+    deleteUser: (id: string): Promise<{ success: boolean }> =>
+      fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+      }),
+  }
 }

@@ -2,17 +2,27 @@
 import type { AdminUser } from '~/features/admin'
 import AdminUserForm from '~/features/admin/components/AdminUserForm.vue'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-// Inject user data from parent layout
-const { user, status, error } = inject<{
+// Try to inject user data from parent layout, with fallback for SSR
+const injected = inject<{
   user: Ref<AdminUser | null>
   userId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-}>('adminUser')!
+} | null>('adminUser', null)
+
+// Fallback: fetch data directly if inject fails during SSR
+const userId = computed(() => route.params.id as string)
+const fallbackQuery = injected ? null : useAdminUser(userId)
+
+// Use injected data if available, otherwise use fallback
+const user = computed(() => injected?.user.value ?? fallbackQuery?.user.value ?? null)
+const status = computed(() => injected?.status.value ?? fallbackQuery?.status.value ?? 'pending')
+const error = computed(() => injected?.error.value ?? fallbackQuery?.error.value ?? null)
 
 const isLoading = computed(() => status.value === 'pending')
 
