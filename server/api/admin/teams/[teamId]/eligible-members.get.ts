@@ -4,23 +4,14 @@ import { container } from '~~/server/utils/container'
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const organisationId = getRouterParam(event, 'id')
   const teamId = getRouterParam(event, 'teamId')
 
-  if (!organisationId) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID is required' })
-  }
   if (!teamId) {
     throw createError({ statusCode: 400, statusMessage: 'Team ID is required' })
   }
 
-  // Verify team exists and belongs to organisation
-  const team = await container.items.teams.findOne({
-    _and: [
-      { id: { _eq: teamId } },
-      { organisationId: { _eq: organisationId } },
-    ],
-  })
+  // Verify team exists and get organisationId
+  const team = await container.items.teams.readOne(teamId)
 
   if (!team) {
     throw createError({ statusCode: 404, statusMessage: 'Team not found' })
@@ -28,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
   // Get all organisation members
   const orgMembers = await container.items.organisationMembers.findMany({
-    filter: { organisationId: { _eq: organisationId } },
+    filter: { organisationId: { _eq: team.organisationId } },
   })
 
   if (orgMembers.length === 0) {

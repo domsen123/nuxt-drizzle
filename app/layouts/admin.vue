@@ -28,6 +28,11 @@ const navItems: NavigationMenuItem[][] = [
       icon: 'i-lucide-building-2',
       to: ROUTES.admin.organisations,
     },
+    {
+      label: 'Teams',
+      icon: 'i-lucide-users-round',
+      to: ROUTES.admin.teams,
+    },
   ],
 ]
 

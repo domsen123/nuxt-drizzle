@@ -9,23 +9,14 @@ const updateTeamSchema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
   const teamId = getRouterParam(event, 'teamId')
 
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID is required' })
-  }
   if (!teamId) {
     throw createError({ statusCode: 400, statusMessage: 'Team ID is required' })
   }
 
-  // Verify team exists and belongs to the organisation
-  const existingTeam = await container.items.teams.findOne({
-    _and: [
-      { id: { _eq: teamId } },
-      { organisationId: { _eq: id } },
-    ],
-  })
+  // Verify team exists
+  const existingTeam = await container.items.teams.readOne(teamId)
 
   if (!existingTeam) {
     throw createError({ statusCode: 404, statusMessage: 'Team not found' })

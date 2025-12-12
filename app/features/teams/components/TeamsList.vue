@@ -1,29 +1,18 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Team } from '../types/teams.types'
+import type { Team, TeamWithOrganisation } from '../types/teams.types'
 
-const props = defineProps<{
-  teams: Team[]
-  organisationId: string
+defineProps<{
+  teams: Team[] | TeamWithOrganisation[]
+  organisationId?: string
   isLoading?: boolean
+  showOrganisation?: boolean
 }>()
 
 const emit = defineEmits<{
-  edit: [team: Team]
-  delete: [team: Team]
+  edit: [team: Team | TeamWithOrganisation]
+  delete: [team: Team | TeamWithOrganisation]
 }>()
-
-const search = ref('')
-
-const filteredTeams = computed(() => {
-  if (!search.value.trim()) {
-    return props.teams
-  }
-  const query = search.value.toLowerCase()
-  return props.teams.filter(team =>
-    team.name.toLowerCase().includes(query),
-  )
-})
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -33,7 +22,17 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getActionsMenu = (team: Team): DropdownMenuItem[] => [
+// Helper to get team link - use standalone route
+const getTeamLink = (team: Team | TeamWithOrganisation) => {
+  return ROUTES.admin.team(team.id)
+}
+
+// Helper to check if team has organisation data
+const hasOrganisation = (team: Team | TeamWithOrganisation): team is TeamWithOrganisation => {
+  return 'organisation' in team && !!team.organisation
+}
+
+const getActionsMenu = (team: Team | TeamWithOrganisation): DropdownMenuItem[] => [
   {
     label: 'Edit team',
     icon: 'i-lucide-pencil',
@@ -54,26 +53,16 @@ const getActionsMenu = (team: Team): DropdownMenuItem[] => [
     :ui="{
       container: 'p-0 sm:p-0 gap-y-0',
       wrapper: 'items-stretch',
-      header: 'p-4 mb-0 border-b border-default',
     }"
   >
-    <template #header>
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        placeholder="Search teams..."
-        class="w-full"
-      />
-    </template>
-
-    <ul v-if="filteredTeams.length > 0" role="list" class="divide-y divide-default">
+    <ul v-if="teams.length > 0" role="list" class="divide-y divide-default">
       <li
-        v-for="team in filteredTeams"
+        v-for="team in teams"
         :key="team.id"
         class="flex items-center justify-between gap-3 py-3 px-4 sm:px-6 hover:bg-elevated transition-colors"
       >
         <NuxtLink
-          :to="ROUTES.admin.teamDetail(organisationId, team.id)"
+          :to="getTeamLink(team)"
           class="flex items-center gap-3 min-w-0 flex-1"
         >
           <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
@@ -84,6 +73,9 @@ const getActionsMenu = (team: Team): DropdownMenuItem[] => [
               {{ team.name }}
             </p>
             <p class="text-muted text-xs truncate">
+              <template v-if="showOrganisation && hasOrganisation(team)">
+                {{ team.organisation.name }} &middot;
+              </template>
               Created {{ formatDate(team.createdAt) }}
             </p>
           </div>
@@ -103,12 +95,7 @@ const getActionsMenu = (team: Team): DropdownMenuItem[] => [
 
     <div v-else class="py-12 text-center text-muted">
       <UIcon name="i-lucide-users-round" class="size-8 mx-auto mb-2 opacity-50" />
-      <p v-if="search">
-        No teams found matching "{{ search }}"
-      </p>
-      <p v-else>
-        No teams in this organisation
-      </p>
+      <p>No teams found</p>
     </div>
   </UPageCard>
 </template>

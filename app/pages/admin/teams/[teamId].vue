@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import type { AdminOrganisation } from '~/features/admin'
-import { useAdminTeam } from '~/features/teams'
+import { useTeamById } from '~/features/teams'
 
 definePageMeta({
   layout: 'admin',
@@ -9,21 +8,14 @@ definePageMeta({
 })
 
 const route = useRoute()
-const organisationId = computed(() => route.params.id as string)
 const teamId = computed(() => route.params.teamId as string)
 
-// Inject organisation data from parent layout
-const { organisation } = inject<{
-  organisation: Ref<AdminOrganisation | null>
-}>('adminOrganisation')!
-
-const { team, status, error, refresh } = useAdminTeam(organisationId, teamId)
+const { team, status, error, refresh } = useTeamById(teamId)
 
 // Provide team data to child pages
-provide('adminTeam', {
+provide('adminTeamById', {
   team,
   teamId,
-  organisationId,
   status,
   error,
   refresh,
@@ -33,13 +25,13 @@ const links = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'General',
     icon: 'i-lucide-settings',
-    to: ROUTES.admin.teamDetail(organisationId.value, teamId.value),
+    to: ROUTES.admin.team(teamId.value),
     exact: true,
   },
   {
     label: 'Members',
     icon: 'i-lucide-users',
-    to: ROUTES.admin.teamMembers(organisationId.value, teamId.value),
+    to: ROUTES.admin.teamMembers(teamId.value),
   },
 ]])
 </script>
@@ -53,13 +45,21 @@ const links = computed<NavigationMenuItem[][]>(() => [[
             icon="i-lucide-arrow-left"
             color="neutral"
             variant="ghost"
-            :to="ROUTES.admin.organisationTeams(organisationId)"
+            :to="ROUTES.admin.teams"
           />
         </template>
         <template #trailing>
-          <span v-if="organisation" class="text-sm text-muted">
-            {{ organisation.name }}
-          </span>
+          <UButton
+            v-if="team?.organisation"
+            :to="ROUTES.admin.organisationEdit(team.organisation.id)"
+            color="neutral"
+            variant="link"
+            size="sm"
+            class="text-muted hover:text-default"
+          >
+            <UIcon name="i-lucide-building-2" class="size-4 mr-1" />
+            {{ team.organisation.name }}
+          </UButton>
         </template>
       </UDashboardNavbar>
 

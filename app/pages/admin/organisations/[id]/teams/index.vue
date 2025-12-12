@@ -4,8 +4,8 @@ import type { Team } from '~/features/teams'
 import {
   useAdminOrganisationTeams,
   useCreateTeam,
-  useDeleteTeam,
-  useUpdateTeam,
+  useDeleteTeamById,
+  useUpdateTeamById,
 } from '~/features/teams'
 import TeamFormModal from '~/features/teams/components/TeamFormModal.vue'
 import TeamsList from '~/features/teams/components/TeamsList.vue'
@@ -26,8 +26,8 @@ const { teams, total, status: teamsStatus, error: teamsError } = useAdminOrganis
 
 // Mutations
 const { mutateAsync: createTeam, asyncStatus: createStatus } = useCreateTeam()
-const { mutateAsync: updateTeam, asyncStatus: updateStatus } = useUpdateTeam()
-const { mutateAsync: deleteTeam } = useDeleteTeam()
+const { mutateAsync: updateTeam, asyncStatus: updateStatus } = useUpdateTeamById()
+const { mutateAsync: deleteTeam } = useDeleteTeamById()
 
 const isLoading = computed(() => teamsStatus.value === 'pending')
 const isMutating = computed(() => createStatus.value === 'loading' || updateStatus.value === 'loading')
@@ -57,7 +57,6 @@ const handleSubmit = async (data: { name: string }) => {
   try {
     if (editingTeam.value) {
       await updateTeam({
-        organisationId: organisationId.value,
         teamId: editingTeam.value.id,
         data,
       })
@@ -96,10 +95,7 @@ const handleSubmit = async (data: { name: string }) => {
 
 const handleDelete = async (team: Team) => {
   try {
-    await deleteTeam({
-      organisationId: organisationId.value,
-      teamId: team.id,
-    })
+    await deleteTeam({ teamId: team.id })
     toast.add({
       title: 'Team deleted',
       description: `${team.name} has been deleted.`,

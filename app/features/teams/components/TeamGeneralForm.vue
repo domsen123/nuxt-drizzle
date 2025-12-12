@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { Team, UpdateTeamInput } from '../types/teams.types'
+import type { Team, TeamWithOrganisation } from '../types/teams.types'
 import { z } from 'zod'
+import { useDeleteTeamById, useUpdateTeamById } from '../composables/useTeamMutationsById'
 
 const props = defineProps<{
-  team: Team
-  isLoading?: boolean
+  team: Team | TeamWithOrganisation
 }>()
 
 const emit = defineEmits<{
-  submit: [data: UpdateTeamInput]
-  delete: []
+  success: [team: Team]
+  cancel: []
 }>()
 
+const router = useRouter()
+const toast = useToast()
+
+const NAME_MAX_LENGTH = 100
+
 const schema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be 100 characters or less'),
+  name: z.string().trim().min(1, 'Team name is required').max(NAME_MAX_LENGTH, `Name must be ${NAME_MAX_LENGTH} characters or less`),
 })
 
 type Schema = z.output<typeof schema>
@@ -28,90 +33,158 @@ watch(() => props.team, (newTeam) => {
   state.name = newTeam.name
 }, { deep: true })
 
-const handleSubmit = (event: FormSubmitEvent<Schema>) => {
-  emit('submit', event.data)
+// Mutations
+const { mutateAsync: updateTeam, asyncStatus: updateStatus, error: updateError } = useUpdateTeamById()
+const { mutateAsync: deleteTeam, asyncStatus: deleteStatus, error: deleteError } = useDeleteTeamById()
+
+const isLoading = computed(() =>
+  updateStatus.value === 'loading' || deleteStatus.value === 'loading',
+)
+
+const apiError = computed(() => {
+  const err = (updateError.value || deleteError.value) as {
+    statusCode?: number
+    data?: { statusMessage?: string }
+    message?: string
+  } | null
+  if (!err)
+    return null
+  return err.data?.statusMessage || err.message || 'An unexpected error occurred. Please try again.'
+})
+
+const onSubmit = async (event: FormSubmitEvent<Schema>) => {
+  try {
+    const result = await updateTeam({ teamId: props.team.id, data: event.data })
+    toast.add({ title: 'Team updated', color: 'success' })
+    emit('success', result.team)
+  }
+  catch {
+    // Error is captured in refs
+  }
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+const onDelete = async () => {
+  try {
+    await deleteTeam({ teamId: props.team.id })
+    toast.add({ title: 'Team deleted', color: 'success' })
+    router.push(ROUTES.admin.teams)
+  }
+  catch {
+    // Error is captured in refs
+  }
 }
 </script>
 
 <template>
-  <div class="space-y-6">
-    <UForm :schema="schema" :state="state" class="space-y-4" @submit="handleSubmit">
-      <UFormField label="Team Name" name="name" required>
-        <UInput v-model="state.name" placeholder="Enter team name" class="max-w-md" />
-      </UFormField>
-
-      <div class="flex gap-2">
-        <UButton type="submit" label="Save Changes" :loading="isLoading" />
+  <UForm
+    id="team-form"
+    :schema="schema"
+    :state="state"
+    class="space-y-4"
+    @submit="onSubmit"
+  >
+    <!-- Header Card -->
+    <UPageCard
+      title="Edit Team"
+      description="Update the team details below."
+      variant="naked"
+      orientation="horizontal"
+      class="mb-4"
+    >
+      <div class="flex gap-2 lg:ms-auto">
+        <UButton
+          variant="ghost"
+          color="neutral"
+          :disabled="isLoading"
+          @click="emit('cancel')"
+        >
+          Cancel
+        </UButton>
+        <UButton
+          form="team-form"
+          type="submit"
+          :loading="updateStatus === 'loading'"
+        >
+          Save Changes
+        </UButton>
       </div>
-    </UForm>
+    </UPageCard>
 
-    <UDivider />
-
-    <div class="space-y-4">
-      <h3 class="text-sm font-medium text-muted">
-        Team Information
-      </h3>
-      <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
-        <div>
-          <dt class="text-muted">
-            Team ID
-          </dt>
-          <dd class="font-mono text-xs mt-1">
-            {{ team.id }}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-muted">
-            Created
-          </dt>
-          <dd class="mt-1">
-            {{ formatDate(team.createdAt) }}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-muted">
-            Last Updated
-          </dt>
-          <dd class="mt-1">
-            {{ formatDate(team.updatedAt) }}
-          </dd>
-        </div>
-      </dl>
-    </div>
-
-    <UDivider />
-
-    <div class="space-y-4">
-      <h3 class="text-sm font-medium text-error">
-        Danger Zone
-      </h3>
+    <!-- Error Alert -->
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-1"
+    >
       <UAlert
+        v-if="apiError"
         color="error"
         variant="subtle"
         icon="i-lucide-alert-triangle"
-        title="Delete Team"
-        description="Permanently delete this team. This action cannot be undone and will remove all team members."
+        :title="apiError"
+        class="animate-shake"
+      />
+    </Transition>
+
+    <!-- Form Fields Card -->
+    <UPageCard variant="subtle">
+      <UFormField
+        name="name"
+        label="Team Name"
+        description="The display name for this team."
+        required
+        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <template #actions>
-          <UButton
-            color="error"
-            variant="outline"
-            label="Delete Team"
-            icon="i-lucide-trash-2"
-            @click="emit('delete')"
+        <div class="w-full max-w-sm">
+          <UInput
+            v-model="state.name"
+            placeholder="Engineering Team"
+            :maxlength="NAME_MAX_LENGTH"
           />
-        </template>
-      </UAlert>
-    </div>
-  </div>
+        </div>
+      </UFormField>
+    </UPageCard>
+
+    <!-- Danger Zone Card -->
+    <UPageCard variant="subtle">
+      <div class="space-y-4">
+        <h3 class="text-sm font-medium text-error">
+          Danger Zone
+        </h3>
+        <UAlert
+          color="error"
+          variant="subtle"
+          icon="i-lucide-alert-triangle"
+          title="Delete Team"
+          description="Permanently delete this team. This action cannot be undone and will remove all team members."
+        >
+          <template #actions>
+            <UButton
+              color="error"
+              variant="outline"
+              label="Delete Team"
+              icon="i-lucide-trash-2"
+              :loading="deleteStatus === 'loading'"
+              @click="onDelete"
+            />
+          </template>
+        </UAlert>
+      </div>
+    </UPageCard>
+  </UForm>
 </template>
+
+<style scoped>
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+</style>

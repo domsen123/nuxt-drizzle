@@ -6,6 +6,14 @@ export interface Team {
   updatedAt: string
 }
 
+// Extended team with organisation info for standalone pages
+export interface TeamWithOrganisation extends Team {
+  organisation: {
+    id: string
+    name: string
+  }
+}
+
 // Team Member Types
 export interface TeamMemberUser {
   id: string
@@ -31,6 +39,16 @@ export interface TeamsResponse {
 
 export interface TeamResponse {
   team: Team
+}
+
+// Standalone API responses (with organisation data)
+export interface AllTeamsResponse {
+  teams: TeamWithOrganisation[]
+  total: number
+}
+
+export interface TeamWithOrganisationResponse {
+  team: TeamWithOrganisation
 }
 
 export interface TeamMembersResponse {

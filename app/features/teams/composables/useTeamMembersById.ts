@@ -2,13 +2,10 @@ import { useQuery } from '@pinia/colada'
 import { teamsApi } from '../api/teams.api'
 import { teamsKeys } from '../api/teams.keys'
 
-export const useAdminTeamMembers = (
-  organisationId: MaybeRefOrGetter<string>,
-  teamId: MaybeRefOrGetter<string>,
-) => {
+export const useTeamMembersById = (teamId: MaybeRefOrGetter<string>) => {
   const query = useQuery({
-    key: () => teamsKeys.teamMembers(toValue(organisationId), toValue(teamId)),
-    query: () => teamsApi.getTeamMembers(toValue(organisationId), toValue(teamId)),
+    key: () => teamsKeys.teamMembersById(toValue(teamId)),
+    query: () => teamsApi.getTeamMembersById(toValue(teamId)),
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
 

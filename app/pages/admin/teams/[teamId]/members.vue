@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Team, TeamMember } from '~/features/teams'
+import type { TeamMember, TeamWithOrganisation } from '~/features/teams'
 import {
-  useAddTeamMember,
-  useAdminTeamMembers,
-  useEligibleTeamMembers,
-  useRemoveTeamMember,
+  useAddTeamMemberById,
+  useEligibleMembersById,
+  useRemoveTeamMemberById,
+  useTeamMembersById,
 } from '~/features/teams'
 import TeamMemberAddModal from '~/features/teams/components/TeamMemberAddModal.vue'
 import TeamMembersList from '~/features/teams/components/TeamMembersList.vue'
@@ -12,24 +12,23 @@ import TeamMembersList from '~/features/teams/components/TeamMembersList.vue'
 const toast = useToast()
 
 // Inject team data from parent layout
-const { team, teamId, organisationId } = inject<{
-  team: Ref<Team | null>
+const { team, teamId } = inject<{
+  team: Ref<TeamWithOrganisation | null>
   teamId: ComputedRef<string>
-  organisationId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-}>('adminTeam')!
+}>('adminTeamById')!
 
 // Fetch team members
-const { members, total, status: membersStatus, error: membersError, refresh } = useAdminTeamMembers(organisationId, teamId)
+const { members, total, status: membersStatus, error: membersError, refresh } = useTeamMembersById(teamId)
 
 // Fetch eligible members
-const { eligibleMembers } = useEligibleTeamMembers(organisationId, teamId)
+const { eligibleMembers } = useEligibleMembersById(teamId)
 
 // Mutations
-const { mutateAsync: addMember, asyncStatus: addStatus } = useAddTeamMember()
-const { mutateAsync: removeMember } = useRemoveTeamMember()
+const { mutateAsync: addMember, asyncStatus: addStatus } = useAddTeamMemberById()
+const { mutateAsync: removeMember } = useRemoveTeamMemberById()
 
 const isLoading = computed(() => membersStatus.value === 'pending')
 const isAdding = computed(() => addStatus.value === 'loading')
@@ -46,7 +45,6 @@ useSeoMeta({
 const handleAddMember = async (data: { userId: string }) => {
   try {
     await addMember({
-      organisationId: organisationId.value,
       teamId: teamId.value,
       data,
     })
@@ -72,7 +70,6 @@ const handleAddMember = async (data: { userId: string }) => {
 const handleRemoveMember = async (member: TeamMember) => {
   try {
     await removeMember({
-      organisationId: organisationId.value,
       teamId: teamId.value,
       userId: member.userId,
     })

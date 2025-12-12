@@ -17,8 +17,10 @@ export const ROUTES = {
     organisationEdit: (id: string) => `/admin/organisations/${id}`,
     organisationMembers: (id: string) => `/admin/organisations/${id}/members`,
     organisationTeams: (id: string) => `/admin/organisations/${id}/teams`,
-    teamDetail: (orgId: string, teamId: string) => `/admin/organisations/${orgId}/teams/${teamId}`,
-    teamMembers: (orgId: string, teamId: string) => `/admin/organisations/${orgId}/teams/${teamId}/members`,
+    // Standalone team routes
+    teams: '/admin/teams',
+    team: (teamId: string) => `/admin/teams/${teamId}`,
+    teamMembers: (teamId: string) => `/admin/teams/${teamId}/members`,
     users: '/admin/users',
     userEdit: (id: string) => `/admin/users/${id}`,
   },
