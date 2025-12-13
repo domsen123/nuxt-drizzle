@@ -51,6 +51,7 @@ export default defineNitroPlugin(async () => {
       DEFAULT_ADMIN.email,
       DEFAULT_ADMIN.password,
       DEFAULT_ADMIN.name,
+      { skipVerification: true },
     )
     console.log(`[Admin Seed] Created admin user: ${user.email}`)
     userId = user.id

@@ -5,7 +5,7 @@ import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
 import { and, eq, gt, lt } from 'drizzle-orm'
 import { ulid } from 'ulid'
-import { passwordResetTokens, sessions, users } from '../../database/schema'
+import { emailVerificationTokens, passwordResetTokens, sessions, users } from '../../database/schema'
 import { config } from '../../utils/config'
 
 const BCRYPT_COST = 12
@@ -13,6 +13,7 @@ const SESSION_EXPIRY_SHORT_DAYS = 1
 const SESSION_EXPIRY_LONG_DAYS = 30
 const SESSION_REFRESH_THRESHOLD_DAYS = 7
 const PASSWORD_RESET_TOKEN_EXPIRY_HOURS = 1
+const EMAIL_VERIFICATION_TOKEN_EXPIRY_HOURS = 24
 
 export interface AuthServiceResult {
   user: Omit<User, 'passwordHash'>
@@ -68,10 +69,70 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     return { session, token }
   }
 
+  const sendVerificationEmail = async (userId: string): Promise<{ success: boolean }> => {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+
+    if (!user) {
+      console.error(`[Email Verification] User not found: ${userId}`)
+      return { success: false }
+    }
+
+    if (user.emailVerified) {
+      console.log(`[Email Verification] User already verified: ${userId}`)
+      return { success: true }
+    }
+
+    // Delete any existing verification tokens for this user
+    await db
+      .delete(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.userId, userId))
+
+    // Generate new token
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000)
+
+    // Store token
+    await db
+      .insert(emailVerificationTokens)
+      .values({
+        id: ulid(),
+        userId,
+        token,
+        expiresAt,
+      })
+
+    // Send verification email
+    const verificationLink = `${config.site.url}/auth/verify-email?token=${token}`
+
+    const result = await emailService.sendEmailVerification(user.email, {
+      userName: user.name ?? undefined,
+      verificationLink,
+      expiresInHours: EMAIL_VERIFICATION_TOKEN_EXPIRY_HOURS,
+    })
+
+    if (!result.success) {
+      console.error(`[Email Verification] Failed to send email to ${user.email}:`, result.error)
+      return { success: false }
+    }
+
+    console.log(`[Email Verification] Email sent to ${user.email}`)
+    return { success: true }
+  }
+
+  interface RegisterOptions {
+    /** Skip sending verification email and mark user as verified (for seeding) */
+    skipVerification?: boolean
+  }
+
   const register = async (
     email: string,
     password: string,
     name?: string,
+    options?: RegisterOptions,
   ): Promise<AuthServiceResult> => {
     const existingUser = await db
       .select()
@@ -95,6 +156,7 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
         email: email.toLowerCase(),
         passwordHash,
         name,
+        emailVerified: options?.skipVerification ?? false,
       })
       .returning()
 
@@ -106,6 +168,13 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     }
 
     const { session, token } = await createSession(user.id)
+
+    // Send verification email unless skipped (don't await to not block registration)
+    if (!options?.skipVerification) {
+      sendVerificationEmail(user.id).catch((error) => {
+        console.error(`[Registration] Failed to send verification email:`, error)
+      })
+    }
 
     return {
       user: omitPasswordHash(user),
@@ -311,6 +380,66 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     return result.length
   }
 
+  const verifyEmail = async (token: string): Promise<{ success: boolean, alreadyVerified?: boolean }> => {
+    const [verificationToken] = await db
+      .select()
+      .from(emailVerificationTokens)
+      .innerJoin(users, eq(emailVerificationTokens.userId, users.id))
+      .where(and(
+        eq(emailVerificationTokens.token, token),
+        gt(emailVerificationTokens.expiresAt, new Date()),
+      ))
+      .limit(1)
+
+    if (!verificationToken) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid or expired verification token',
+      })
+    }
+
+    // Check if already verified
+    if (verificationToken.users.emailVerified) {
+      // Delete the token since it's no longer needed
+      await db
+        .delete(emailVerificationTokens)
+        .where(eq(emailVerificationTokens.token, token))
+
+      return { success: true, alreadyVerified: true }
+    }
+
+    // Mark email as verified
+    await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, verificationToken.email_verification_tokens.userId))
+
+    // Delete the verification token (single-use)
+    await db
+      .delete(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.token, token))
+
+    console.log(`[Email Verification] Email verified for user: ${verificationToken.email_verification_tokens.userId}`)
+
+    return { success: true }
+  }
+
+  const resendVerificationEmail = async (userId: string): Promise<{ success: boolean }> => {
+    return sendVerificationEmail(userId)
+  }
+
+  const cleanupExpiredVerificationTokens = async (): Promise<number> => {
+    const result = await db
+      .delete(emailVerificationTokens)
+      .where(lt(emailVerificationTokens.expiresAt, new Date()))
+      .returning()
+
+    return result.length
+  }
+
   return {
     register,
     login,
@@ -323,6 +452,10 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
     validateResetToken,
     resetPassword,
     cleanupExpiredResetTokens,
+    sendVerificationEmail,
+    verifyEmail,
+    resendVerificationEmail,
+    cleanupExpiredVerificationTokens,
   }
 }
 

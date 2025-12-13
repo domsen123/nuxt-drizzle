@@ -1,6 +1,7 @@
 <template>
   <div>
     <AppHeader />
+    <EmailVerificationBanner />
 
     <UMain>
       <slot />

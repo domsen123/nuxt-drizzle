@@ -63,3 +63,11 @@ export const useResetPassword = () => {
     },
   })
 }
+
+export const useResendVerification = () => {
+  const authApi = useAuthApi()
+
+  return useMutation({
+    mutation: () => authApi.resendVerification(),
+  })
+}

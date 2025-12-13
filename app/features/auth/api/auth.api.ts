@@ -4,6 +4,7 @@ import type {
   ForgotPasswordResponse,
   LoginCredentials,
   RegisterCredentials,
+  ResendVerificationResponse,
   ResetPasswordCredentials,
   ResetPasswordResponse,
   SessionResponse,
@@ -50,6 +51,11 @@ export const useAuthApi = () => {
     validateResetToken: (token: string): Promise<ValidateResetTokenResponse> =>
       fetch('/api/auth/validate-reset-token', {
         query: { token },
+      }),
+
+    resendVerification: (): Promise<ResendVerificationResponse> =>
+      fetch('/api/auth/resend-verification', {
+        method: 'POST',
       }),
   }
 }

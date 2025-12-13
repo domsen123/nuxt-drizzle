@@ -55,3 +55,8 @@ export interface ResetPasswordResponse {
 export interface ValidateResetTokenResponse {
   valid: boolean
 }
+
+export interface ResendVerificationResponse {
+  success: boolean
+  message: string
+}

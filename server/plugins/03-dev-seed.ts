@@ -46,8 +46,8 @@ const seedUsers = async () => {
 
     const name = faker.person.fullName()
 
-    // Use authService.register for proper password hashing
-    const { user } = await container.authService.register(email, DEV_PASSWORD, name)
+    // Use authService.register for proper password hashing (skip verification for seeds)
+    const { user } = await container.authService.register(email, DEV_PASSWORD, name, { skipVerification: true })
     users.push(user)
 
     // Log progress every 50 users
