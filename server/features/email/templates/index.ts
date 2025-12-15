@@ -23,6 +23,14 @@ export interface EmailChangeTemplateData {
   siteName: string
 }
 
+export interface OrganisationInvitationTemplateData {
+  organisationName: string
+  inviterName?: string
+  acceptLink: string
+  expiresInDays: number
+  siteName: string
+}
+
 export const passwordResetTemplate = async (data: PasswordResetTemplateData) => {
   const storage = useStorage('assets:server')
 
@@ -105,6 +113,35 @@ export const emailChangeTemplate = async (data: EmailChangeTemplateData) => {
 
   return {
     subject: `Confirm your email change - ${data.siteName}`,
+    html,
+    text,
+  }
+}
+
+export const organisationInvitationTemplate = async (data: OrganisationInvitationTemplateData) => {
+  const storage = useStorage('assets:server')
+
+  const [htmlTemplate, txtTemplate] = await Promise.all([
+    storage.getItem<string>('templates/organisation-invitation.html.liquid'),
+    storage.getItem<string>('templates/organisation-invitation.txt.liquid'),
+  ])
+
+  if (!htmlTemplate || !txtTemplate) {
+    throw new Error('Organisation invitation templates not found')
+  }
+
+  const templateData = {
+    ...data,
+    year: new Date().getFullYear(),
+  }
+
+  const [html, text] = await Promise.all([
+    engine.parseAndRender(htmlTemplate, templateData),
+    engine.parseAndRender(txtTemplate, templateData),
+  ])
+
+  return {
+    subject: `You've been invited to join ${data.organisationName} - ${data.siteName}`,
     html,
     text,
   }

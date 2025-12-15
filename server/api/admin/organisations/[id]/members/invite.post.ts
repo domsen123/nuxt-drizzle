@@ -25,11 +25,39 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const result = await container.organisationMembersService.inviteMember({
+  const currentUser = event.context.user
+  const inviterName = currentUser?.name ?? undefined
+
+  // Check if user already exists
+  const existingUser = await container.items.users.findOne({
+    email: parsed.data.email.toLowerCase().trim(),
+  })
+
+  if (existingUser) {
+    // User exists - add directly to organisation
+    const result = await container.organisationMembersService.inviteMember({
+      organisationId: id,
+      email: parsed.data.email,
+      roleId: parsed.data.roleId,
+    })
+    return result
+  }
+
+  if (!currentUser) {
+    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+  }
+
+  // User doesn't exist - create invitation
+  await container.organisationInvitationsService.createInvitation({
     organisationId: id,
     email: parsed.data.email,
     roleId: parsed.data.roleId,
+    invitedByUserId: currentUser.id,
+    inviterName,
   })
 
-  return result
+  return {
+    invited: true,
+    email: parsed.data.email,
+  }
 })

@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm'
+import { organisationInvitations } from './organisation-invitations'
 import { organisationMembers } from './organisation-members'
 import { organisations } from './organisations'
 import { passwordResetTokens } from './password-reset-tokens'
@@ -38,6 +39,18 @@ export const organisationsRelations = relations(organisations, ({ many }) => ({
   teams: many(teams),
   members: many(organisationMembers),
   customRoles: many(roles),
+  invitations: many(organisationInvitations),
+}))
+
+export const organisationInvitationsRelations = relations(organisationInvitations, ({ one }) => ({
+  organisation: one(organisations, {
+    fields: [organisationInvitations.organisationId],
+    references: [organisations.id],
+  }),
+  role: one(roles, {
+    fields: [organisationInvitations.roleId],
+    references: [roles.id],
+  }),
 }))
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({

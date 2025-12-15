@@ -2,6 +2,7 @@ import type { ImpersonationService } from '../features/admin/impersonation.servi
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
+import type { OrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { OrganisationsService } from '../features/organisations/organisations.service'
 import type { ProfileService } from '../features/profile/profile.service'
@@ -13,6 +14,7 @@ import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
+import { createOrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import { createOrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import { createOrganisationsService } from '../features/organisations/organisations.service'
 import { createProfileService } from '../features/profile/profile.service'
@@ -110,6 +112,9 @@ const getRolePermissionsItemService = lazy(() =>
 const getUserRolesItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.userRoles, tableName: 'userRoles', eventBus: getEventBus() }),
 )
+const getOrganisationInvitationsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.organisationInvitations, tableName: 'organisationInvitations', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -151,6 +156,18 @@ const getOrganisationsService = lazy(() =>
   }),
 )
 
+// Organisation Invitations Service
+const getOrganisationInvitationsService = lazy(() =>
+  createOrganisationInvitationsService({
+    organisationInvitationsItemService: getOrganisationInvitationsItemService(),
+    organisationsItemService: getOrganisationsItemService(),
+    usersItemService: getUsersItemService(),
+    rolesItemService: getRolesItemService(),
+    emailService: getEmailService(),
+    organisationMembersService: getOrganisationMembersService(),
+  }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -171,6 +188,9 @@ export const container = {
   get organisationsService(): OrganisationsService {
     return getOrganisationsService()
   },
+  get organisationInvitationsService(): OrganisationInvitationsService {
+    return getOrganisationInvitationsService()
+  },
   get profileService(): ProfileService {
     return getProfileService()
   },
@@ -189,5 +209,6 @@ export const container = {
     get roles() { return getRolesItemService() },
     get rolePermissions() { return getRolePermissionsItemService() },
     get userRoles() { return getUserRolesItemService() },
+    get organisationInvitations() { return getOrganisationInvitationsItemService() },
   },
 }
