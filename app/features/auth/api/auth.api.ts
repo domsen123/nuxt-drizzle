@@ -3,11 +3,14 @@ import type {
   ForgotPasswordCredentials,
   ForgotPasswordResponse,
   LoginCredentials,
+  LogoutOtherSessionsResponse,
   RegisterCredentials,
   ResendVerificationResponse,
   ResetPasswordCredentials,
   ResetPasswordResponse,
+  RevokeSessionResponse,
   SessionResponse,
+  SessionsResponse,
   ValidateResetTokenResponse,
 } from '../types/auth.types'
 
@@ -55,6 +58,20 @@ export const useAuthApi = () => {
     resendVerification: (): Promise<ResendVerificationResponse> =>
       $api('/api/auth/resend-verification', {
         method: 'POST',
+      }),
+
+    // Session management
+    getSessions: (): Promise<SessionsResponse> =>
+      $api('/api/auth/sessions'),
+
+    logoutOtherSessions: (): Promise<LogoutOtherSessionsResponse> =>
+      $api('/api/auth/sessions/others', {
+        method: 'DELETE',
+      }),
+
+    revokeSession: (sessionId: string): Promise<RevokeSessionResponse> =>
+      $api(`/api/auth/sessions/${sessionId}`, {
+        method: 'DELETE',
       }),
   }
 }

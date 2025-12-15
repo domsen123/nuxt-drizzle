@@ -9,6 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "nuxt typecheck",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d",
     "docker:clean": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up -d",

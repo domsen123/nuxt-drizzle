@@ -16,6 +16,13 @@ export interface EmailVerificationTemplateData {
   siteName: string
 }
 
+export interface EmailChangeTemplateData {
+  userName?: string
+  confirmationLink: string
+  expiresInHours: number
+  siteName: string
+}
+
 export const passwordResetTemplate = async (data: PasswordResetTemplateData) => {
   const storage = useStorage('assets:server')
 
@@ -69,6 +76,35 @@ export const emailVerificationTemplate = async (data: EmailVerificationTemplateD
 
   return {
     subject: `Verify your email - ${data.siteName}`,
+    html,
+    text,
+  }
+}
+
+export const emailChangeTemplate = async (data: EmailChangeTemplateData) => {
+  const storage = useStorage('assets:server')
+
+  const [htmlTemplate, txtTemplate] = await Promise.all([
+    storage.getItem<string>('templates/email-change.html.liquid'),
+    storage.getItem<string>('templates/email-change.txt.liquid'),
+  ])
+
+  if (!htmlTemplate || !txtTemplate) {
+    throw new Error('Email change templates not found')
+  }
+
+  const templateData = {
+    ...data,
+    year: new Date().getFullYear(),
+  }
+
+  const [html, text] = await Promise.all([
+    engine.parseAndRender(htmlTemplate, templateData),
+    engine.parseAndRender(txtTemplate, templateData),
+  ])
+
+  return {
+    subject: `Confirm your email change - ${data.siteName}`,
     html,
     text,
   }

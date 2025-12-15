@@ -1,7 +1,7 @@
 import type { Config } from '../../utils/config'
 import type { EmailProvider } from './email-provider.interface'
-import type { EmailVerificationTemplateData, PasswordResetTemplateData } from './templates'
-import { emailVerificationTemplate, passwordResetTemplate } from './templates'
+import type { EmailChangeTemplateData, EmailVerificationTemplateData, PasswordResetTemplateData } from './templates'
+import { emailChangeTemplate, emailVerificationTemplate, passwordResetTemplate } from './templates'
 
 export interface CreateEmailServiceDeps {
   provider: EmailProvider
@@ -55,9 +55,28 @@ export const createEmailService = ({ provider, config }: CreateEmailServiceDeps)
     })
   }
 
+  const sendEmailChangeConfirmation = async (
+    to: string,
+    data: Omit<EmailChangeTemplateData, 'siteName'>,
+  ) => {
+    const template = await emailChangeTemplate({
+      ...data,
+      siteName: config.site.name,
+    })
+
+    return provider.send({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+      from: getDefaultFrom(),
+    })
+  }
+
   return {
     sendPasswordReset,
     sendEmailVerification,
+    sendEmailChangeConfirmation,
   }
 }
 

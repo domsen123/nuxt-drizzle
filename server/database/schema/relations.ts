@@ -2,6 +2,7 @@ import { relations } from 'drizzle-orm'
 import { organisationMembers } from './organisation-members'
 import { organisations } from './organisations'
 import { passwordResetTokens } from './password-reset-tokens'
+import { pendingEmailChanges } from './pending-email-changes'
 import { rolePermissions } from './role-permissions'
 import { roles } from './roles'
 import { sessions } from './sessions'
@@ -13,6 +14,7 @@ import { users } from './users'
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   passwordResetTokens: many(passwordResetTokens),
+  pendingEmailChanges: many(pendingEmailChanges),
   organisationMemberships: many(organisationMembers),
   teamMemberships: many(teamMembers),
   userRoles: many(userRoles),
@@ -93,5 +95,12 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
   role: one(roles, {
     fields: [userRoles.roleId],
     references: [roles.id],
+  }),
+}))
+
+export const pendingEmailChangesRelations = relations(pendingEmailChanges, ({ one }) => ({
+  user: one(users, {
+    fields: [pendingEmailChanges.userId],
+    references: [users.id],
   }),
 }))

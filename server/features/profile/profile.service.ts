@@ -1,8 +1,15 @@
-import type { users } from '~~/server/database/schema'
+import type { pendingEmailChanges, users } from '~~/server/database/schema'
+import type { DatabaseClient } from '~~/server/infrastructure/database/client'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
+import type { EmailService } from '../email/email.service'
+import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
+import { eq, lt } from 'drizzle-orm'
+import { pendingEmailChanges as pendingEmailChangesTable } from '~~/server/database/schema'
+import { config } from '~~/server/utils/config'
 
 const BCRYPT_COST = 12
+const EMAIL_CHANGE_TOKEN_EXPIRY_HOURS = 24
 
 export interface UserProfile {
   id: string
@@ -14,7 +21,6 @@ export interface UserProfile {
 
 export interface UpdateProfileInput {
   name?: string
-  email?: string
 }
 
 export interface ChangePasswordInput {
@@ -22,12 +28,24 @@ export interface ChangePasswordInput {
   newPassword: string
 }
 
+export interface RequestEmailChangeInput {
+  newEmail: string
+}
+
+export interface PendingEmailChangeInfo {
+  newEmail: string
+  expiresAt: Date
+}
+
 export interface CreateProfileServiceDeps {
   usersItemService: ItemService<typeof users>
+  pendingEmailChangesItemService: ItemService<typeof pendingEmailChanges>
+  emailService: EmailService
+  db: DatabaseClient
 }
 
 export const createProfileService = (deps: CreateProfileServiceDeps) => {
-  const { usersItemService } = deps
+  const { usersItemService, pendingEmailChangesItemService, emailService, db } = deps
 
   /**
    * Get user profile by ID
@@ -49,7 +67,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
   }
 
   /**
-   * Update user profile (name, email)
+   * Update user profile (name only - email changes require verification)
    */
   const updateProfile = async (
     userId: string,
@@ -61,25 +79,10 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
       throw createError({ statusCode: 404, statusMessage: 'User not found' })
     }
 
-    // If email is being changed, check for uniqueness
-    if (input.email && input.email.toLowerCase() !== user.email) {
-      const existingUser = await usersItemService.findOne({
-        email: input.email.toLowerCase(),
-      })
-
-      if (existingUser && existingUser.id !== userId) {
-        throw createError({ statusCode: 409, statusMessage: 'Email already in use' })
-      }
-    }
-
-    const updateData: Partial<{ name: string | null, email: string }> = {}
+    const updateData: Partial<{ name: string | null }> = {}
 
     if (input.name !== undefined) {
       updateData.name = input.name || null
-    }
-
-    if (input.email) {
-      updateData.email = input.email.toLowerCase()
     }
 
     const updatedUser = await usersItemService.update(userId, updateData)
@@ -91,6 +94,147 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
     }
+  }
+
+  /**
+   * Request email change - sends verification to NEW email address
+   */
+  const requestEmailChange = async (
+    userId: string,
+    input: RequestEmailChangeInput,
+  ): Promise<{ success: boolean, message: string }> => {
+    const user = await usersItemService.readOne(userId)
+
+    if (!user) {
+      throw createError({ statusCode: 404, statusMessage: 'User not found' })
+    }
+
+    const newEmail = input.newEmail.toLowerCase().trim()
+
+    // Check if new email is same as current
+    if (newEmail === user.email) {
+      throw createError({ statusCode: 400, statusMessage: 'New email must be different from current email' })
+    }
+
+    // Check if new email is already in use
+    const existingUser = await usersItemService.findOne({ email: newEmail })
+    if (existingUser) {
+      throw createError({ statusCode: 409, statusMessage: 'Email already in use' })
+    }
+
+    // Delete any existing pending email changes for this user
+    await db.delete(pendingEmailChangesTable).where(eq(pendingEmailChangesTable.userId, userId))
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + EMAIL_CHANGE_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000)
+
+    // Create pending email change
+    await pendingEmailChangesItemService.create({
+      userId,
+      newEmail,
+      token,
+      expiresAt,
+    })
+
+    // Send confirmation email to NEW email address
+    const confirmationLink = `${config.site.url}/auth/confirm-email?token=${token}`
+
+    await emailService.sendEmailChangeConfirmation(newEmail, {
+      userName: user.name || undefined,
+      confirmationLink,
+      expiresInHours: EMAIL_CHANGE_TOKEN_EXPIRY_HOURS,
+    })
+
+    return {
+      success: true,
+      message: 'Verification email sent to your new email address',
+    }
+  }
+
+  /**
+   * Confirm email change with token
+   */
+  const confirmEmailChange = async (
+    token: string,
+  ): Promise<{ success: boolean, email: string }> => {
+    // Find pending change
+    const pendingChange = await pendingEmailChangesItemService.findOne({ token })
+
+    if (!pendingChange) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid or expired token' })
+    }
+
+    // Check if token has expired
+    if (new Date() > pendingChange.expiresAt) {
+      // Clean up expired token
+      await pendingEmailChangesItemService.delete(pendingChange.id)
+      throw createError({ statusCode: 400, statusMessage: 'Token has expired' })
+    }
+
+    // Check if new email is still available (could have been taken since request)
+    const existingUser = await usersItemService.findOne({ email: pendingChange.newEmail })
+    if (existingUser && existingUser.id !== pendingChange.userId) {
+      await pendingEmailChangesItemService.delete(pendingChange.id)
+      throw createError({ statusCode: 409, statusMessage: 'Email is no longer available' })
+    }
+
+    // Update user email and mark as verified
+    await usersItemService.update(pendingChange.userId, {
+      email: pendingChange.newEmail,
+      emailVerified: true,
+    })
+
+    // Delete pending change
+    await pendingEmailChangesItemService.delete(pendingChange.id)
+
+    return {
+      success: true,
+      email: pendingChange.newEmail,
+    }
+  }
+
+  /**
+   * Cancel pending email change
+   */
+  const cancelEmailChange = async (userId: string): Promise<{ success: boolean }> => {
+    await db.delete(pendingEmailChangesTable).where(eq(pendingEmailChangesTable.userId, userId))
+    return { success: true }
+  }
+
+  /**
+   * Get pending email change for user
+   */
+  const getPendingEmailChange = async (userId: string): Promise<PendingEmailChangeInfo | null> => {
+    const pendingChange = await pendingEmailChangesItemService.findOne({ userId })
+
+    if (!pendingChange) {
+      return null
+    }
+
+    // Check if expired
+    if (new Date() > pendingChange.expiresAt) {
+      // Clean up expired token
+      await pendingEmailChangesItemService.delete(pendingChange.id)
+      return null
+    }
+
+    return {
+      newEmail: pendingChange.newEmail,
+      expiresAt: pendingChange.expiresAt,
+    }
+  }
+
+  /**
+   * Cleanup expired pending email changes
+   */
+  const cleanupExpiredEmailChanges = async (): Promise<number> => {
+    const result = await db
+      .delete(pendingEmailChangesTable)
+      .where(lt(pendingEmailChangesTable.expiresAt, new Date()))
+      .returning()
+
+    return result.length
   }
 
   /**
@@ -128,6 +272,11 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     getProfile,
     updateProfile,
     changePassword,
+    requestEmailChange,
+    confirmEmailChange,
+    cancelEmailChange,
+    getPendingEmailChange,
+    cleanupExpiredEmailChanges,
   }
 }
 

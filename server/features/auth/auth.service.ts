@@ -4,7 +4,7 @@ import type { EventBus } from '../../infrastructure/events'
 import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
-import { and, eq, gt, lt } from 'drizzle-orm'
+import { and, desc, eq, gt, isNull, lt, ne } from 'drizzle-orm'
 import { ulid } from 'ulid'
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from '../../database/schema'
 import { config } from '../../utils/config'
@@ -20,6 +20,15 @@ export interface AuthServiceResult {
   user: Omit<User, 'passwordHash'>
   session: Session
   token: string
+}
+
+export interface SessionInfo {
+  id: string
+  userAgent: string | null
+  ipAddress: string | null
+  createdAt: Date
+  expiresAt: Date
+  isCurrent: boolean
 }
 
 export interface CreateAuthServiceDeps {
@@ -449,6 +458,71 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     return result.length
   }
 
+  /**
+   * Get all active sessions for a user
+   */
+  const getUserSessions = async (
+    userId: string,
+    currentSessionId: string,
+  ): Promise<SessionInfo[]> => {
+    const userSessions = await db
+      .select()
+      .from(sessions)
+      .where(and(
+        eq(sessions.userId, userId),
+        gt(sessions.expiresAt, new Date()),
+        isNull(sessions.impersonatingUserId), // Exclude impersonation sessions
+      ))
+      .orderBy(desc(sessions.createdAt))
+
+    return userSessions.map(session => ({
+      id: session.id,
+      userAgent: session.userAgent,
+      ipAddress: session.ipAddress,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+      isCurrent: session.id === currentSessionId,
+    }))
+  }
+
+  /**
+   * Invalidate all sessions except the current one
+   */
+  const invalidateOtherSessions = async (
+    userId: string,
+    currentSessionId: string,
+  ): Promise<number> => {
+    const result = await db
+      .delete(sessions)
+      .where(and(
+        eq(sessions.userId, userId),
+        ne(sessions.id, currentSessionId),
+        isNull(sessions.impersonatingUserId), // Don't delete impersonation sessions
+      ))
+      .returning()
+
+    return result.length
+  }
+
+  /**
+   * Invalidate a specific session by ID (for revoking individual sessions)
+   */
+  const invalidateSessionById = async (
+    userId: string,
+    sessionId: string,
+  ): Promise<boolean> => {
+    const result = await db
+      .delete(sessions)
+      .where(and(
+        eq(sessions.id, sessionId),
+        eq(sessions.userId, userId),
+        isNull(sessions.impersonatingUserId), // Don't delete impersonation sessions
+      ))
+      .returning()
+
+    return result.length > 0
+  }
+
   return {
     register,
     login,
@@ -465,6 +539,9 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     verifyEmail,
     resendVerificationEmail,
     cleanupExpiredVerificationTokens,
+    getUserSessions,
+    invalidateOtherSessions,
+    invalidateSessionById,
   }
 }
 

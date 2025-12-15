@@ -4,7 +4,6 @@ import { container } from '~~/server/utils/container'
 
 const updateProfileSchema = z.object({
   name: z.string().trim().max(100, 'Name must be 100 characters or less').optional(),
-  email: z.string().trim().email('Valid email is required').optional(),
 })
 
 export default defineEventHandler(async (event) => {

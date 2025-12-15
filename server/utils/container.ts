@@ -98,6 +98,9 @@ const getSessionsItemService = lazy(() =>
 const getPasswordResetTokensItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.passwordResetTokens, tableName: 'passwordResetTokens', eventBus: getEventBus() }),
 )
+const getPendingEmailChangesItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.pendingEmailChanges, tableName: 'pendingEmailChanges', eventBus: getEventBus() }),
+)
 const getRolesItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.roles, tableName: 'roles', eventBus: getEventBus() }),
 )
@@ -132,6 +135,9 @@ const getOrganisationMembersService = lazy(() =>
 const getProfileService = lazy(() =>
   createProfileService({
     usersItemService: getUsersItemService(),
+    pendingEmailChangesItemService: getPendingEmailChangesItemService(),
+    emailService: getEmailService(),
+    db: getDatabase('app'),
   }),
 )
 
@@ -179,6 +185,7 @@ export const container = {
     get teamMembers() { return getTeamMembersItemService() },
     get sessions() { return getSessionsItemService() },
     get passwordResetTokens() { return getPasswordResetTokensItemService() },
+    get pendingEmailChanges() { return getPendingEmailChangesItemService() },
     get roles() { return getRolesItemService() },
     get rolePermissions() { return getRolePermissionsItemService() },
     get userRoles() { return getUserRolesItemService() },

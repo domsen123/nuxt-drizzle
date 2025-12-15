@@ -60,3 +60,34 @@ export interface ResendVerificationResponse {
   success: boolean
   message: string
 }
+
+// Session management types
+export interface SessionInfo {
+  id: string
+  userAgent: string | null
+  ipAddress: string | null
+  createdAt: string
+  expiresAt: string
+  isCurrent: boolean
+}
+
+export interface SessionsResponse {
+  sessions: SessionInfo[]
+}
+
+export interface LogoutOtherSessionsResponse {
+  success: boolean
+  count: number
+  message: string
+}
+
+export interface RevokeSessionResponse {
+  success: boolean
+  message: string
+}
+
+export interface DeviceInfo {
+  browser: string
+  os: string
+  device: string
+}

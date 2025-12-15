@@ -2,7 +2,9 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { UserProfile } from '../types/profile.types'
 import * as z from 'zod'
-import { useUpdateProfile } from '../composables/useProfileMutations'
+import { usePendingEmailChange } from '../composables/usePendingEmailChange'
+import { useCancelEmailChange, useUpdateProfile } from '../composables/useProfileMutations'
+import EmailChangeForm from './EmailChangeForm.vue'
 
 const props = defineProps<{
   profile: UserProfile
@@ -16,19 +18,23 @@ const NAME_MAX_LENGTH = 100
 
 const schema = z.object({
   name: z.string().trim().max(NAME_MAX_LENGTH, `Name must be ${NAME_MAX_LENGTH} characters or less`).optional(),
-  email: z.string().trim().email('Valid email is required'),
 })
 
 type Schema = z.output<typeof schema>
 
 const state = reactive<Schema>({
   name: props.profile.name ?? '',
-  email: props.profile.email,
 })
 
 const { mutateAsync: updateProfile, asyncStatus, error } = useUpdateProfile()
+const { pending: pendingEmailChange } = usePendingEmailChange()
+const { mutateAsync: cancelEmailChange, asyncStatus: cancelStatus } = useCancelEmailChange()
 
 const isLoading = computed(() => asyncStatus.value === 'loading')
+const isCancelling = computed(() => cancelStatus.value === 'loading')
+
+// Modal state for email change
+const isEmailChangeModalOpen = ref(false)
 
 const apiError = computed(() => {
   const err = error.value as {
@@ -38,8 +44,6 @@ const apiError = computed(() => {
   } | null
   if (!err)
     return null
-  if (err.statusCode === 409)
-    return 'This email is already in use by another account.'
   return err.data?.statusMessage || err.message || 'An unexpected error occurred. Please try again.'
 })
 
@@ -51,6 +55,20 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   catch {
     // Error is captured in refs
   }
+}
+
+const onCancelEmailChange = async () => {
+  try {
+    await cancelEmailChange()
+  }
+  catch {
+    // Error handling
+  }
+}
+
+const formatExpiryTime = (expiresAt: string) => {
+  const date = new Date(expiresAt)
+  return date.toLocaleString()
 }
 </script>
 
@@ -120,23 +138,71 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
 
       <USeparator />
 
-      <!-- Email Field -->
-      <UFormField
-        name="email"
-        label="Email"
-        description="Your email address for login and notifications."
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <div class="w-full max-w-sm">
-          <UInput
-            v-model="state.email"
-            type="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-          />
+      <!-- Email Field (Read-only with change button) -->
+      <div class="flex max-sm:flex-col justify-between items-start gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-(--ui-text-highlighted)">Email</label>
+          </div>
+          <p class="text-sm text-(--ui-text-muted) mt-0.5">
+            Your email address for login and notifications.
+          </p>
         </div>
-      </UFormField>
+        <div class="w-full max-w-sm space-y-2">
+          <div class="flex items-center gap-2">
+            <UInput
+              :model-value="profile.email"
+              type="email"
+              disabled
+              class="flex-1"
+            />
+            <UButton
+              variant="soft"
+              @click="isEmailChangeModalOpen = true"
+            >
+              Change
+            </UButton>
+          </div>
+
+          <!-- Pending Email Change Alert -->
+          <UAlert
+            v-if="pendingEmailChange"
+            color="info"
+            variant="subtle"
+            icon="i-lucide-mail"
+            class="mt-2"
+          >
+            <template #title>
+              Email change pending
+            </template>
+            <template #description>
+              <p class="text-sm">
+                We sent a verification email to <strong>{{ pendingEmailChange.newEmail }}</strong>.
+                Please check your inbox and click the link to confirm your new email address.
+              </p>
+              <p class="text-xs text-(--ui-text-muted) mt-1">
+                Expires: {{ formatExpiryTime(pendingEmailChange.expiresAt) }}
+              </p>
+              <UButton
+                variant="link"
+                size="xs"
+                color="neutral"
+                :loading="isCancelling"
+                class="mt-2 -ml-2"
+                @click="onCancelEmailChange"
+              >
+                Cancel email change
+              </UButton>
+            </template>
+          </UAlert>
+        </div>
+      </div>
     </UPageCard>
+
+    <!-- Email Change Modal -->
+    <EmailChangeForm
+      v-model:open="isEmailChangeModalOpen"
+      :current-email="profile.email"
+    />
   </UForm>
 </template>

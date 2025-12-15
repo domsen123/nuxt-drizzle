@@ -6,6 +6,7 @@ export const ROUTES = {
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
     verifyEmail: '/auth/verify-email',
+    confirmEmail: '/auth/confirm-email',
   },
   legal: {
     termsOfService: '/terms-of-service',
