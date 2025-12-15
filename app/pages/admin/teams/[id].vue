@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import { useTeamById } from '~/features/teams'
+import { useAdminTeam } from '~/features/admin'
 
 definePageMeta({
   layout: 'admin',
@@ -8,12 +8,12 @@ definePageMeta({
 })
 
 const route = useRoute()
-const teamId = computed(() => route.params.teamId as string)
+const teamId = computed(() => route.params.id as string)
 
-const { team, status, error, refresh } = useTeamById(teamId)
+const { team, status, error, refresh } = useAdminTeam(teamId)
 
 // Provide team data to child pages
-provide('adminTeamById', {
+provide('adminTeam', {
   team,
   teamId,
   status,

@@ -1,7 +1,13 @@
 import type {
+  AddTeamMemberInput,
+  AdminEligibleMembersResponse,
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
+  AdminTeam,
+  AdminTeamMember,
+  AdminTeamMembersResponse,
+  AdminTeamResponse,
   AdminTeamsQueryParams,
   AdminTeamsResponse,
   AdminUserResponse,
@@ -9,7 +15,9 @@ import type {
   AdminUsersQueryParams,
   AdminUsersResponse,
   CreateOrganisationInput,
+  CreateTeamInput,
   UpdateOrganisationInput,
+  UpdateTeamInput,
   UpdateUserInput,
 } from '../types/admin.types'
 
@@ -64,7 +72,41 @@ export const useAdminApi = () => {
     getTeams: (params?: AdminTeamsQueryParams): Promise<AdminTeamsResponse> =>
       $api('/api/admin/teams', { query: params }),
 
+    getOrganisationTeams: (organisationId: string): Promise<{ teams: AdminTeam[], total: number }> =>
+      $api(`/api/admin/organisations/${organisationId}/teams`),
+
+    getTeam: (id: string): Promise<AdminTeamResponse> =>
+      $api(`/api/admin/teams/${id}`),
+
+    createTeam: (organisationId: string, data: CreateTeamInput): Promise<AdminTeamResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/teams`, {
+        method: 'POST',
+        body: data,
+      }),
+
+    updateTeam: (id: string, data: UpdateTeamInput): Promise<AdminTeamResponse> =>
+      $api(`/api/admin/teams/${id}`, {
+        method: 'PUT',
+        body: data,
+      }),
+
     deleteTeam: (id: string): Promise<{ success: boolean }> =>
       $api(`/api/admin/teams/${id}`, { method: 'DELETE' }),
+
+    // Team Members
+    getTeamMembers: (teamId: string): Promise<AdminTeamMembersResponse> =>
+      $api(`/api/admin/teams/${teamId}/members`),
+
+    addTeamMember: (teamId: string, data: AddTeamMemberInput): Promise<{ member: AdminTeamMember }> =>
+      $api(`/api/admin/teams/${teamId}/members`, {
+        method: 'POST',
+        body: data,
+      }),
+
+    removeTeamMember: (teamId: string, userId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/teams/${teamId}/members/${userId}`, { method: 'DELETE' }),
+
+    getTeamEligibleMembers: (teamId: string): Promise<AdminEligibleMembersResponse> =>
+      $api(`/api/admin/teams/${teamId}/eligible-members`),
   }
 }

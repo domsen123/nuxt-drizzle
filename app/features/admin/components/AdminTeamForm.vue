@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { Team, TeamWithOrganisation } from '../types/teams.types'
+import type { AdminTeam } from '../types/admin.types'
 import { z } from 'zod'
-import { useDeleteTeamById, useUpdateTeamById } from '../composables/useTeamMutationsById'
+import { useDeleteTeam, useUpdateTeam } from '../composables/useAdminTeamMutations'
 
 const props = defineProps<{
-  team: Team | TeamWithOrganisation
+  team: AdminTeam
 }>()
 
 const emit = defineEmits<{
-  success: [team: Team]
+  success: [team: AdminTeam]
   cancel: []
 }>()
 
@@ -34,8 +34,8 @@ watch(() => props.team, (newTeam) => {
 }, { deep: true })
 
 // Mutations
-const { mutateAsync: updateTeam, asyncStatus: updateStatus, error: updateError } = useUpdateTeamById()
-const { mutateAsync: deleteTeam, asyncStatus: deleteStatus, error: deleteError } = useDeleteTeamById()
+const { mutateAsync: updateTeam, asyncStatus: updateStatus, error: updateError } = useUpdateTeam()
+const { mutateAsync: deleteTeam, asyncStatus: deleteStatus, error: deleteError } = useDeleteTeam()
 
 const isLoading = computed(() =>
   updateStatus.value === 'loading' || deleteStatus.value === 'loading',
@@ -54,7 +54,7 @@ const apiError = computed(() => {
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   try {
-    const result = await updateTeam({ teamId: props.team.id, data: event.data })
+    const result = await updateTeam({ id: props.team.id, data: event.data })
     toast.add({ title: 'Team updated', color: 'success' })
     emit('success', result.team)
   }
@@ -65,7 +65,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
 
 const onDelete = async () => {
   try {
-    await deleteTeam({ teamId: props.team.id })
+    await deleteTeam(props.team.id)
     toast.add({ title: 'Team deleted', color: 'success' })
     router.push(ROUTES.admin.teams)
   }

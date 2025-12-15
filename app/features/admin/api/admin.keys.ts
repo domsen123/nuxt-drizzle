@@ -6,6 +6,7 @@ export const adminKeys = {
     ? [...adminKeys.all, 'organisations', params] as const
     : [...adminKeys.all, 'organisations'] as const,
   organisation: (id: string) => [...adminKeys.all, 'organisation', id] as const,
+  organisationTeams: (organisationId: string) => [...adminKeys.all, 'organisation', organisationId, 'teams'] as const,
   users: (params?: AdminUsersQueryParams) => params
     ? [...adminKeys.all, 'users', params] as const
     : [...adminKeys.all, 'users'] as const,
@@ -14,4 +15,7 @@ export const adminKeys = {
   teams: (params?: AdminTeamsQueryParams) => params
     ? [...adminKeys.all, 'teams', params] as const
     : [...adminKeys.all, 'teams'] as const,
+  team: (id: string) => [...adminKeys.all, 'team', id] as const,
+  teamMembers: (teamId: string) => [...adminKeys.all, 'team', teamId, 'members'] as const,
+  teamEligibleMembers: (teamId: string) => [...adminKeys.all, 'team', teamId, 'eligible-members'] as const,
 }

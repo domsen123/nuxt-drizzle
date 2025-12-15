@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { Team } from '../types/teams.types'
+import type { AdminTeam } from '../types/admin.types'
 import * as z from 'zod'
 
 const props = defineProps<{
-  team?: Team | null
+  team?: AdminTeam | null
   isLoading?: boolean
 }>()
 

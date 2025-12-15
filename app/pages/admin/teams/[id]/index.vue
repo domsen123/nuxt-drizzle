@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import type { TeamWithOrganisation } from '~/features/teams'
-import TeamGeneralForm from '~/features/teams/components/TeamGeneralForm.vue'
+import type { AdminTeam } from '~/features/admin'
+import { useAdminTeam } from '~/features/admin'
+import AdminTeamForm from '~/features/admin/components/AdminTeamForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 // Try to inject team data from parent layout, with fallback for SSR
 const injected = inject<{
-  team: Ref<TeamWithOrganisation | null>
+  team: Ref<AdminTeam | null>
   teamId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-} | null>('adminTeamById', null)
+} | null>('adminTeam', null)
 
 // Fallback: fetch data directly if inject fails during SSR
-const teamId = computed(() => route.params.teamId as string)
-const fallbackQuery = injected ? null : useTeamById(teamId)
+const teamId = computed(() => route.params.id as string)
+const fallbackQuery = injected ? null : useAdminTeam(teamId)
 
 // Use injected data if available, otherwise use fallback
 const team = computed(() => injected?.team.value ?? fallbackQuery?.team.value ?? null)
@@ -55,7 +56,7 @@ const onCancel = () => {
       icon="i-lucide-alert-circle"
     />
 
-    <TeamGeneralForm
+    <AdminTeamForm
       v-else-if="team"
       :team="team"
       @success="onSuccess"

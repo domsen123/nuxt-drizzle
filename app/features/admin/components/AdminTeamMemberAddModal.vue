@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { TeamMemberUser } from '../types/teams.types'
+import type { AdminTeamMemberUser } from '../types/admin.types'
 
 const props = defineProps<{
-  eligibleMembers: TeamMemberUser[]
+  eligibleMembers: AdminTeamMemberUser[]
   isLoading?: boolean
 }>()
 

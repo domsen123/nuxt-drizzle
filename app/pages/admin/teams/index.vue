@@ -59,7 +59,7 @@ useSeoMeta({
   title: 'Teams - Admin',
 })
 
-const handleDelete = async (team: AdminTeam) => {
+const handleDelete = async (team: AdminTeam | Omit<AdminTeam, 'organisation'>) => {
   try {
     await deleteTeam(team.id)
     toast.add({

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { TeamMember } from '../types/teams.types'
+import type { AdminTeamMember } from '../types/admin.types'
 
 const props = defineProps<{
-  members: TeamMember[]
+  members: AdminTeamMember[]
   isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
-  remove: [member: TeamMember]
+  remove: [member: AdminTeamMember]
 }>()
 
 const search = ref('')
@@ -24,7 +24,7 @@ const filteredMembers = computed(() => {
   )
 })
 
-const getActionsMenu = (member: TeamMember): DropdownMenuItem[] => [
+const getActionsMenu = (member: AdminTeamMember): DropdownMenuItem[] => [
   {
     label: 'Remove from team',
     icon: 'i-lucide-user-minus',

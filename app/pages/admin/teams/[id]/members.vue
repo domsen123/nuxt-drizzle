@@ -1,41 +1,43 @@
 <script setup lang="ts">
-import type { TeamMember, TeamWithOrganisation } from '~/features/teams'
+import type { AdminTeam, AdminTeamMember } from '~/features/admin'
 import {
-  useAddTeamMemberById,
-  useEligibleMembersById,
-  useRemoveTeamMemberById,
-  useTeamMembersById,
-} from '~/features/teams'
-import TeamMemberAddModal from '~/features/teams/components/TeamMemberAddModal.vue'
-import TeamMembersList from '~/features/teams/components/TeamMembersList.vue'
+  useAddTeamMember,
+  useAdminTeam,
+  useAdminTeamEligibleMembers,
+  useAdminTeamMembers,
+  useRemoveTeamMember,
+} from '~/features/admin'
+import AdminTeamMemberAddModal from '~/features/admin/components/AdminTeamMemberAddModal.vue'
+import AdminTeamMemberList from '~/features/admin/components/AdminTeamMemberList.vue'
 
 const route = useRoute()
 const toast = useToast()
 
 // Try to inject team data from parent layout, with fallback for SSR
 const injected = inject<{
-  team: Ref<TeamWithOrganisation | null>
+  team: Ref<AdminTeam | null>
   teamId: ComputedRef<string>
   status: Ref<string>
   error: Ref<Error | null>
   refresh: () => void
-} | null>('adminTeamById', null)
+} | null>('adminTeam', null)
 
 // Fallback: compute teamId from route if inject fails during SSR
-const teamId = computed(() => injected?.teamId.value ?? (route.params.teamId as string))
+const teamId = computed(() => injected?.teamId.value ?? (route.params.id as string))
 
-// Use injected team if available
-const team = computed(() => injected?.team.value ?? null)
+// Use injected team if available, or fetch it
+const fallbackTeamQuery = injected ? null : useAdminTeam(teamId)
+const team = computed(() => injected?.team.value ?? fallbackTeamQuery?.team.value ?? null)
 
 // Fetch team members
-const { members, total, status: membersStatus, error: membersError, refresh } = useTeamMembersById(teamId)
+const { members, total, status: membersStatus, error: membersError, refresh } = useAdminTeamMembers(teamId)
 
 // Fetch eligible members
-const { eligibleMembers } = useEligibleMembersById(teamId)
+const { members: eligibleMembers } = useAdminTeamEligibleMembers(teamId)
 
 // Mutations
-const { mutateAsync: addMember, asyncStatus: addStatus } = useAddTeamMemberById()
-const { mutateAsync: removeMember } = useRemoveTeamMemberById()
+const { mutateAsync: addMember, asyncStatus: addStatus } = useAddTeamMember()
+const { mutateAsync: removeMember } = useRemoveTeamMember()
 
 const isLoading = computed(() => membersStatus.value === 'pending')
 const isAdding = computed(() => addStatus.value === 'loading')
@@ -74,7 +76,7 @@ const handleAddMember = async (data: { userId: string }) => {
   }
 }
 
-const handleRemoveMember = async (member: TeamMember) => {
+const handleRemoveMember = async (member: AdminTeamMember) => {
   try {
     await removeMember({
       teamId: teamId.value,
@@ -136,14 +138,14 @@ const handleRemoveMember = async (member: TeamMember) => {
       class="mb-4"
     />
 
-    <TeamMembersList
+    <AdminTeamMemberList
       :members="members"
       :is-loading="isLoading"
       @remove="handleRemoveMember"
     />
   </div>
 
-  <TeamMemberAddModal
+  <AdminTeamMemberAddModal
     v-model:open="isAddModalOpen"
     :eligible-members="eligibleMembers"
     :is-loading="isAdding"

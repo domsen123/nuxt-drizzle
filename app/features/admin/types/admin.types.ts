@@ -108,3 +108,52 @@ export interface AdminUserRole {
 export interface AdminUserRolesResponse {
   roles: AdminUserRole[]
 }
+
+// Team response type (single team)
+export interface AdminTeamResponse {
+  team: AdminTeam
+}
+
+// Team member types
+export interface AdminTeamMemberUser {
+  id: string
+  email: string
+  name: string | null
+}
+
+export interface AdminTeamMemberRole {
+  id: string
+  name: string
+}
+
+export interface AdminTeamMember {
+  id: string
+  teamId: string
+  userId: string
+  role: AdminTeamMemberRole | null
+  createdAt: string
+  updatedAt: string
+  user: AdminTeamMemberUser
+}
+
+export interface AdminTeamMembersResponse {
+  members: AdminTeamMember[]
+  total: number
+}
+
+export interface AdminEligibleMembersResponse {
+  members: AdminTeamMemberUser[]
+}
+
+// Team input types
+export interface CreateTeamInput {
+  name: string
+}
+
+export interface UpdateTeamInput {
+  name: string
+}
+
+export interface AddTeamMemberInput {
+  userId: string
+}

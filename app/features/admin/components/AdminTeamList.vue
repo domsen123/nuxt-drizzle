@@ -2,22 +2,25 @@
 import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import type { AdminTeam } from '../types/admin.types'
 
+// Support teams with or without organisation nested (for global vs org-scoped lists)
+type TeamItem = AdminTeam | Omit<AdminTeam, 'organisation'>
+
 defineProps<{
-  teams: AdminTeam[]
+  teams: TeamItem[]
   loading?: boolean
 }>()
 
 const emit = defineEmits<{
-  delete: [team: AdminTeam]
+  delete: [team: TeamItem]
 }>()
 
 const router = useRouter()
 
-const onSelect = (_e: Event, row: TableRow<AdminTeam>) => {
+const onSelect = (_e: Event, row: TableRow<TeamItem>) => {
   router.push(ROUTES.admin.team(row.original.id))
 }
 
-const columns: TableColumn<AdminTeam>[] = [
+const columns: TableColumn<TeamItem>[] = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'createdAt', header: 'Created' },
   { id: 'actions' },
@@ -31,7 +34,11 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getActionsMenu = (team: AdminTeam): DropdownMenuItem[][] => [
+const hasOrganisation = (team: TeamItem): team is AdminTeam => {
+  return 'organisation' in team && !!team.organisation
+}
+
+const getActionsMenu = (team: TeamItem): DropdownMenuItem[][] => [
   [
     {
       label: 'View details',
@@ -76,7 +83,7 @@ const getActionsMenu = (team: AdminTeam): DropdownMenuItem[][] => [
             <p class="text-highlighted font-medium">
               {{ row.original.name }}
             </p>
-            <p class="text-muted text-xs">
+            <p v-if="hasOrganisation(row.original)" class="text-muted text-xs">
               {{ row.original.organisation.name }}
             </p>
           </div>

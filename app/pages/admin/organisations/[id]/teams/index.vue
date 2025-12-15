@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import type { AdminOrganisation } from '~/features/admin'
-import type { Team } from '~/features/teams'
+import type { AdminOrganisation, AdminTeam } from '~/features/admin'
 import {
   useAdminOrganisationTeams,
   useCreateTeam,
-  useDeleteTeamById,
-  useUpdateTeamById,
-} from '~/features/teams'
-import TeamFormModal from '~/features/teams/components/TeamFormModal.vue'
-import TeamsList from '~/features/teams/components/TeamsList.vue'
+  useDeleteTeam,
+  useUpdateTeam,
+} from '~/features/admin'
+import AdminTeamFormModal from '~/features/admin/components/AdminTeamFormModal.vue'
+import AdminTeamList from '~/features/admin/components/AdminTeamList.vue'
 
 const toast = useToast()
 
@@ -26,15 +25,15 @@ const { teams, total, status: teamsStatus, error: teamsError } = useAdminOrganis
 
 // Mutations
 const { mutateAsync: createTeam, asyncStatus: createStatus } = useCreateTeam()
-const { mutateAsync: updateTeam, asyncStatus: updateStatus } = useUpdateTeamById()
-const { mutateAsync: deleteTeam } = useDeleteTeamById()
+const { mutateAsync: updateTeam, asyncStatus: updateStatus } = useUpdateTeam()
+const { mutateAsync: deleteTeam } = useDeleteTeam()
 
 const isLoading = computed(() => teamsStatus.value === 'pending')
 const isMutating = computed(() => createStatus.value === 'loading' || updateStatus.value === 'loading')
 
 // Modal state
 const isFormModalOpen = ref(false)
-const editingTeam = ref<Team | null>(null)
+const editingTeam = ref<AdminTeam | null>(null)
 
 useSeoMeta({
   title: () => organisation.value
@@ -48,16 +47,11 @@ const handleCreate = () => {
   isFormModalOpen.value = true
 }
 
-const handleEdit = (team: Team) => {
-  editingTeam.value = team
-  isFormModalOpen.value = true
-}
-
 const handleSubmit = async (data: { name: string }) => {
   try {
     if (editingTeam.value) {
       await updateTeam({
-        teamId: editingTeam.value.id,
+        id: editingTeam.value.id,
         data,
       })
       toast.add({
@@ -93,9 +87,9 @@ const handleSubmit = async (data: { name: string }) => {
   }
 }
 
-const handleDelete = async (team: Team) => {
+const handleDelete = async (team: AdminTeam | Omit<AdminTeam, 'organisation'>) => {
   try {
-    await deleteTeam({ teamId: team.id })
+    await deleteTeam(team.id)
     toast.add({
       title: 'Team deleted',
       description: `${team.name} has been deleted.`,
@@ -146,17 +140,15 @@ const handleDelete = async (team: Team) => {
       <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-muted" />
     </div>
 
-    <TeamsList
+    <AdminTeamList
       v-else
       :teams="teams"
-      :organisation-id="organisationId"
-      :is-loading="isLoading"
-      @edit="handleEdit"
+      :loading="isLoading"
       @delete="handleDelete"
     />
   </div>
 
-  <TeamFormModal
+  <AdminTeamFormModal
     v-model:open="isFormModalOpen"
     :team="editingTeam"
     :is-loading="isMutating"
