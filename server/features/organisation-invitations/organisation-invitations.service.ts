@@ -229,11 +229,109 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     return expired.length
   }
 
+  /**
+   * List all invitations for an organisation (including expired)
+   */
+  const listByOrganisation = async (organisationId: string) => {
+    const invitations = await organisationInvitationsItemService.findMany({
+      filter: { organisationId: { _eq: organisationId } },
+      sort: ['-createdAt'],
+    })
+
+    // Fetch related data for enrichment
+    const roleIds = [...new Set(invitations.map(inv => inv.roleId))]
+    const inviterIds = [...new Set(invitations.map(inv => inv.invitedByUserId))]
+
+    const [rolesData, usersData] = await Promise.all([
+      roleIds.length > 0
+        ? rolesItemService.findMany({ filter: { id: { _in: roleIds } } })
+        : [],
+      inviterIds.length > 0
+        ? usersItemService.findMany({ filter: { id: { _in: inviterIds } } })
+        : [],
+    ])
+
+    const rolesMap = new Map(rolesData.map(r => [r.id, r]))
+    const usersMap = new Map(usersData.map(u => [u.id, u]))
+
+    const now = new Date()
+    const enriched = invitations.map(inv => ({
+      id: inv.id,
+      email: inv.email,
+      role: rolesMap.get(inv.roleId)
+        ? { id: inv.roleId, name: rolesMap.get(inv.roleId)!.name }
+        : null,
+      invitedBy: usersMap.get(inv.invitedByUserId)
+        ? { id: inv.invitedByUserId, name: usersMap.get(inv.invitedByUserId)!.name }
+        : null,
+      expiresAt: inv.expiresAt,
+      createdAt: inv.createdAt,
+      isExpired: new Date(inv.expiresAt) < now,
+    }))
+
+    return { invitations: enriched, total: enriched.length }
+  }
+
+  /**
+   * Revoke/cancel an invitation
+   */
+  const revokeInvitation = async (invitationId: string): Promise<{ success: boolean }> => {
+    const invitation = await organisationInvitationsItemService.readOne(invitationId)
+    if (!invitation) {
+      throw createError({ statusCode: 404, statusMessage: 'Invitation not found' })
+    }
+
+    await organisationInvitationsItemService.delete(invitationId)
+    console.log(`[Organisation Invitation] Invitation ${invitationId} revoked`)
+
+    return { success: true }
+  }
+
+  /**
+   * Resend an invitation email (only for non-expired invitations)
+   */
+  const resendInvitation = async (invitationId: string): Promise<{ success: boolean }> => {
+    const invitation = await organisationInvitationsItemService.readOne(invitationId)
+    if (!invitation) {
+      throw createError({ statusCode: 404, statusMessage: 'Invitation not found' })
+    }
+
+    if (new Date(invitation.expiresAt) < new Date()) {
+      throw createError({ statusCode: 400, statusMessage: 'Cannot resend expired invitation' })
+    }
+
+    const org = await organisationsItemService.readOne(invitation.organisationId)
+    if (!org) {
+      throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+    }
+
+    const inviter = await usersItemService.readOne(invitation.invitedByUserId)
+    const acceptLink = `${config.site.url}/auth/accept-invitation?token=${invitation.token}`
+
+    const result = await emailService.sendOrganisationInvitation(invitation.email, {
+      organisationName: org.name,
+      inviterName: inviter?.name ?? undefined,
+      acceptLink,
+      expiresInDays: Math.ceil((new Date(invitation.expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)),
+    })
+
+    if (!result.success) {
+      throw createError({ statusCode: 500, statusMessage: 'Failed to send invitation email' })
+    }
+
+    console.log(`[Organisation Invitation] Invitation resent to ${invitation.email}`)
+
+    return { success: true }
+  }
+
   return {
     createInvitation,
     validateInvitation,
     acceptInvitation,
     cleanupExpiredInvitations,
+    listByOrganisation,
+    revokeInvitation,
+    resendInvitation,
   }
 }
 

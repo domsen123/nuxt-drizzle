@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { AdminOrganisation } from '~/features/admin'
+import type { OrganisationInvitation } from '~/features/organisation-invitations'
 import type { OrganisationMember } from '~/features/organisation-members'
+import {
+  useAdminOrganisationInvitations,
+  useResendOrganisationInvitation,
+  useRevokeOrganisationInvitation,
+} from '~/features/organisation-invitations'
+import OrganisationInvitationsList from '~/features/organisation-invitations/components/OrganisationInvitationsList.vue'
 import {
   useAdminOrganisationMembers,
   useInviteOrganisationMember,
@@ -35,14 +42,20 @@ const { members, total, status: membersStatus, error: membersError, refresh } = 
 // Fetch roles
 const { roles } = useOrganisationRoles(organisationId)
 
+// Fetch invitations
+const { invitations, status: invitationsStatus, refresh: refreshInvitations } = useAdminOrganisationInvitations(organisationId)
+
 // Mutations
 const { mutateAsync: updateRole, asyncStatus: updateStatus } = useUpdateOrganisationMemberRole()
 const { mutateAsync: removeMember } = useRemoveOrganisationMember()
 const { mutateAsync: inviteMember, asyncStatus: inviteStatus } = useInviteOrganisationMember()
+const { mutateAsync: resendInvitation } = useResendOrganisationInvitation()
+const { mutateAsync: revokeInvitation } = useRevokeOrganisationInvitation()
 
 const isLoading = computed(() => membersStatus.value === 'pending')
 const isUpdating = computed(() => updateStatus.value === 'loading')
 const isInviting = computed(() => inviteStatus.value === 'loading')
+const isInvitationsLoading = computed(() => invitationsStatus.value === 'pending')
 
 // Invite modal state
 const isInviteModalOpen = ref(false)
@@ -118,6 +131,7 @@ const handleInvite = async (data: { email: string, roleId: string }) => {
         icon: 'i-lucide-mail',
         color: 'success',
       })
+      refreshInvitations()
     }
     else {
       toast.add({
@@ -138,6 +152,59 @@ const handleInvite = async (data: { email: string, roleId: string }) => {
     })
   }
 }
+
+const handleResendInvitation = async (invitation: OrganisationInvitation) => {
+  try {
+    await resendInvitation({
+      organisationId: organisationId.value,
+      invitationId: invitation.id,
+    })
+    toast.add({
+      title: 'Invitation resent',
+      description: `Invitation email has been resent to ${invitation.email}.`,
+      icon: 'i-lucide-mail',
+      color: 'success',
+    })
+  }
+  catch (err) {
+    const message = (err as Error).message || 'Failed to resend invitation'
+    toast.add({
+      title: 'Error',
+      description: message,
+      icon: 'i-lucide-alert-circle',
+      color: 'error',
+    })
+  }
+}
+
+const handleRevokeInvitation = async (invitation: OrganisationInvitation) => {
+  try {
+    await revokeInvitation({
+      organisationId: organisationId.value,
+      invitationId: invitation.id,
+    })
+    toast.add({
+      title: 'Invitation revoked',
+      description: `Invitation to ${invitation.email} has been revoked.`,
+      icon: 'i-lucide-check',
+      color: 'success',
+    })
+  }
+  catch (err) {
+    const message = (err as Error).message || 'Failed to revoke invitation'
+    toast.add({
+      title: 'Error',
+      description: message,
+      icon: 'i-lucide-alert-circle',
+      color: 'error',
+    })
+  }
+}
+
+const handleRefresh = () => {
+  refresh()
+  refreshInvitations()
+}
 </script>
 
 <template>
@@ -157,7 +224,7 @@ const handleInvite = async (data: { email: string, roleId: string }) => {
           color="neutral"
           variant="ghost"
           :loading="isLoading"
-          @click="refresh()"
+          @click="handleRefresh()"
         />
         <UButton
           icon="i-lucide-user-plus"
@@ -180,14 +247,22 @@ const handleInvite = async (data: { email: string, roleId: string }) => {
       <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-muted" />
     </div>
 
-    <OrganisationMembersList
-      v-else
-      :members="members"
-      :roles="roles"
-      :is-updating="isUpdating"
-      @update:role="handleUpdateRole"
-      @remove="handleRemoveMember"
-    />
+    <div v-else class="space-y-6">
+      <OrganisationMembersList
+        :members="members"
+        :roles="roles"
+        :is-updating="isUpdating"
+        @update:role="handleUpdateRole"
+        @remove="handleRemoveMember"
+      />
+
+      <OrganisationInvitationsList
+        :invitations="invitations"
+        :is-loading="isInvitationsLoading"
+        @resend="handleResendInvitation"
+        @revoke="handleRevokeInvitation"
+      />
+    </div>
   </div>
 
   <OrganisationMemberInviteModal
