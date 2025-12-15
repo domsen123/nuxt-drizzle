@@ -4,6 +4,7 @@ import type {
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
+  AdminStatsResponse,
   AdminTeam,
   AdminTeamMember,
   AdminTeamMembersResponse,
@@ -29,6 +30,11 @@ export const useAdminApi = () => {
   const { $api } = useNuxtApp()
 
   return {
+    // Stats
+    getStats: (): Promise<AdminStatsResponse> =>
+      $api('/api/admin/stats'),
+
+    // Organisations
     getOrganisations: (params?: AdminOrganisationsQueryParams): Promise<AdminOrganisationsResponse> =>
       $api('/api/admin/organisations', { query: params }),
 

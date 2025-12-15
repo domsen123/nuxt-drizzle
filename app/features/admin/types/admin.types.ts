@@ -1,3 +1,13 @@
+// Stats types
+export interface AdminStatsResponse {
+  totalUsers: number
+  verifiedUsers: number
+  unverifiedUsers: number
+  totalOrganisations: number
+  totalTeams: number
+  activeSessions: number
+}
+
 export interface AdminOrganisation {
   id: string
   name: string

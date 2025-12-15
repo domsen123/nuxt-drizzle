@@ -89,6 +89,22 @@ const seedMemberships = async (
 
   const created = await container.items.organisationMembers.createMany(memberships)
   console.log(`[Dev Seed] Created ${created.length} organisation memberships`)
+
+  // Assign organisation "Member" role to all members
+  const orgMemberRole = await container.rbacService.getDefaultRole('organisation')
+  if (orgMemberRole) {
+    console.log('[Dev Seed] Assigning organisation Member roles...')
+    for (const membership of created) {
+      await container.rbacService.assignRole({
+        userId: membership.userId,
+        roleId: orgMemberRole.id,
+        scope: 'organisation',
+        scopeId: membership.organisationId,
+      })
+    }
+    console.log(`[Dev Seed] Assigned ${created.length} organisation Member roles`)
+  }
+
   return created
 }
 
@@ -154,6 +170,22 @@ const seedTeamMemberships = async (
 
   const created = await container.items.teamMembers.createMany(teamMemberships)
   console.log(`[Dev Seed] Created ${created.length} team memberships`)
+
+  // Assign team "Member" role to all team members
+  const teamMemberRole = await container.rbacService.getDefaultRole('team')
+  if (teamMemberRole) {
+    console.log('[Dev Seed] Assigning team Member roles...')
+    for (const membership of created) {
+      await container.rbacService.assignRole({
+        userId: membership.userId,
+        roleId: teamMemberRole.id,
+        scope: 'team',
+        scopeId: membership.teamId,
+      })
+    }
+    console.log(`[Dev Seed] Assigned ${created.length} team Member roles`)
+  }
+
   return created
 }
 

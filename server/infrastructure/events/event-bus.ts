@@ -1,3 +1,4 @@
+import type { Emitter } from 'mitt'
 import mitt from 'mitt'
 
 export interface CrudEventPayload<T = unknown> {
@@ -13,11 +14,19 @@ export interface CrudEventPayload<T = unknown> {
 
 export type CrudEventKey = `${string}:${'created' | 'updated' | 'deleted'}`
 
-export type EventBusEvents = {
-  [K in CrudEventKey]: CrudEventPayload
+// Domain Events
+export interface UserRegisteredPayload {
+  userId: string
+  email: string
+  timestamp: Date
 }
 
-export type EventBus = ReturnType<typeof mitt<EventBusEvents>>
+// All event types using Record for mitt compatibility
+export type EventBusEvents = Record<CrudEventKey, CrudEventPayload> & {
+  'auth:user-registered': UserRegisteredPayload
+}
+
+export type EventBus = Emitter<EventBusEvents>
 
 export const createEventBus = (): EventBus => mitt<EventBusEvents>()
 

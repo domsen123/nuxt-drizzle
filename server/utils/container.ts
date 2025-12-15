@@ -66,6 +66,7 @@ const getAuthService = lazy(() =>
   createAuthService({
     db: getDatabase('app'),
     emailService: getEmailService(),
+    eventBus: getEventBus(),
   }),
 )
 

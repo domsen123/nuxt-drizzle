@@ -2,6 +2,7 @@ import type { AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQu
 
 export const adminKeys = {
   all: ['admin'] as const,
+  stats: () => [...adminKeys.all, 'stats'] as const,
   organisations: (params?: AdminOrganisationsQueryParams) => params
     ? [...adminKeys.all, 'organisations', params] as const
     : [...adminKeys.all, 'organisations'] as const,

@@ -1,5 +1,6 @@
 import type { Session, User } from '../../database/schema'
 import type { DatabaseClient } from '../../infrastructure/database/client'
+import type { EventBus } from '../../infrastructure/events'
 import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
@@ -24,9 +25,10 @@ export interface AuthServiceResult {
 export interface CreateAuthServiceDeps {
   db: DatabaseClient
   emailService: EmailService
+  eventBus?: EventBus
 }
 
-export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) => {
+export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServiceDeps) => {
   const hashPassword = (password: string): Promise<string> => {
     return bcrypt.hash(password, BCRYPT_COST)
   }
@@ -166,6 +168,13 @@ export const createAuthService = ({ db, emailService }: CreateAuthServiceDeps) =
         statusMessage: 'Failed to create user',
       })
     }
+
+    // Emit user registered event for other features (e.g., RBAC role assignment)
+    eventBus?.emit('auth:user-registered', {
+      userId: user.id,
+      email: user.email,
+      timestamp: new Date(),
+    })
 
     const { session, token } = await createSession(user.id)
 
