@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Team, TeamWithOrganisation } from '~/features/teams'
-import { useAllTeams, useDeleteTeamById } from '~/features/teams'
-import TeamsList from '~/features/teams/components/TeamsList.vue'
+import type { AdminTeam } from '~/features/admin'
+import { useAdminTeams, useDeleteTeam } from '~/features/admin'
+import AdminTeamList from '~/features/admin/components/AdminTeamList.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -33,10 +33,10 @@ const allTeamsParams = computed(() => ({
 }))
 
 // Fetch all teams (optionally filtered by organisation)
-const { teams, total, status: teamsStatus, error: teamsError, refresh } = useAllTeams(allTeamsParams)
+const { teams, total, status: teamsStatus, error: teamsError, refresh } = useAdminTeams(allTeamsParams)
 
 // Mutations
-const { mutateAsync: deleteTeam } = useDeleteTeamById()
+const { mutateAsync: deleteTeam } = useDeleteTeam()
 
 const isLoading = computed(() => teamsStatus.value === 'pending')
 
@@ -59,9 +59,9 @@ useSeoMeta({
   title: 'Teams - Admin',
 })
 
-const handleDelete = async (team: Team | TeamWithOrganisation) => {
+const handleDelete = async (team: AdminTeam) => {
   try {
-    await deleteTeam({ teamId: team.id })
+    await deleteTeam(team.id)
     toast.add({
       title: 'Team deleted',
       description: `${team.name} has been deleted.`,
@@ -153,10 +153,9 @@ const handleDelete = async (team: Team | TeamWithOrganisation) => {
           class="mb-4"
         />
 
-        <TeamsList
+        <AdminTeamList
           :teams="teams"
-          :is-loading="isLoading"
-          show-organisation
+          :loading="isLoading"
           @delete="handleDelete"
         />
 

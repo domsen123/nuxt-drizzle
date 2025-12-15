@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AdminUser } from '~/features/admin'
 import AdminUserForm from '~/features/admin/components/AdminUserForm.vue'
+import AdminUserRoles from '~/features/admin/components/AdminUserRoles.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,12 +79,17 @@ const onDelete = async () => {
       icon="i-lucide-alert-circle"
     />
 
-    <AdminUserForm
-      v-else-if="user"
-      :user="user"
-      @success="onSuccess"
-      @cancel="onCancel"
-      @delete="onDelete"
-    />
+    <template v-else-if="user">
+      <AdminUserForm
+        :user="user"
+        @success="onSuccess"
+        @cancel="onCancel"
+        @delete="onDelete"
+      />
+
+      <USeparator class="my-6" />
+
+      <AdminUserRoles :user-id="userId" />
+    </template>
   </div>
 </template>

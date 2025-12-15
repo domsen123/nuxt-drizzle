@@ -3,15 +3,24 @@ export { adminKeys } from './api/admin.keys'
 export { useAdminOrganisation } from './composables/useAdminOrganisation'
 export { useCreateOrganisation, useUpdateOrganisation } from './composables/useAdminOrganisationMutations'
 export { useAdminOrganisations } from './composables/useAdminOrganisations'
+export { useDeleteTeam } from './composables/useAdminTeamMutations'
+export { useAdminTeams } from './composables/useAdminTeams'
 export { useAdminUser } from './composables/useAdminUser'
 export { useDeleteUser, useUpdateUser } from './composables/useAdminUserMutations'
+export { useAdminUserRoles } from './composables/useAdminUserRoles'
 export { useAdminUsers } from './composables/useAdminUsers'
 export type {
   AdminOrganisation,
   AdminOrganisationResponse,
   AdminOrganisationsResponse,
+  AdminTeam,
+  AdminTeamsQueryParams,
+  AdminTeamsResponse,
   AdminUser,
   AdminUserResponse,
+  AdminUserRole,
+  AdminUserRolePermission,
+  AdminUserRolesResponse,
   AdminUsersQueryParams,
   AdminUsersResponse,
   CreateOrganisationInput,

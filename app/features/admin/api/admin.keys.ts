@@ -1,4 +1,4 @@
-import type { AdminOrganisationsQueryParams, AdminUsersQueryParams } from '../types/admin.types'
+import type { AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQueryParams } from '../types/admin.types'
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -10,4 +10,8 @@ export const adminKeys = {
     ? [...adminKeys.all, 'users', params] as const
     : [...adminKeys.all, 'users'] as const,
   user: (id: string) => [...adminKeys.all, 'user', id] as const,
+  userRoles: (userId: string) => [...adminKeys.all, 'user', userId, 'roles'] as const,
+  teams: (params?: AdminTeamsQueryParams) => params
+    ? [...adminKeys.all, 'teams', params] as const
+    : [...adminKeys.all, 'teams'] as const,
 }

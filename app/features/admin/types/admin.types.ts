@@ -63,3 +63,48 @@ export interface AdminOrganisationsQueryParams {
   limit?: number
   offset?: number
 }
+
+// Team types
+export interface AdminTeam {
+  id: string
+  name: string
+  organisationId: string
+  createdAt: string
+  updatedAt: string
+  organisation: {
+    id: string
+    name: string
+  }
+}
+
+export interface AdminTeamsResponse {
+  teams: AdminTeam[]
+  total: number
+}
+
+export interface AdminTeamsQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+  organisationId?: string
+}
+
+// User roles types
+export interface AdminUserRolePermission {
+  permission: string
+}
+
+export interface AdminUserRole {
+  id: string
+  name: string
+  description: string | null
+  scope: string
+  isSystem: boolean
+  isDefault: boolean
+  permissions: AdminUserRolePermission[]
+}
+
+export interface AdminUserRolesResponse {
+  roles: AdminUserRole[]
+}

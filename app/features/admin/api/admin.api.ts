@@ -2,7 +2,10 @@ import type {
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
+  AdminTeamsQueryParams,
+  AdminTeamsResponse,
   AdminUserResponse,
+  AdminUserRolesResponse,
   AdminUsersQueryParams,
   AdminUsersResponse,
   CreateOrganisationInput,
@@ -53,5 +56,15 @@ export const useAdminApi = () => {
       $api(`/api/admin/users/${id}`, {
         method: 'DELETE',
       }),
+
+    getUserRoles: (userId: string): Promise<AdminUserRolesResponse> =>
+      $api(`/api/admin/users/${userId}/roles`),
+
+    // Teams
+    getTeams: (params?: AdminTeamsQueryParams): Promise<AdminTeamsResponse> =>
+      $api('/api/admin/teams', { query: params }),
+
+    deleteTeam: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/teams/${id}`, { method: 'DELETE' }),
   }
 }
