@@ -35,6 +35,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-07-11',
 
   nitro: {
+    experimental: {
+      tasks: true,
+    },
+    scheduledTasks: {
+      // Run cleanup daily at 3:00 AM
+      '0 3 * * *': ['cleanup:tokens'],
+    },
     prerender: {
       routes: [
         '/',
