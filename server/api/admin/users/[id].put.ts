@@ -4,7 +4,7 @@ import { container } from '~~/server/utils/container'
 
 const schema = z.object({
   name: z.string().trim().min(1).max(100).nullable(),
-  email: z.string().trim().email().max(255),
+  email: z.email().trim().max(255),
   emailVerified: z.boolean(),
 })
 
