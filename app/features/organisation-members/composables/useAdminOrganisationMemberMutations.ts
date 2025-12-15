@@ -1,10 +1,11 @@
 import type { AddMemberInput, InviteMemberInput, UpdateMemberRoleInput } from '../types/organisation-members.types'
 import { useMutation, useQueryCache } from '@pinia/colada'
-import { organisationMembersApi } from '../api/organisation-members.api'
+import { useOrganisationMembersApi } from '../api/organisation-members.api'
 import { organisationMembersKeys } from '../api/organisation-members.keys'
 
 export const useAddOrganisationMember = () => {
   const queryCache = useQueryCache()
+  const organisationMembersApi = useOrganisationMembersApi()
 
   return useMutation({
     mutation: ({ organisationId, data }: { organisationId: string, data: AddMemberInput }) =>
@@ -17,6 +18,7 @@ export const useAddOrganisationMember = () => {
 
 export const useUpdateOrganisationMemberRole = () => {
   const queryCache = useQueryCache()
+  const organisationMembersApi = useOrganisationMembersApi()
 
   return useMutation({
     mutation: ({ organisationId, userId, data }: { organisationId: string, userId: string, data: UpdateMemberRoleInput }) =>
@@ -29,6 +31,7 @@ export const useUpdateOrganisationMemberRole = () => {
 
 export const useRemoveOrganisationMember = () => {
   const queryCache = useQueryCache()
+  const organisationMembersApi = useOrganisationMembersApi()
 
   return useMutation({
     mutation: ({ organisationId, userId }: { organisationId: string, userId: string }) =>
@@ -41,6 +44,7 @@ export const useRemoveOrganisationMember = () => {
 
 export const useInviteOrganisationMember = () => {
   const queryCache = useQueryCache()
+  const organisationMembersApi = useOrganisationMembersApi()
 
   return useMutation({
     mutation: ({ organisationId, data }: { organisationId: string, data: InviteMemberInput }) =>

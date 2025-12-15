@@ -1,10 +1,11 @@
 import type { AddTeamMemberInput } from '../types/teams.types'
 import { useMutation, useQueryCache } from '@pinia/colada'
-import { teamsApi } from '../api/teams.api'
+import { useTeamsApi } from '../api/teams.api'
 import { teamsKeys } from '../api/teams.keys'
 
 export const useAddTeamMemberById = () => {
   const queryCache = useQueryCache()
+  const teamsApi = useTeamsApi()
 
   return useMutation({
     mutation: ({ teamId, data }: { teamId: string, data: AddTeamMemberInput }) =>
@@ -18,6 +19,7 @@ export const useAddTeamMemberById = () => {
 
 export const useRemoveTeamMemberById = () => {
   const queryCache = useQueryCache()
+  const teamsApi = useTeamsApi()
 
   return useMutation({
     mutation: ({ teamId, userId }: { teamId: string, userId: string }) =>

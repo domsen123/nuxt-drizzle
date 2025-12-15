@@ -19,40 +19,44 @@ export interface AllTeamsQueryParams {
   offset?: number
 }
 
-export const teamsApi = {
-  // Org-scoped routes (for listing and creating teams within an organisation)
-  getTeams: (organisationId: string): Promise<TeamsResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/teams`),
+export const useTeamsApi = () => {
+  const { $api } = useNuxtApp()
 
-  createTeam: (organisationId: string, data: CreateTeamInput): Promise<TeamResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/teams`, {
-      method: 'POST',
-      body: data,
-    }),
+  return {
+    // Org-scoped routes (for listing and creating teams within an organisation)
+    getTeams: (organisationId: string): Promise<TeamsResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/teams`),
 
-  // Standalone Team Routes (for team detail pages)
-  getAllTeams: (params?: AllTeamsQueryParams): Promise<AllTeamsResponse> =>
-    $fetch('/api/admin/teams', { params }),
+    createTeam: (organisationId: string, data: CreateTeamInput): Promise<TeamResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/teams`, {
+        method: 'POST',
+        body: data,
+      }),
 
-  getTeamById: (teamId: string): Promise<TeamWithOrganisationResponse> =>
-    $fetch(`/api/admin/teams/${teamId}`),
+    // Standalone Team Routes (for team detail pages)
+    getAllTeams: (params?: AllTeamsQueryParams): Promise<AllTeamsResponse> =>
+      $api('/api/admin/teams', { params }),
 
-  updateTeamById: (teamId: string, data: UpdateTeamInput): Promise<TeamResponse> =>
-    $fetch(`/api/admin/teams/${teamId}`, { method: 'PUT', body: data }),
+    getTeamById: (teamId: string): Promise<TeamWithOrganisationResponse> =>
+      $api(`/api/admin/teams/${teamId}`),
 
-  deleteTeamById: (teamId: string): Promise<{ success: boolean }> =>
-    $fetch(`/api/admin/teams/${teamId}`, { method: 'DELETE' }),
+    updateTeamById: (teamId: string, data: UpdateTeamInput): Promise<TeamResponse> =>
+      $api(`/api/admin/teams/${teamId}`, { method: 'PUT', body: data }),
 
-  // Standalone Team Members Routes
-  getTeamMembersById: (teamId: string): Promise<TeamMembersResponse> =>
-    $fetch(`/api/admin/teams/${teamId}/members`),
+    deleteTeamById: (teamId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/teams/${teamId}`, { method: 'DELETE' }),
 
-  addTeamMemberById: (teamId: string, data: AddTeamMemberInput): Promise<TeamMemberResponse> =>
-    $fetch(`/api/admin/teams/${teamId}/members`, { method: 'POST', body: data }),
+    // Standalone Team Members Routes
+    getTeamMembersById: (teamId: string): Promise<TeamMembersResponse> =>
+      $api(`/api/admin/teams/${teamId}/members`),
 
-  removeTeamMemberById: (teamId: string, userId: string): Promise<{ success: boolean }> =>
-    $fetch(`/api/admin/teams/${teamId}/members/${userId}`, { method: 'DELETE' }),
+    addTeamMemberById: (teamId: string, data: AddTeamMemberInput): Promise<TeamMemberResponse> =>
+      $api(`/api/admin/teams/${teamId}/members`, { method: 'POST', body: data }),
 
-  getEligibleMembersById: (teamId: string): Promise<EligibleMembersResponse> =>
-    $fetch(`/api/admin/teams/${teamId}/eligible-members`),
+    removeTeamMemberById: (teamId: string, userId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/teams/${teamId}/members/${userId}`, { method: 'DELETE' }),
+
+    getEligibleMembersById: (teamId: string): Promise<EligibleMembersResponse> =>
+      $api(`/api/admin/teams/${teamId}/eligible-members`),
+  }
 }

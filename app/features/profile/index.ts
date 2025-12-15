@@ -1,5 +1,5 @@
 // API
-export { profileApi } from './api/profile.api'
+export { useProfileApi } from './api/profile.api'
 
 export { profileKeys } from './api/profile.keys'
 // Composables

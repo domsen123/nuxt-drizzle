@@ -8,38 +8,42 @@ import type {
   UpdateMemberRoleInput,
 } from '../types/organisation-members.types'
 
-export const organisationMembersApi = {
-  // Admin routes
-  getMembers: (organisationId: string): Promise<OrganisationMembersResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/members`),
+export const useOrganisationMembersApi = () => {
+  const { $api } = useNuxtApp()
 
-  addMember: (organisationId: string, data: AddMemberInput): Promise<OrganisationMemberResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/members`, {
-      method: 'POST',
-      body: data,
-    }),
+  return {
+    // Admin routes
+    getMembers: (organisationId: string): Promise<OrganisationMembersResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/members`),
 
-  updateMemberRole: (
-    organisationId: string,
-    userId: string,
-    data: UpdateMemberRoleInput,
-  ): Promise<OrganisationMemberResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/members/${userId}`, {
-      method: 'PUT',
-      body: data,
-    }),
+    addMember: (organisationId: string, data: AddMemberInput): Promise<OrganisationMemberResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/members`, {
+        method: 'POST',
+        body: data,
+      }),
 
-  removeMember: (organisationId: string, userId: string): Promise<{ success: boolean }> =>
-    $fetch(`/api/admin/organisations/${organisationId}/members/${userId}`, {
-      method: 'DELETE',
-    }),
+    updateMemberRole: (
+      organisationId: string,
+      userId: string,
+      data: UpdateMemberRoleInput,
+    ): Promise<OrganisationMemberResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/members/${userId}`, {
+        method: 'PUT',
+        body: data,
+      }),
 
-  inviteMember: (organisationId: string, data: InviteMemberInput): Promise<InviteMemberResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/members/invite`, {
-      method: 'POST',
-      body: data,
-    }),
+    removeMember: (organisationId: string, userId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/organisations/${organisationId}/members/${userId}`, {
+        method: 'DELETE',
+      }),
 
-  getRoles: (organisationId: string): Promise<OrganisationRolesResponse> =>
-    $fetch(`/api/admin/organisations/${organisationId}/roles`),
+    inviteMember: (organisationId: string, data: InviteMemberInput): Promise<InviteMemberResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/members/invite`, {
+        method: 'POST',
+        body: data,
+      }),
+
+    getRoles: (organisationId: string): Promise<OrganisationRolesResponse> =>
+      $api(`/api/admin/organisations/${organisationId}/roles`),
+  }
 }

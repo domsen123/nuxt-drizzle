@@ -1,8 +1,10 @@
 import { useQuery } from '@pinia/colada'
-import { profileApi } from '../api/profile.api'
+import { useProfileApi } from '../api/profile.api'
 import { profileKeys } from '../api/profile.keys'
 
 export const useProfile = () => {
+  const profileApi = useProfileApi()
+
   const query = useQuery({
     key: () => profileKeys.profile(),
     query: () => profileApi.getProfile(),

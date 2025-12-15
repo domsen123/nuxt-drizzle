@@ -1,9 +1,11 @@
 import type { AllTeamsQueryParams } from '../api/teams.api'
 import { useQuery } from '@pinia/colada'
-import { teamsApi } from '../api/teams.api'
+import { useTeamsApi } from '../api/teams.api'
 import { teamsKeys } from '../api/teams.keys'
 
 export const useAllTeams = (params: MaybeRefOrGetter<AllTeamsQueryParams>) => {
+  const teamsApi = useTeamsApi()
+
   const query = useQuery({
     key: () => teamsKeys.allTeams(toValue(params)),
     query: () => teamsApi.getAllTeams(toValue(params)),

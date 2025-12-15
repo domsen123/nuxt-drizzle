@@ -1,5 +1,5 @@
 // API
-export { organisationMembersApi } from './api/organisation-members.api'
+export { useOrganisationMembersApi } from './api/organisation-members.api'
 
 export { organisationMembersKeys } from './api/organisation-members.keys'
 export {

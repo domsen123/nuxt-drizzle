@@ -1,8 +1,10 @@
 import { useQuery } from '@pinia/colada'
-import { teamsApi } from '../api/teams.api'
+import { useTeamsApi } from '../api/teams.api'
 import { teamsKeys } from '../api/teams.keys'
 
 export const useAdminOrganisationTeams = (organisationId: MaybeRefOrGetter<string>) => {
+  const teamsApi = useTeamsApi()
+
   const query = useQuery({
     key: () => teamsKeys.teams(toValue(organisationId)),
     query: () => teamsApi.getTeams(toValue(organisationId)),

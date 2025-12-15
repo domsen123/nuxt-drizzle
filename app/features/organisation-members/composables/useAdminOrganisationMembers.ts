@@ -1,8 +1,10 @@
 import { useQuery } from '@pinia/colada'
-import { organisationMembersApi } from '../api/organisation-members.api'
+import { useOrganisationMembersApi } from '../api/organisation-members.api'
 import { organisationMembersKeys } from '../api/organisation-members.keys'
 
 export const useAdminOrganisationMembers = (organisationId: MaybeRefOrGetter<string>) => {
+  const organisationMembersApi = useOrganisationMembersApi()
+
   const query = useQuery({
     key: () => organisationMembersKeys.members(toValue(organisationId)),
     query: () => organisationMembersApi.getMembers(toValue(organisationId)),

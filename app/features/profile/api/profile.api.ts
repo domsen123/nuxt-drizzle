@@ -4,19 +4,23 @@ import type {
   UpdateProfileInput,
 } from '../types/profile.types'
 
-export const profileApi = {
-  getProfile: (): Promise<ProfileResponse> =>
-    $fetch('/api/profile'),
+export const useProfileApi = () => {
+  const { $api } = useNuxtApp()
 
-  updateProfile: (data: UpdateProfileInput): Promise<ProfileResponse> =>
-    $fetch('/api/profile', {
-      method: 'PUT',
-      body: data,
-    }),
+  return {
+    getProfile: (): Promise<ProfileResponse> =>
+      $api('/api/profile'),
 
-  changePassword: (data: ChangePasswordInput): Promise<{ success: boolean }> =>
-    $fetch('/api/profile/password', {
-      method: 'PUT',
-      body: data,
-    }),
+    updateProfile: (data: UpdateProfileInput): Promise<ProfileResponse> =>
+      $api('/api/profile', {
+        method: 'PUT',
+        body: data,
+      }),
+
+    changePassword: (data: ChangePasswordInput): Promise<{ success: boolean }> =>
+      $api('/api/profile/password', {
+        method: 'PUT',
+        body: data,
+      }),
+  }
 }
