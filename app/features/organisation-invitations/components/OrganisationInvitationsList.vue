@@ -10,6 +10,7 @@ defineProps<{
 const emit = defineEmits<{
   resend: [invitation: OrganisationInvitation]
   revoke: [invitation: OrganisationInvitation]
+  copyLink: [invitation: OrganisationInvitation]
 }>()
 
 const getExpiryText = (invitation: OrganisationInvitation): string => {
@@ -37,6 +38,11 @@ const getActionsMenu = (invitation: OrganisationInvitation): DropdownMenuItem[] 
   const items: DropdownMenuItem[] = []
 
   if (!invitation.isExpired) {
+    items.push({
+      label: 'Copy invitation link',
+      icon: 'i-lucide-link',
+      onSelect: () => emit('copyLink', invitation),
+    })
     items.push({
       label: 'Resend invitation',
       icon: 'i-lucide-mail',

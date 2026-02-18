@@ -116,7 +116,7 @@ const handleRemoveMember = async (member: OrganisationMember) => {
   }
 }
 
-const handleInvite = async (data: { email: string, roleId: string }) => {
+const handleInvite = async (data: { email: string, roleId: string, deliveryMethod: 'email' | 'link' }) => {
   try {
     const result = await inviteMember({
       organisationId: organisationId.value,
@@ -124,7 +124,27 @@ const handleInvite = async (data: { email: string, roleId: string }) => {
     })
     isInviteModalOpen.value = false
 
-    if (result.invited) {
+    if (result.invited && result.invitationLink) {
+      try {
+        await navigator.clipboard.writeText(result.invitationLink)
+        toast.add({
+          title: 'Invitation link copied',
+          description: `Invitation for ${data.email} has been copied to clipboard.`,
+          icon: 'i-lucide-link',
+          color: 'success',
+        })
+      }
+      catch {
+        toast.add({
+          title: 'Invitation link created',
+          description: result.invitationLink,
+          icon: 'i-lucide-link',
+          color: 'success',
+        })
+      }
+      refreshInvitations()
+    }
+    else if (result.invited) {
       toast.add({
         title: 'Invitation sent',
         description: `An invitation has been sent to ${data.email}.`,
@@ -201,6 +221,26 @@ const handleRevokeInvitation = async (invitation: OrganisationInvitation) => {
   }
 }
 
+const handleCopyInvitationLink = async (invitation: OrganisationInvitation) => {
+  try {
+    await navigator.clipboard.writeText(invitation.acceptLink)
+    toast.add({
+      title: 'Invitation link copied',
+      description: `Invitation link for ${invitation.email} has been copied to clipboard.`,
+      icon: 'i-lucide-link',
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Invitation link',
+      description: invitation.acceptLink,
+      icon: 'i-lucide-link',
+      color: 'success',
+    })
+  }
+}
+
 const handleRefresh = () => {
   refresh()
   refreshInvitations()
@@ -261,6 +301,7 @@ const handleRefresh = () => {
         :is-loading="isInvitationsLoading"
         @resend="handleResendInvitation"
         @revoke="handleRevokeInvitation"
+        @copy-link="handleCopyInvitationLink"
       />
     </div>
   </div>

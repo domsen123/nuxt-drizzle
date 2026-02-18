@@ -1,5 +1,6 @@
 import type { AddMemberInput, InviteMemberInput, UpdateMemberRoleInput } from '../types/organisation-members.types'
 import { useMutation, useQueryCache } from '@pinia/colada'
+import { organisationInvitationsKeys } from '~/features/organisation-invitations/api/organisation-invitations.keys'
 import { useOrganisationMembersApi } from '../api/organisation-members.api'
 import { organisationMembersKeys } from '../api/organisation-members.keys'
 
@@ -51,6 +52,7 @@ export const useInviteOrganisationMember = () => {
       organisationMembersApi.inviteMember(organisationId, data),
     onSettled: (_data, _error, variables) => {
       queryCache.invalidateQueries({ key: organisationMembersKeys.members(variables.organisationId) })
+      queryCache.invalidateQueries({ key: organisationInvitationsKeys.list(variables.organisationId) })
     },
   })
 }
