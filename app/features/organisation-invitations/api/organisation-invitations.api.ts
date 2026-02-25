@@ -24,6 +24,7 @@ export interface OrganisationInvitation {
   expiresAt: string
   createdAt: string
   isExpired: boolean
+  acceptLink: string
 }
 
 export interface OrganisationInvitationsResponse {

@@ -1,6 +1,18 @@
+import type { Storage } from 'unstorage'
 import { Liquid } from 'liquidjs'
 
 const engine = new Liquid()
+
+const readTemplate = async (storage: Storage, path: string): Promise<string | null> => {
+  const raw = await storage.getItemRaw(path)
+  if (raw === null || raw === undefined)
+    return null
+  if (typeof raw === 'string')
+    return raw
+  if (Buffer.isBuffer(raw))
+    return raw.toString('utf-8')
+  return new TextDecoder().decode(raw as ArrayBufferLike)
+}
 
 export interface PasswordResetTemplateData {
   userName?: string
@@ -35,8 +47,8 @@ export const passwordResetTemplate = async (data: PasswordResetTemplateData) => 
   const storage = useStorage('assets:server')
 
   const [htmlTemplate, txtTemplate] = await Promise.all([
-    storage.getItem<string>('templates/password-reset.html.liquid'),
-    storage.getItem<string>('templates/password-reset.txt.liquid'),
+    readTemplate(storage, 'templates/password-reset.html.liquid'),
+    readTemplate(storage, 'templates/password-reset.txt.liquid'),
   ])
 
   if (!htmlTemplate || !txtTemplate) {
@@ -64,8 +76,8 @@ export const emailVerificationTemplate = async (data: EmailVerificationTemplateD
   const storage = useStorage('assets:server')
 
   const [htmlTemplate, txtTemplate] = await Promise.all([
-    storage.getItem<string>('templates/email-verification.html.liquid'),
-    storage.getItem<string>('templates/email-verification.txt.liquid'),
+    readTemplate(storage, 'templates/email-verification.html.liquid'),
+    readTemplate(storage, 'templates/email-verification.txt.liquid'),
   ])
 
   if (!htmlTemplate || !txtTemplate) {
@@ -93,8 +105,8 @@ export const emailChangeTemplate = async (data: EmailChangeTemplateData) => {
   const storage = useStorage('assets:server')
 
   const [htmlTemplate, txtTemplate] = await Promise.all([
-    storage.getItem<string>('templates/email-change.html.liquid'),
-    storage.getItem<string>('templates/email-change.txt.liquid'),
+    readTemplate(storage, 'templates/email-change.html.liquid'),
+    readTemplate(storage, 'templates/email-change.txt.liquid'),
   ])
 
   if (!htmlTemplate || !txtTemplate) {
@@ -122,8 +134,8 @@ export const organisationInvitationTemplate = async (data: OrganisationInvitatio
   const storage = useStorage('assets:server')
 
   const [htmlTemplate, txtTemplate] = await Promise.all([
-    storage.getItem<string>('templates/organisation-invitation.html.liquid'),
-    storage.getItem<string>('templates/organisation-invitation.txt.liquid'),
+    readTemplate(storage, 'templates/organisation-invitation.html.liquid'),
+    readTemplate(storage, 'templates/organisation-invitation.txt.liquid'),
   ])
 
   if (!htmlTemplate || !txtTemplate) {

@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [data: { email: string, roleId: string }]
+  submit: [data: { email: string, roleId: string, deliveryMethod: 'email' | 'link' }]
   cancel: []
 }>()
 
@@ -18,6 +18,7 @@ const isOpen = defineModel<boolean>('open', { default: false })
 const schema = z.object({
   email: z.string().trim().email('Valid email is required'),
   roleId: z.string().min(1, 'Role is required'),
+  deliveryMethod: z.enum(['email', 'link']),
 })
 
 type Schema = z.output<typeof schema>
@@ -30,6 +31,7 @@ const defaultRole = computed(() =>
 const state = reactive<Schema>({
   email: '',
   roleId: '',
+  deliveryMethod: 'email',
 })
 
 // Set default role when roles load
@@ -44,6 +46,7 @@ watch(isOpen, (open) => {
   if (open) {
     state.email = ''
     state.roleId = defaultRole.value?.id ?? ''
+    state.deliveryMethod = 'email'
   }
 })
 
@@ -53,6 +56,14 @@ const roleOptions = computed(() =>
     value: role.id,
   })),
 )
+
+const deliveryMethodItems = [
+  { label: 'Send email', description: 'Send an invitation email to the user', value: 'email' },
+  { label: 'Copy invitation link', description: 'Generate a link to share manually', value: 'link' },
+]
+
+const submitLabel = computed(() => state.deliveryMethod === 'link' ? 'Create Link' : 'Send Invite')
+const submitIcon = computed(() => state.deliveryMethod === 'link' ? 'i-lucide-link' : 'i-lucide-send')
 
 const onSubmit = (event: FormSubmitEvent<Schema>) => {
   emit('submit', event.data)
@@ -78,7 +89,7 @@ const onCancel = () => {
                 Invite Member
               </h3>
               <p class="text-sm text-muted">
-                Send an invitation to join this organisation
+                Invite a user to join this organisation
               </p>
             </div>
           </div>
@@ -123,6 +134,16 @@ const onCancel = () => {
             />
           </UFormField>
 
+          <UFormField
+            label="Delivery Method"
+            name="deliveryMethod"
+          >
+            <URadioGroup
+              v-model="state.deliveryMethod"
+              :items="deliveryMethodItems"
+            />
+          </UFormField>
+
           <div class="flex items-center justify-end gap-3 pt-4">
             <UButton
               variant="ghost"
@@ -137,9 +158,9 @@ const onCancel = () => {
               :loading="isLoading"
             >
               <template v-if="!isLoading" #leading>
-                <UIcon name="i-lucide-send" class="size-4" />
+                <UIcon :name="submitIcon" class="size-4" />
               </template>
-              Send Invite
+              {{ submitLabel }}
             </UButton>
           </div>
         </UForm>

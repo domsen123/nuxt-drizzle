@@ -45,6 +45,7 @@ export interface InviteMemberResponse {
   member?: OrganisationMember
   invited: boolean
   email: string
+  invitationLink?: string
 }
 
 // API Inputs
@@ -60,4 +61,5 @@ export interface UpdateMemberRoleInput {
 export interface InviteMemberInput {
   email: string
   roleId: string
+  deliveryMethod?: 'email' | 'link'
 }

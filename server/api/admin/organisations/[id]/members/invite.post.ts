@@ -5,6 +5,7 @@ import { container } from '~~/server/utils/container'
 const inviteSchema = z.object({
   email: z.string().trim().email('Valid email is required'),
   roleId: z.string().trim().min(1, 'Role ID is required'),
+  deliveryMethod: z.enum(['email', 'link']).default('email'),
 })
 
 export default defineEventHandler(async (event) => {
@@ -48,16 +49,18 @@ export default defineEventHandler(async (event) => {
   }
 
   // User doesn't exist - create invitation
-  await container.organisationInvitationsService.createInvitation({
+  const invitationResult = await container.organisationInvitationsService.createInvitation({
     organisationId: id,
     email: parsed.data.email,
     roleId: parsed.data.roleId,
     invitedByUserId: currentUser.id,
     inviterName,
+    deliveryMethod: parsed.data.deliveryMethod,
   })
 
   return {
     invited: true,
     email: parsed.data.email,
+    ...(invitationResult.invitationLink && { invitationLink: invitationResult.invitationLink }),
   }
 })

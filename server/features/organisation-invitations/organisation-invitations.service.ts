@@ -24,6 +24,7 @@ export interface CreateInvitationInput {
   roleId: string
   invitedByUserId: string
   inviterName?: string
+  deliveryMethod?: 'email' | 'link'
 }
 
 export interface AcceptInvitationInput {
@@ -51,8 +52,8 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
   /**
    * Create an invitation for a non-existing user to join an organisation
    */
-  const createInvitation = async (input: CreateInvitationInput): Promise<{ success: boolean }> => {
-    const { organisationId, email, roleId, invitedByUserId, inviterName } = input
+  const createInvitation = async (input: CreateInvitationInput): Promise<{ success: boolean, invitationLink?: string }> => {
+    const { organisationId, email, roleId, invitedByUserId, inviterName, deliveryMethod = 'email' } = input
     const normalizedEmail = email.toLowerCase().trim()
 
     // Verify organisation exists
@@ -107,9 +108,14 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
       expiresAt,
     })
 
-    // Send invitation email
     const acceptLink = `${config.site.url}/auth/accept-invitation?token=${token}`
 
+    if (deliveryMethod === 'link') {
+      console.log(`[Organisation Invitation] Invitation link created for ${normalizedEmail} for org ${org.name}`)
+      return { success: true, invitationLink: acceptLink }
+    }
+
+    // Send invitation email
     const result = await emailService.sendOrganisationInvitation(normalizedEmail, {
       organisationName: org.name,
       inviterName,
@@ -267,6 +273,7 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
       expiresAt: inv.expiresAt,
       createdAt: inv.createdAt,
       isExpired: new Date(inv.expiresAt) < now,
+      acceptLink: `${config.site.url}/auth/accept-invitation?token=${inv.token}`,
     }))
 
     return { invitations: enriched, total: enriched.length }
