@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import AdminUserList from '~/features/admin/components/AdminUserList.vue'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { AdminUser } from '~/features/admin/types/admin.types'
+import { useStartImpersonation } from '~/features/admin/composables/useImpersonation'
 
 definePageMeta({
   layout: 'admin',
@@ -10,107 +12,198 @@ useSeoMeta({
   title: 'Users - Admin',
 })
 
+const router = useRouter()
+const toast = useToast()
+const { user } = useSession()
+const { mutateAsync: startImpersonation, asyncStatus: impersonationStatus } = useStartImpersonation()
+
+const impersonatingUserId = ref<string | null>(null)
+
 const {
   search,
   page,
   perPage,
-  offset,
   queryParams,
+  handleSort,
+  getSortDirection,
 } = usePagination({
   defaultPerPage: 10,
   defaultSort: [{ key: 'createdAt', direction: 'desc' }],
 })
 
-const { users, total: apiTotal, status, error, refresh } = useAdminUsers(queryParams)
+const { users, total: apiTotal, error, isLoading } = useAdminUsers(queryParams)
 
-const isLoading = computed(() => status.value === 'pending')
+const columns: TableColumn<AdminUser>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'emailVerified', header: 'Verified' },
+  { accessorKey: 'createdAt', header: 'Created' },
+  { id: 'actions' },
+]
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const onSelectUser = (user: AdminUser) => {
+  router.push(ROUTES.admin.userEdit(user.id))
+}
+
+const handleImpersonate = async (userId: string) => {
+  impersonatingUserId.value = userId
+  try {
+    await startImpersonation(userId)
+    toast.add({
+      title: 'Impersonation started',
+      description: 'You are now viewing the app as this user.',
+      color: 'success',
+    })
+    router.push(ROUTES.start)
+  }
+  catch {
+    toast.add({
+      title: 'Failed to impersonate',
+      description: 'Could not start impersonation. Please try again.',
+      color: 'error',
+    })
+  }
+  finally {
+    impersonatingUserId.value = null
+  }
+}
+
+const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
+  const isSelf = user.value?.id === row.id
+  const isImpersonating = impersonatingUserId.value === row.id && impersonationStatus.value === 'loading'
+
+  return [
+    [
+      {
+        label: 'View Details',
+        icon: 'i-lucide-eye',
+        onSelect: () => router.push(ROUTES.admin.userEdit(row.id)),
+      },
+    ],
+    [
+      {
+        label: isImpersonating ? 'Impersonating...' : 'Impersonate',
+        icon: 'i-lucide-user-check',
+        disabled: isSelf || isImpersonating,
+        onSelect: () => handleImpersonate(row.id),
+      },
+    ],
+  ]
+}
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Users">
-        <template #leading>
-          <UDashboardSidebarToggle />
-        </template>
-
-        <template #right>
-          <div class="flex items-center gap-2">
-            <UButton
-              icon="i-lucide-refresh-cw"
-              color="neutral"
-              variant="ghost"
-              :loading="isLoading"
-              @click="refresh()"
-            />
-          </div>
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h1 class="text-2xl font-bold">
-              Users
-            </h1>
-            <p class="text-muted">
-              {{ apiTotal }} user{{ apiTotal !== 1 ? 's' : '' }} total
-            </p>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="mb-4">
-          <UInput
-            v-model="search"
-            icon="i-lucide-search"
-            placeholder="Search by name or email..."
-          >
-            <template #trailing>
-              <UButton
-                v-show="search !== ''"
-                color="neutral"
-                variant="link"
-                icon="i-lucide-x"
-                :padded="false"
-                @click="search = ''"
-              />
-            </template>
-          </UInput>
-        </div>
-
-        <UAlert
-          v-if="error"
-          color="error"
-          title="Failed to load users"
-          :description="error.message"
-          icon="i-lucide-alert-circle"
-          class="mb-4"
-        />
-
-        <AdminUserList
-          :users="users"
-          :loading="isLoading"
-        />
-
-        <!-- Pagination -->
-        <div v-if="apiTotal > 0" class="mt-6 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <span class="text-sm text-muted">
-              Showing {{ offset + 1 }}-{{ Math.min(offset + perPage, apiTotal) }} of {{ apiTotal }}
-            </span>
-          </div>
-          <UPagination
-            v-model:page="page"
-            :total="apiTotal"
-            :items-per-page="perPage"
-            show-edges
-            @update:page="page = $event"
-          />
+  <DashboardAdminPage title="Users">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold">
+            Users
+          </h1>
+          <p class="text-muted">
+            {{ apiTotal }} user{{ apiTotal !== 1 ? 's' : '' }} total
+          </p>
         </div>
       </div>
-    </template>
-  </UDashboardPanel>
+
+      <UAlert
+        v-if="error"
+        color="error"
+        title="Failed to load users"
+        :description="error.message"
+        icon="i-lucide-alert-circle"
+        class="mb-4"
+      />
+
+      <AppResponsiveTable
+        v-model:search="search"
+        :columns="columns"
+        :data="users"
+        :loading="isLoading"
+        :server-side="true"
+        search-placeholder="Search by name or email..."
+        empty-icon="i-lucide-user"
+        empty-text="No users found"
+        :pagination="{ page, perPage, total: apiTotal }"
+        :sortable-columns="['name', 'createdAt']"
+        :get-sort-direction="getSortDirection"
+        @select="onSelectUser"
+        @update:page="page = $event"
+        @update:per-page="perPage = $event"
+        @sort="handleSort"
+      >
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+              <UIcon name="i-lucide-user" class="size-5 text-primary" />
+            </div>
+            <div class="text-sm">
+              <p class="text-highlighted font-medium">
+                {{ row.original.name || 'No name' }}
+              </p>
+              <p class="text-muted text-xs">
+                {{ row.original.email }}
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #emailVerified-cell="{ row }">
+          <UBadge
+            :color="row.original.emailVerified ? 'success' : 'neutral'"
+            variant="subtle"
+          >
+            {{ row.original.emailVerified ? 'Verified' : 'Unverified' }}
+          </UBadge>
+        </template>
+
+        <template #createdAt-cell="{ row }">
+          {{ formatDate(row.original.createdAt) }}
+        </template>
+
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UDropdownMenu :items="getActionsItems(row.original)" :content="{ align: 'end' }">
+              <UButton
+                icon="i-lucide-ellipsis-vertical"
+                color="neutral"
+                variant="ghost"
+                @click.stop
+              />
+            </UDropdownMenu>
+          </div>
+        </template>
+
+        <template #mobile-card="{ item }">
+          <div class="flex items-center gap-3 p-4">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
+              <UIcon name="i-lucide-user" class="size-5 text-primary" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-highlighted font-medium truncate">
+                {{ item.name || 'No name' }}
+              </p>
+              <p class="text-muted text-xs truncate">
+                {{ item.email }}
+              </p>
+            </div>
+            <UBadge
+              :color="item.emailVerified ? 'success' : 'neutral'"
+              variant="subtle"
+              class="shrink-0"
+            >
+              {{ item.emailVerified ? 'Verified' : 'Unverified' }}
+            </UBadge>
+          </div>
+        </template>
+      </AppResponsiveTable>
+    </div>
+  </DashboardAdminPage>
 </template>
