@@ -101,18 +101,7 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
 
 <template>
   <DashboardAdminPage title="Users">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold">
-            Users
-          </h1>
-          <p class="text-muted">
-            {{ apiTotal }} user{{ apiTotal !== 1 ? 's' : '' }} total
-          </p>
-        </div>
-      </div>
-
+    <div>
       <UAlert
         v-if="error"
         color="error"

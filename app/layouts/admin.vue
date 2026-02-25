@@ -5,6 +5,7 @@ import { useStopImpersonation } from '~/features/admin/composables/useImpersonat
 const router = useRouter()
 const toast = useToast()
 const route = useRoute()
+const open = ref(false)
 
 const { user, isImpersonating } = useSession()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
@@ -116,18 +117,28 @@ const navItemsWithActive = computed(() =>
 
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar>
-      <template #header>
+    <UDashboardSidebar
+      v-model:open="open"
+      collapsible
+      resizable
+      class="bg-elevated/75"
+      :ui="{ footer: 'lg:border-t lg:border-default' }"
+    >
+      <template #header="{ collapsed }">
         <NuxtLink :to="ROUTES.admin.home" class="flex items-center gap-2 px-2">
           <UIcon name="i-lucide-shield" class="text-primary size-5" />
-          <span class="font-semibold">Admin</span>
+          <span v-if="!collapsed" class="font-semibold">Admin</span>
         </NuxtLink>
       </template>
-
-      <UNavigationMenu
-        :items="navItemsWithActive"
-        orientation="vertical"
-      />
+      <template #default="{ collapsed }">
+        <UNavigationMenu
+          :collapsed="collapsed"
+          :items="navItemsWithActive"
+          orientation="vertical"
+          tooltip
+          popover
+        />
+      </template>
 
       <template #footer>
         <UDropdownMenu :items="userMenuItems">
