@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm'
+import { files } from './files'
 import { organisationInvitations } from './organisation-invitations'
 import { organisationMembers } from './organisation-members'
 import { organisations } from './organisations'
@@ -19,6 +20,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   organisationMemberships: many(organisationMembers),
   teamMemberships: many(teamMembers),
   userRoles: many(userRoles),
+  files: many(files),
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -114,6 +116,13 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
 export const pendingEmailChangesRelations = relations(pendingEmailChanges, ({ one }) => ({
   user: one(users, {
     fields: [pendingEmailChanges.userId],
+    references: [users.id],
+  }),
+}))
+
+export const filesRelations = relations(files, ({ one }) => ({
+  uploader: one(users, {
+    fields: [files.uploadedBy],
     references: [users.id],
   }),
 }))

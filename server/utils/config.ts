@@ -61,6 +61,21 @@ export const config = {
       from: process.env.NUXT_SMTP_FROM || 'noreply@example.com',
     },
   },
+  storage: {
+    provider: (process.env.NUXT_STORAGE_PROVIDER || 'local') as 'local' | 's3',
+    local: {
+      basePath: process.env.NUXT_STORAGE_LOCAL_PATH || './storage/uploads',
+    },
+    s3: {
+      bucket: process.env.NUXT_S3_BUCKET || '',
+      region: process.env.NUXT_S3_REGION || '',
+      endpoint: process.env.NUXT_S3_ENDPOINT || '',
+      accessKeyId: process.env.NUXT_S3_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.NUXT_S3_SECRET_ACCESS_KEY || '',
+    },
+    maxFileSize: Number.parseInt(process.env.NUXT_STORAGE_MAX_FILE_SIZE || String(5 * 1024 * 1024)), // 5MB
+    allowedMimeTypes: (process.env.NUXT_STORAGE_ALLOWED_MIME_TYPES || 'image/jpeg,image/png,image/webp,image/gif').split(','),
+  },
 }
 
 export default config

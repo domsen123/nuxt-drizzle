@@ -2,6 +2,8 @@ import type { ImpersonationService } from '../features/admin/impersonation.servi
 import type { AuthService } from '../features/auth/auth.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
+import type { FileStoreProvider } from '../features/files/file-store-provider.interface'
+import type { FileService } from '../features/files/files.service'
 import type { OrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { OrganisationsService } from '../features/organisations/organisations.service'
@@ -14,6 +16,8 @@ import { createAuthService } from '../features/auth/auth.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
+import { createFileService } from '../features/files/files.service'
+import { createLocalFileStoreProvider } from '../features/files/providers/local.provider'
 import { createOrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import { createOrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import { createOrganisationsService } from '../features/organisations/organisations.service'
@@ -51,6 +55,14 @@ const getEmailProvider = lazy((): EmailProvider => {
     })
   }
   return createConsoleEmailProvider()
+})
+
+// File store provider factory
+const getFileStoreProvider = lazy((): FileStoreProvider => {
+  // Only local provider implemented for now
+  return createLocalFileStoreProvider({
+    basePath: config.storage.local.basePath,
+  })
 })
 
 // Event Bus
@@ -115,6 +127,9 @@ const getUserRolesItemService = lazy(() =>
 const getOrganisationInvitationsItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.organisationInvitations, tableName: 'organisationInvitations', eventBus: getEventBus() }),
 )
+const getFilesItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.files, tableName: 'files', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -168,6 +183,15 @@ const getOrganisationInvitationsService = lazy(() =>
   }),
 )
 
+// File Service
+const getFileService = lazy(() =>
+  createFileService({
+    fileStoreProvider: getFileStoreProvider(),
+    filesItemService: getFilesItemService(),
+    config,
+  }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -194,6 +218,9 @@ export const container = {
   get profileService(): ProfileService {
     return getProfileService()
   },
+  get fileService(): FileService {
+    return getFileService()
+  },
   get eventBus(): EventBus {
     return getEventBus()
   },
@@ -210,5 +237,6 @@ export const container = {
     get rolePermissions() { return getRolePermissionsItemService() },
     get userRoles() { return getUserRolesItemService() },
     get organisationInvitations() { return getOrganisationInvitationsItemService() },
+    get files() { return getFilesItemService() },
   },
 }

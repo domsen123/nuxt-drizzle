@@ -1,4 +1,5 @@
 export * from './email-verification-tokens'
+export * from './files'
 export * from './organisation-invitations'
 export * from './organisation-members'
 export * from './organisations'

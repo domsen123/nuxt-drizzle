@@ -23,5 +23,8 @@ logs
 .env.*
 !.env.example
 
+# File uploads
+storage/
+
 # VSC
 .history
