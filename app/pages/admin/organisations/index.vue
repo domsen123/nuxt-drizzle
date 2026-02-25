@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import AdminOrganisationList from '~/features/admin/components/AdminOrganisationList.vue'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { AdminOrganisation } from '~/features/admin/types/admin.types'
 
 definePageMeta({
   layout: 'admin',
@@ -10,112 +11,137 @@ useSeoMeta({
   title: 'Organisations - Admin',
 })
 
+const router = useRouter()
+
 const {
   search,
   page,
   perPage,
-  offset,
   queryParams,
+  handleSort,
+  getSortDirection,
 } = usePagination({
   defaultPerPage: 10,
   defaultSort: [{ key: 'createdAt', direction: 'desc' }],
 })
 
-const { organisations, total: apiTotal, status, error, refresh } = useAdminOrganisations(queryParams)
+const { organisations, total: apiTotal, error, isLoading } = useAdminOrganisations(queryParams)
 
-const isLoading = computed(() => status.value === 'pending')
+const columns: TableColumn<AdminOrganisation>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'createdAt', header: 'Created' },
+  { id: 'actions' },
+]
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const onSelectOrganisation = (org: AdminOrganisation) => {
+  router.push(ROUTES.admin.organisationEdit(org.id))
+}
+
+const getActionsItems = (org: AdminOrganisation): DropdownMenuItem[][] => [
+  [
+    {
+      label: 'Edit',
+      icon: 'i-lucide-pencil',
+      onSelect: () => router.push(ROUTES.admin.organisationEdit(org.id)),
+    },
+  ],
+]
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Organisations">
-        <template #leading>
-          <UDashboardSidebarToggle />
-        </template>
+  <DashboardAdminPage title="Organisations">
+    <div>
+      <UAlert
+        v-if="error"
+        color="error"
+        title="Failed to load organisations"
+        :description="error.message"
+        icon="i-lucide-alert-circle"
+        class="mb-4"
+      />
 
-        <template #right>
-          <div class="flex items-center gap-2">
-            <UButton
-              icon="i-lucide-refresh-cw"
-              color="neutral"
-              variant="ghost"
-              :loading="isLoading"
-              @click="refresh()"
-            />
-            <UButton
-              icon="i-lucide-plus"
-              label="Create"
-              :to="ROUTES.admin.organisationCreate"
-            />
-          </div>
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h1 class="text-2xl font-bold">
-              Organisations
-            </h1>
-            <p class="text-muted">
-              {{ apiTotal }} organisation{{ apiTotal !== 1 ? 's' : '' }} total
-            </p>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="mb-4">
-          <UInput
-            v-model="search"
-            icon="i-lucide-search"
-            placeholder="Search by name or slug..."
-          >
-            <template #trailing>
-              <UButton
-                v-show="search !== ''"
-                color="neutral"
-                variant="link"
-                icon="i-lucide-x"
-                :padded="false"
-                @click="search = ''"
-              />
-            </template>
-          </UInput>
-        </div>
-
-        <UAlert
-          v-if="error"
-          color="error"
-          title="Failed to load organisations"
-          :description="error.message"
-          icon="i-lucide-alert-circle"
-          class="mb-4"
-        />
-
-        <AdminOrganisationList
-          :organisations="organisations"
-          :loading="isLoading"
-        />
-
-        <!-- Pagination -->
-        <div v-if="apiTotal > 0" class="mt-6 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <span class="text-sm text-muted">
-              Showing {{ offset + 1 }}-{{ Math.min(offset + perPage, apiTotal) }} of {{ apiTotal }}
-            </span>
-          </div>
-          <UPagination
-            v-model:page="page"
-            :total="apiTotal"
-            :items-per-page="perPage"
-            show-edges
-            @update:page="page = $event"
+      <AppResponsiveTable
+        v-model:search="search"
+        :columns="columns"
+        :data="organisations"
+        :loading="isLoading"
+        :server-side="true"
+        search-placeholder="Search by name or slug..."
+        empty-icon="i-lucide-building-2"
+        empty-text="No organisations found"
+        :pagination="{ page, perPage, total: apiTotal }"
+        :sortable-columns="['name', 'createdAt']"
+        :get-sort-direction="getSortDirection"
+        @select="onSelectOrganisation"
+        @update:page="page = $event"
+        @update:per-page="perPage = $event"
+        @sort="handleSort"
+      >
+        <template #header-extra>
+          <UButton
+            icon="i-lucide-plus"
+            label="Create"
+            :to="ROUTES.admin.organisationCreate"
           />
-        </div>
-      </div>
-    </template>
-  </UDashboardPanel>
+        </template>
+
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+              <UIcon name="i-lucide-building-2" class="size-5 text-primary" />
+            </div>
+            <div class="text-sm">
+              <p class="text-highlighted font-medium">
+                {{ row.original.name }}
+              </p>
+              <p class="text-muted text-xs">
+                {{ row.original.slug }}
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #createdAt-cell="{ row }">
+          {{ formatDate(row.original.createdAt) }}
+        </template>
+
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UDropdownMenu :items="getActionsItems(row.original)" :content="{ align: 'end' }">
+              <UButton
+                icon="i-lucide-ellipsis-vertical"
+                color="neutral"
+                variant="ghost"
+                @click.stop
+              />
+            </UDropdownMenu>
+          </div>
+        </template>
+
+        <template #mobile-card="{ item }">
+          <div class="flex items-center gap-3 p-4">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
+              <UIcon name="i-lucide-building-2" class="size-5 text-primary" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-highlighted font-medium truncate">
+                {{ item.name }}
+              </p>
+              <p class="text-muted text-xs truncate">
+                {{ item.slug }}
+              </p>
+            </div>
+          </div>
+        </template>
+      </AppResponsiveTable>
+    </div>
+  </DashboardAdminPage>
 </template>

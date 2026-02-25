@@ -1,46 +1,48 @@
 <script setup lang="ts">
-import type { AdminTeam } from '~/features/admin'
-import { useAdminTeams, useDeleteTeam } from '~/features/admin'
-import AdminTeamList from '~/features/admin/components/AdminTeamList.vue'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { AdminTeam } from '~/features/admin/types/admin.types'
 
 definePageMeta({
   layout: 'admin',
   middleware: ['admin'],
 })
 
+useSeoMeta({
+  title: 'Teams - Admin',
+})
+
+const router = useRouter()
 const toast = useToast()
 
-// Filter state
-const selectedOrganisationId = ref<string>()
+const organisationFilter = ref<string>()
 
-// Pagination and search
 const {
   search,
   page,
   perPage,
-  offset,
   queryParams,
+  handleSort,
+  getSortDirection,
 } = usePagination({
   defaultPerPage: 10,
   defaultSort: [{ key: 'createdAt', direction: 'desc' }],
-  resetOnChange: [selectedOrganisationId],
+  resetOnChange: [organisationFilter],
 })
 
-// Combined query params with organisation filter
 const allTeamsParams = computed(() => ({
   ...queryParams.value,
-  organisationId: selectedOrganisationId.value,
+  organisationId: organisationFilter.value || undefined,
 }))
 
-// Fetch all teams (optionally filtered by organisation)
-const { teams, total, status: teamsStatus, error: teamsError, refresh } = useAdminTeams(allTeamsParams)
-
-// Mutations
+const { teams, total, error, isLoading } = useAdminTeams(allTeamsParams)
 const { mutateAsync: deleteTeam } = useDeleteTeam()
 
-const isLoading = computed(() => teamsStatus.value === 'pending')
+const columns: TableColumn<AdminTeam>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'createdAt', header: 'Created' },
+  { id: 'actions' },
+]
 
-// Get unique organisations for filter (fetched separately to avoid circular dependency)
 const organisationFilterOptions = computed(() => {
   const orgs = new Map<string, { id: string, name: string }>()
   teams.value.forEach((team) => {
@@ -49,17 +51,22 @@ const organisationFilterOptions = computed(() => {
     }
   })
   const sortedOrgs = Array.from(orgs.values()).sort((a, b) => a.name.localeCompare(b.name))
-  return [
-    { label: 'All Organisations', value: undefined },
-    ...sortedOrgs.map(org => ({ label: org.name, value: org.id })),
-  ]
+  return sortedOrgs.map(org => ({ label: org.name, value: org.id }))
 })
 
-useSeoMeta({
-  title: 'Teams - Admin',
-})
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
 
-const handleDelete = async (team: AdminTeam | Omit<AdminTeam, 'organisation'>) => {
+const onSelectTeam = (team: AdminTeam) => {
+  router.push(ROUTES.admin.team(team.id))
+}
+
+const handleDelete = async (team: AdminTeam) => {
   try {
     await deleteTeam(team.id)
     toast.add({
@@ -79,101 +86,107 @@ const handleDelete = async (team: AdminTeam | Omit<AdminTeam, 'organisation'>) =
     })
   }
 }
+
+const getActionsItems = (team: AdminTeam): DropdownMenuItem[][] => [
+  [
+    {
+      label: 'View Details',
+      icon: 'i-lucide-eye',
+      onSelect: () => router.push(ROUTES.admin.team(team.id)),
+    },
+  ],
+  [
+    {
+      label: 'Delete team',
+      icon: 'i-lucide-trash-2',
+      color: 'error' as const,
+      onSelect: () => handleDelete(team),
+    },
+  ],
+]
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Teams">
-        <template #leading>
-          <UDashboardSidebarToggle />
-        </template>
+  <DashboardAdminPage title="Teams">
+    <div>
+      <UAlert
+        v-if="error"
+        color="error"
+        title="Failed to load teams"
+        :description="error.message"
+        icon="i-lucide-alert-circle"
+        class="mb-4"
+      />
 
-        <template #right>
-          <div class="flex items-center gap-2">
-            <UButton
-              icon="i-lucide-refresh-cw"
-              color="neutral"
-              variant="ghost"
-              :loading="isLoading"
-              @click="refresh()"
-            />
+      <AppResponsiveTable
+        v-model:search="search"
+        v-model:filter="organisationFilter"
+        :columns="columns"
+        :data="teams"
+        :loading="isLoading"
+        :server-side="true"
+        search-placeholder="Search by name..."
+        empty-icon="i-lucide-users-round"
+        empty-text="No teams found"
+        :filter-options="organisationFilterOptions"
+        filter-placeholder="Organisation"
+        :pagination="{ page, perPage, total }"
+        :sortable-columns="['name', 'createdAt']"
+        :get-sort-direction="getSortDirection"
+        @select="onSelectTeam"
+        @update:page="page = $event"
+        @update:per-page="perPage = $event"
+        @sort="handleSort"
+      >
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+              <UIcon name="i-lucide-users-round" class="size-5 text-primary" />
+            </div>
+            <div class="text-sm">
+              <p class="text-highlighted font-medium">
+                {{ row.original.name }}
+              </p>
+              <p class="text-muted text-xs">
+                {{ row.original.organisation.name }}
+              </p>
+            </div>
           </div>
         </template>
-      </UDashboardNavbar>
-    </template>
 
-    <template #body>
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h1 class="text-2xl font-bold">
-              Teams
-            </h1>
-            <p class="text-muted">
-              {{ total }} team{{ total !== 1 ? 's' : '' }} total
-            </p>
-          </div>
-        </div>
+        <template #createdAt-cell="{ row }">
+          {{ formatDate(row.original.createdAt) }}
+        </template>
 
-        <!-- Search and Filters -->
-        <div class="flex items-center gap-3 mb-4">
-          <UInput
-            v-model="search"
-            icon="i-lucide-search"
-            placeholder="Search by name..."
-            class="flex-1"
-          >
-            <template #trailing>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UDropdownMenu :items="getActionsItems(row.original)" :content="{ align: 'end' }">
               <UButton
-                v-show="search !== ''"
+                icon="i-lucide-ellipsis-vertical"
                 color="neutral"
-                variant="link"
-                icon="i-lucide-x"
-                :padded="false"
-                @click="search = ''"
+                variant="ghost"
+                @click.stop
               />
-            </template>
-          </UInput>
-          <USelectMenu
-            v-model="selectedOrganisationId"
-            :items="organisationFilterOptions"
-            value-key="value"
-            placeholder="Filter by organisation"
-            class="w-64"
-          />
-        </div>
-
-        <UAlert
-          v-if="teamsError"
-          color="error"
-          title="Failed to load data"
-          :description="teamsError.message"
-          icon="i-lucide-alert-circle"
-          class="mb-4"
-        />
-
-        <AdminTeamList
-          :teams="teams"
-          :loading="isLoading"
-          @delete="handleDelete"
-        />
-
-        <!-- Pagination -->
-        <div v-if="total > 0" class="mt-6 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <span class="text-sm text-muted">
-              Showing {{ offset + 1 }}-{{ Math.min(offset + perPage, total) }} of {{ total }}
-            </span>
+            </UDropdownMenu>
           </div>
-          <UPagination
-            v-model:page="page"
-            :total="total"
-            :items-per-page="perPage"
-            show-edges
-          />
-        </div>
-      </div>
-    </template>
-  </UDashboardPanel>
+        </template>
+
+        <template #mobile-card="{ item }">
+          <div class="flex items-center gap-3 p-4">
+            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
+              <UIcon name="i-lucide-users-round" class="size-5 text-primary" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-highlighted font-medium truncate">
+                {{ item.name }}
+              </p>
+              <p class="text-muted text-xs truncate">
+                {{ item.organisation.name }}
+              </p>
+            </div>
+          </div>
+        </template>
+      </AppResponsiveTable>
+    </div>
+  </DashboardAdminPage>
 </template>
