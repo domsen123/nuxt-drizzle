@@ -1,16 +1,48 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
+import type { AdminOrganisation } from '../types/admin.types'
 import { useAdminOrganisations } from '../composables/useAdminOrganisations'
 
 const { organisations, status } = useAdminOrganisations({ limit: 5, sort: ['-createdAt'] })
+
+const columns: TableColumn<AdminOrganisation>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'createdAt', header: 'Created' },
+]
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const onSelect = (org: AdminOrganisation) => {
+  navigateTo(`/admin/organisations/${org.id}`)
+}
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Recent Organisations
-        </h3>
+  <AppResponsiveTable
+    :columns="columns"
+    :data="organisations"
+    :loading="status === 'pending'"
+    :searchable="false"
+    empty-icon="i-lucide-building-2"
+    empty-text="No organisations yet"
+    @select="onSelect"
+  >
+    <template #header-extra>
+      <div class="flex items-center justify-between flex-1">
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center justify-center size-8 rounded-full bg-primary/10 ring ring-inset ring-primary/25">
+            <UIcon name="i-lucide-building-2" class="size-4 text-primary" />
+          </div>
+          <h3 class="text-xs uppercase text-muted font-medium">
+            Recent Organisations
+          </h3>
+        </div>
         <NuxtLink
           to="/admin/organisations"
           class="text-sm text-primary hover:underline"
@@ -20,43 +52,40 @@ const { organisations, status } = useAdminOrganisations({ limit: 5, sort: ['-cre
       </div>
     </template>
 
-    <div v-if="status === 'pending'" class="space-y-3">
-      <div v-for="i in 5" :key="i" class="flex items-center gap-3">
-        <USkeleton class="size-10 rounded-lg" />
-        <div class="flex-1 space-y-2">
-          <USkeleton class="h-4 w-32" />
-          <USkeleton class="h-3 w-24" />
+    <template #name-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+          <UIcon name="i-lucide-building-2" class="size-5 text-primary" />
+        </div>
+        <div class="text-sm">
+          <p class="text-highlighted font-medium">
+            {{ row.original.name }}
+          </p>
+          <p class="text-muted text-xs">
+            {{ row.original.slug }}
+          </p>
         </div>
       </div>
-    </div>
+    </template>
 
-    <ul v-else-if="organisations.length" class="divide-y divide-default">
-      <li v-for="org in organisations" :key="org.id">
-        <NuxtLink
-          :to="`/admin/organisations/${org.id}`"
-          class="flex items-center gap-3 py-3 hover:bg-elevated transition-colors -mx-4 px-4"
-        >
-          <div class="p-2 rounded-lg bg-primary/10">
-            <UIcon name="i-lucide-building-2" class="size-5 text-primary" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-medium truncate">
-              {{ org.name }}
-            </p>
-            <p class="text-sm text-muted truncate">
-              {{ org.slug }}
-            </p>
-          </div>
-          <span class="text-xs text-muted">
-            {{ new Date(org.createdAt).toLocaleDateString() }}
-          </span>
-        </NuxtLink>
-      </li>
-    </ul>
+    <template #createdAt-cell="{ row }">
+      {{ formatDate(row.original.createdAt) }}
+    </template>
 
-    <div v-else class="py-8 text-center text-muted">
-      <UIcon name="i-lucide-building-2" class="size-8 mx-auto mb-2 opacity-50" />
-      <p>No organisations yet</p>
-    </div>
-  </UCard>
+    <template #mobile-card="{ item }">
+      <div class="flex items-center gap-3 p-4">
+        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
+          <UIcon name="i-lucide-building-2" class="size-5 text-primary" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-highlighted font-medium truncate">
+            {{ item.name }}
+          </p>
+          <p class="text-muted text-xs truncate">
+            {{ item.slug }}
+          </p>
+        </div>
+      </div>
+    </template>
+  </AppResponsiveTable>
 </template>

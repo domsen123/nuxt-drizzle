@@ -196,8 +196,8 @@ const columnsWithSort = computed(() => {
     variant="subtle"
     :ui="{
       root: 'overflow-x-auto',
-      container: 'p-0 sm:p-0 gap-y-0 min-w-0',
-      wrapper: 'items-stretch min-w-0',
+      container: 'p-0 sm:p-0 gap-y-0 min-w-0 lg:flex lg:flex-col',
+      wrapper: 'items-stretch min-w-0 flex-none',
       header: (searchable || filterOptions?.length || $slots['header-extra']) ? 'p-4 mb-0 border-b border-default' : '',
     }"
   >

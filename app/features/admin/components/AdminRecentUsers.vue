@@ -1,16 +1,49 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
+import type { AdminUser } from '../types/admin.types'
 import { useAdminUsers } from '../composables/useAdminUsers'
 
 const { users, status } = useAdminUsers({ limit: 5, sort: ['-createdAt'] })
+
+const columns: TableColumn<AdminUser>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'emailVerified', header: 'Verified' },
+  { accessorKey: 'createdAt', header: 'Created' },
+]
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const onSelect = (user: AdminUser) => {
+  navigateTo(`/admin/users/${user.id}`)
+}
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Recent Users
-        </h3>
+  <AppResponsiveTable
+    :columns="columns"
+    :data="users"
+    :loading="status === 'pending'"
+    :searchable="false"
+    empty-icon="i-lucide-users"
+    empty-text="No users yet"
+    @select="onSelect"
+  >
+    <template #header-extra>
+      <div class="flex items-center justify-between flex-1">
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center justify-center size-8 rounded-full bg-primary/10 ring ring-inset ring-primary/25">
+            <UIcon name="i-lucide-users" class="size-4 text-primary" />
+          </div>
+          <h3 class="text-xs uppercase text-muted font-medium">
+            Recent Users
+          </h3>
+        </div>
         <NuxtLink
           to="/admin/users"
           class="text-sm text-primary hover:underline"
@@ -20,49 +53,56 @@ const { users, status } = useAdminUsers({ limit: 5, sort: ['-createdAt'] })
       </div>
     </template>
 
-    <div v-if="status === 'pending'" class="space-y-3">
-      <div v-for="i in 5" :key="i" class="flex items-center gap-3">
-        <USkeleton class="size-10 rounded-full" />
-        <div class="flex-1 space-y-2">
-          <USkeleton class="h-4 w-32" />
-          <USkeleton class="h-3 w-48" />
+    <template #name-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+          <UIcon name="i-lucide-user" class="size-5 text-primary" />
+        </div>
+        <div class="text-sm">
+          <p class="text-highlighted font-medium">
+            {{ row.original.name || 'No name' }}
+          </p>
+          <p class="text-muted text-xs">
+            {{ row.original.email }}
+          </p>
         </div>
       </div>
-    </div>
+    </template>
 
-    <ul v-else-if="users.length" class="divide-y divide-default">
-      <li v-for="user in users" :key="user.id">
-        <NuxtLink
-          :to="`/admin/users/${user.id}`"
-          class="flex items-center gap-3 py-3 hover:bg-elevated transition-colors -mx-4 px-4"
+    <template #emailVerified-cell="{ row }">
+      <UBadge
+        :color="row.original.emailVerified ? 'success' : 'neutral'"
+        variant="subtle"
+      >
+        {{ row.original.emailVerified ? 'Verified' : 'Unverified' }}
+      </UBadge>
+    </template>
+
+    <template #createdAt-cell="{ row }">
+      {{ formatDate(row.original.createdAt) }}
+    </template>
+
+    <template #mobile-card="{ item }">
+      <div class="flex items-center gap-3 p-4">
+        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
+          <UIcon name="i-lucide-user" class="size-5 text-primary" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-highlighted font-medium truncate">
+            {{ item.name || 'No name' }}
+          </p>
+          <p class="text-muted text-xs truncate">
+            {{ item.email }}
+          </p>
+        </div>
+        <UBadge
+          :color="item.emailVerified ? 'success' : 'neutral'"
+          variant="subtle"
+          class="shrink-0"
         >
-          <UAvatar
-            :alt="user.name || user.email"
-            :ui="{ fallback: 'bg-primary/10 text-primary' }"
-            size="md"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="font-medium truncate">
-              {{ user.name || 'Unnamed' }}
-            </p>
-            <p class="text-sm text-muted truncate">
-              {{ user.email }}
-            </p>
-          </div>
-          <UBadge
-            :color="user.emailVerified ? 'success' : 'neutral'"
-            variant="subtle"
-            size="xs"
-          >
-            {{ user.emailVerified ? 'Verified' : 'Unverified' }}
-          </UBadge>
-        </NuxtLink>
-      </li>
-    </ul>
-
-    <div v-else class="py-8 text-center text-muted">
-      <UIcon name="i-lucide-users" class="size-8 mx-auto mb-2 opacity-50" />
-      <p>No users yet</p>
-    </div>
-  </UCard>
+          {{ item.emailVerified ? 'Verified' : 'Unverified' }}
+        </UBadge>
+      </div>
+    </template>
+  </AppResponsiveTable>
 </template>

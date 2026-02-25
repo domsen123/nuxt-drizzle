@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminRecentOrganisations from '~/features/admin/components/AdminRecentOrganisations.vue'
 import AdminRecentUsers from '~/features/admin/components/AdminRecentUsers.vue'
-import AdminStatsCard from '~/features/admin/components/AdminStatsCard.vue'
 import { useAdminStats } from '~/features/admin/composables/useAdminStats'
 
 definePageMeta({
@@ -14,6 +13,15 @@ useSeoMeta({
 })
 
 const { stats, status } = useAdminStats()
+
+const statCards = computed(() => [
+  { title: 'Total Users', value: stats.value?.totalUsers ?? '—', icon: 'i-lucide-users' },
+  { title: 'Verified Users', value: stats.value?.verifiedUsers ?? '—', icon: 'i-lucide-user-check' },
+  { title: 'Unverified Users', value: stats.value?.unverifiedUsers ?? '—', icon: 'i-lucide-user-x' },
+  { title: 'Organisations', value: stats.value?.totalOrganisations ?? '—', icon: 'i-lucide-building-2' },
+  { title: 'Teams', value: stats.value?.totalTeams ?? '—', icon: 'i-lucide-users-round' },
+  { title: 'Active Sessions', value: stats.value?.activeSessions ?? '—', icon: 'i-lucide-activity' },
+])
 </script>
 
 <template>
@@ -25,44 +33,34 @@ const { stats, status } = useAdminStats()
         </h1>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <AdminStatsCard
-            title="Total Users"
-            :value="stats?.totalUsers ?? '—'"
-            icon="i-lucide-users"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-          <AdminStatsCard
-            title="Verified Users"
-            :value="stats?.verifiedUsers ?? '—'"
-            icon="i-lucide-user-check"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-          <AdminStatsCard
-            title="Unverified Users"
-            :value="stats?.unverifiedUsers ?? '—'"
-            icon="i-lucide-user-x"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-          <AdminStatsCard
-            title="Organisations"
-            :value="stats?.totalOrganisations ?? '—'"
-            icon="i-lucide-building-2"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-          <AdminStatsCard
-            title="Teams"
-            :value="stats?.totalTeams ?? '—'"
-            icon="i-lucide-users-round"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-          <AdminStatsCard
-            title="Active Sessions"
-            :value="stats?.activeSessions ?? '—'"
-            icon="i-lucide-activity"
-            :description="status === 'pending' ? 'Loading...' : undefined"
-          />
-        </div>
+        <UPageGrid class="lg:grid-cols-3 gap-px">
+          <UPageCard
+            v-for="(card, index) in statCards"
+            :key="card.title"
+            :icon="card.icon"
+            :title="card.title"
+            variant="subtle"
+            class="lg:rounded-none"
+            :class="[
+              index === 0 && 'lg:rounded-tl-lg',
+              index === 2 && 'lg:rounded-tr-lg',
+              index === 3 && 'lg:rounded-bl-lg',
+              index === 5 && 'lg:rounded-br-lg',
+            ]"
+            :ui="{
+              root: 'gap-3',
+              leading: 'inline-flex items-center justify-center size-8 rounded-full bg-primary/10 ring ring-inset ring-primary/25',
+              leadingIcon: 'size-4',
+              title: 'text-xs uppercase text-muted font-medium',
+            }"
+          >
+            <template #default>
+              <p class="text-2xl font-semibold text-highlighted">
+                {{ status === 'pending' ? 'Loading...' : card.value }}
+              </p>
+            </template>
+          </UPageCard>
+        </UPageGrid>
       </div>
 
       <!-- Recent Activity -->
