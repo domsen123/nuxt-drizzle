@@ -20,22 +20,7 @@ provide('adminUser', {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="user?.name || user?.email || 'User'">
-        <template #leading>
-          <UButton
-            icon="i-lucide-arrow-left"
-            color="neutral"
-            variant="ghost"
-            :to="ROUTES.admin.users"
-          />
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <NuxtPage />
-    </template>
-  </UDashboardPanel>
+  <DashboardAdminPage :title="user?.name || user?.email || 'User'">
+    <NuxtPage />
+  </DashboardAdminPage>
 </template>

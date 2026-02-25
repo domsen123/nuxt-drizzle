@@ -138,50 +138,38 @@ const showDeleteConfirm = ref(false)
         label="Email Address"
         description="User's email address for login and notifications."
         required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <div class="w-full max-w-sm">
-          <UInput
-            v-model="state.email"
-            type="email"
-            placeholder="user@example.com"
-            autocomplete="email"
-            :maxlength="EMAIL_MAX_LENGTH"
-          />
-        </div>
+        <UInput
+          v-model="state.email"
+          type="email"
+          placeholder="user@example.com"
+          autocomplete="email"
+          :maxlength="EMAIL_MAX_LENGTH"
+        />
       </UFormField>
-
-      <USeparator />
 
       <!-- Name Field -->
       <UFormField
         name="name"
         label="Full Name"
         description="User's display name."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <div class="w-full max-w-sm">
-          <UInput
-            v-model="state.name"
-            placeholder="John Doe"
-            autocomplete="name"
-            :maxlength="NAME_MAX_LENGTH"
-          />
-        </div>
+        <UInput
+          v-model="state.name"
+          placeholder="John Doe"
+          autocomplete="name"
+          :maxlength="NAME_MAX_LENGTH"
+        />
       </UFormField>
-
-      <USeparator />
 
       <!-- Email Verified Toggle -->
       <UFormField
         name="emailVerified"
         label="Email Verified"
         description="Whether the user's email address has been verified."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
+        class="flex max-sm:flex-col justify-between items-center gap-4"
       >
-        <div class="w-full max-w-sm">
-          <USwitch v-model="state.emailVerified" />
-        </div>
+        <USwitch v-model="state.emailVerified" />
       </UFormField>
     </UPageCard>
 
