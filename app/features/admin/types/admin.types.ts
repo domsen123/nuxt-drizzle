@@ -311,3 +311,112 @@ export interface UpdateBlogCategoryInput {
   name: string
   slug: string
 }
+
+// Content Creator types
+export type AiProviderType = 'anthropic' | 'google'
+export type PillarStatus = 'pending' | 'confirmed' | 'rejected'
+export type ClusterStatus = 'idea' | 'approved' | 'queued' | 'generating' | 'generated' | 'failed'
+export type ProductionInterval = 'every3days' | 'weekly' | 'biweekly'
+export type ContentCreatorLanguage = 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt' | 'nl' | 'pl' | 'ja' | 'ko' | 'zh' | 'ru' | 'ar' | 'tr' | 'sv' | 'da' | 'no'
+
+export interface ContentCreatorSettings {
+  id: string
+  provider: AiProviderType
+  model: string | null
+  hasApiKey: boolean
+  language: ContentCreatorLanguage
+  brandVoice: string | null
+  productionInterval: ProductionInterval
+  productionEnabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ContentCreatorSettingsResponse {
+  settings: ContentCreatorSettings | null
+}
+
+export interface SaveContentCreatorSettingsInput {
+  provider: AiProviderType
+  model?: string | null
+  apiKey?: string
+  language: ContentCreatorLanguage
+  brandVoice?: string | null
+  productionInterval: ProductionInterval
+  productionEnabled: boolean
+}
+
+export interface ContentCreatorPillar {
+  id: string
+  seedTopic: string
+  name: string
+  description: string | null
+  categoryId: string | null
+  status: PillarStatus
+  category: { id: string, name: string, slug: string } | null
+  clusterCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ContentCreatorPillarsResponse {
+  pillars: ContentCreatorPillar[]
+  total: number
+}
+
+export interface ContentCreatorCluster {
+  id: string
+  pillarId: string
+  title: string
+  slug: string
+  description: string | null
+  keywords: string | null
+  status: ClusterStatus
+  blogPostId: string | null
+  priority: number
+  scheduledFor: string | null
+  generatedAt: string | null
+  errorMessage: string | null
+  pillar: { id: string, name: string, seedTopic: string } | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ContentCreatorClustersResponse {
+  clusters: ContentCreatorCluster[]
+  total: number
+}
+
+export interface ContentCreatorClustersQueryParams {
+  pillarId?: string
+  status?: ClusterStatus
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface UpdateClusterInput {
+  title?: string
+  slug?: string
+  description?: string | null
+  keywords?: string | null
+  status?: ClusterStatus
+  priority?: number
+  scheduledFor?: string | null
+}
+
+export interface ContentCreatorQueueResponse {
+  queue: ContentCreatorCluster[]
+}
+
+export interface ValidateConnectionResponse {
+  success: boolean
+  provider: AiProviderType
+}
+
+export interface ProcessQueueResponse {
+  processed: boolean
+  message?: string
+  clusterId?: string
+  blogPostId?: string
+}
