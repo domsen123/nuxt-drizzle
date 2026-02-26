@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { AdminOrganisation } from '~/features/admin'
 import type { OrganisationInvitation } from '~/features/organisation-invitations'
 import type { OrganisationMember } from '~/features/organisation-members'
 import {
@@ -21,20 +20,8 @@ import OrganisationMembersList from '~/features/organisation-members/components/
 const route = useRoute()
 const toast = useToast()
 
-// Try to inject organisation data from parent layout, with fallback for SSR
-const injected = inject<{
-  organisation: Ref<AdminOrganisation | null>
-  organisationId: ComputedRef<string>
-  status: Ref<string>
-  error: Ref<Error | null>
-  refresh: () => void
-} | null>('adminOrganisation', null)
-
-// Fallback: compute organisationId from route if inject fails during SSR
-const organisationId = computed(() => injected?.organisationId.value ?? (route.params.id as string))
-
-// Use injected organisation if available
-const organisation = computed(() => injected?.organisation.value ?? null)
+const organisationId = computed(() => route.params.id as string)
+const { organisation } = useAdminOrganisation(organisationId)
 
 // Fetch members
 const { members, total, status: membersStatus, error: membersError, refresh } = useAdminOrganisationMembers(organisationId)

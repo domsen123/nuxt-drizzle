@@ -9,16 +9,7 @@ definePageMeta({
 const route = useRoute()
 const organisationId = computed(() => route.params.id as string)
 
-const { organisation, status, error, refresh } = useAdminOrganisation(organisationId)
-
-// Provide organisation data to child pages
-provide('adminOrganisation', {
-  organisation,
-  organisationId,
-  status,
-  error,
-  refresh,
-})
+const { organisation } = useAdminOrganisation(organisationId)
 
 const links = computed<NavigationMenuItem[][]>(() => [[
   {

@@ -1,29 +1,12 @@
 <script setup lang="ts">
-import type { AdminTeam } from '~/features/admin'
 import { useAdminTeam } from '~/features/admin'
 import AdminTeamForm from '~/features/admin/components/AdminTeamForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-// Try to inject team data from parent layout, with fallback for SSR
-const injected = inject<{
-  team: Ref<AdminTeam | null>
-  teamId: ComputedRef<string>
-  status: Ref<string>
-  error: Ref<Error | null>
-  refresh: () => void
-} | null>('adminTeam', null)
-
-// Fallback: fetch data directly if inject fails during SSR
 const teamId = computed(() => route.params.id as string)
-const fallbackQuery = injected ? null : useAdminTeam(teamId)
-
-// Use injected data if available, otherwise use fallback
-const team = computed(() => injected?.team.value ?? fallbackQuery?.team.value ?? null)
-const status = computed(() => injected?.status.value ?? fallbackQuery?.status.value ?? 'pending')
-const error = computed(() => injected?.error.value ?? fallbackQuery?.error.value ?? null)
-const refresh = () => injected?.refresh() ?? fallbackQuery?.refresh()
+const { team, status, error, refresh } = useAdminTeam(teamId)
 
 const isLoading = computed(() => status.value === 'pending')
 

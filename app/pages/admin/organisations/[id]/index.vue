@@ -1,28 +1,12 @@
 <script setup lang="ts">
-import type { AdminOrganisation } from '~/features/admin'
 import AdminOrganisationForm from '~/features/admin/components/AdminOrganisationForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-// Try to inject organisation data from parent layout, with fallback for SSR
-const injected = inject<{
-  organisation: Ref<AdminOrganisation | null>
-  organisationId: ComputedRef<string>
-  status: Ref<string>
-  error: Ref<Error | null>
-  refresh: () => void
-} | null>('adminOrganisation', null)
-
-// Fallback: fetch data directly if inject fails during SSR
 const organisationId = computed(() => route.params.id as string)
-const fallbackQuery = injected ? null : useAdminOrganisation(organisationId)
-
-// Use injected data if available, otherwise use fallback
-const organisation = computed(() => injected?.organisation.value ?? fallbackQuery?.organisation.value ?? null)
-const status = computed(() => injected?.status.value ?? fallbackQuery?.status.value ?? 'pending')
-const error = computed(() => injected?.error.value ?? fallbackQuery?.error.value ?? null)
+const { organisation, status, error } = useAdminOrganisation(organisationId)
 
 const isLoading = computed(() => status.value === 'pending')
 

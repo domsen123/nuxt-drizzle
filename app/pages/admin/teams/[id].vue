@@ -10,16 +10,7 @@ definePageMeta({
 const route = useRoute()
 const teamId = computed(() => route.params.id as string)
 
-const { team, status, error, refresh } = useAdminTeam(teamId)
-
-// Provide team data to child pages
-provide('adminTeam', {
-  team,
-  teamId,
-  status,
-  error,
-  refresh,
-})
+const { team } = useAdminTeam(teamId)
 
 const links = computed<NavigationMenuItem[][]>(() => [[
   {

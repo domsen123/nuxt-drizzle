@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrganisation, AdminTeam } from '~/features/admin'
+import type { AdminTeam } from '~/features/admin'
 import {
   useAdminOrganisationTeams,
   useCreateTeam,
@@ -9,16 +9,11 @@ import {
 import AdminTeamFormModal from '~/features/admin/components/AdminTeamFormModal.vue'
 import AdminTeamList from '~/features/admin/components/AdminTeamList.vue'
 
+const route = useRoute()
 const toast = useToast()
 
-// Inject organisation data from parent layout
-const { organisation, organisationId } = inject<{
-  organisation: Ref<AdminOrganisation | null>
-  organisationId: ComputedRef<string>
-  status: Ref<string>
-  error: Ref<Error | null>
-  refresh: () => void
-}>('adminOrganisation')!
+const organisationId = computed(() => route.params.id as string)
+const { organisation } = useAdminOrganisation(organisationId)
 
 // Fetch teams
 const { teams, total, status: teamsStatus, error: teamsError } = useAdminOrganisationTeams(organisationId)

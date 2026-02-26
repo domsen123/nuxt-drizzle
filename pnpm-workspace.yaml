@@ -1,3 +1,8 @@
+catalogMode: prefer
+
+shellEmulator: true
+trustPolicy: no-downgrade
+
 catalog:
   '@antfu/eslint-config': ^7.2.0
   '@faker-js/faker': ^10.2.0
@@ -45,9 +50,6 @@ catalog:
   vue-advanced-cropper: ^2.8.9
   vue-tsc: ^3.2.4
   zod: ^4.3.6
-
-catalogMode: prefer
-
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - bcrypt
@@ -55,5 +57,3 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - vue-demi
-
-shellEmulator: true

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminTeam, AdminTeamMember } from '~/features/admin'
+import type { AdminTeamMember } from '~/features/admin'
 import {
   useAddTeamMember,
   useAdminTeam,
@@ -13,21 +13,8 @@ import AdminTeamMemberList from '~/features/admin/components/AdminTeamMemberList
 const route = useRoute()
 const toast = useToast()
 
-// Try to inject team data from parent layout, with fallback for SSR
-const injected = inject<{
-  team: Ref<AdminTeam | null>
-  teamId: ComputedRef<string>
-  status: Ref<string>
-  error: Ref<Error | null>
-  refresh: () => void
-} | null>('adminTeam', null)
-
-// Fallback: compute teamId from route if inject fails during SSR
-const teamId = computed(() => injected?.teamId.value ?? (route.params.id as string))
-
-// Use injected team if available, or fetch it
-const fallbackTeamQuery = injected ? null : useAdminTeam(teamId)
-const team = computed(() => injected?.team.value ?? fallbackTeamQuery?.team.value ?? null)
+const teamId = computed(() => route.params.id as string)
+const { team } = useAdminTeam(teamId)
 
 // Fetch team members
 const { members, total, status: membersStatus, error: membersError, refresh } = useAdminTeamMembers(teamId)
