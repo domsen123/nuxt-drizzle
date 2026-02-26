@@ -29,6 +29,7 @@ const onCancel = () => {
 
 const { mutateAsync: deleteUser, asyncStatus: deleteStatus } = useDeleteUser()
 const isDeleting = computed(() => deleteStatus.value === 'loading')
+const confirmDelete = ref(false)
 
 const onDelete = async () => {
   if (!user.value)
@@ -60,6 +61,7 @@ const onDelete = async () => {
             :items="[
               { label: 'General', to: { hash: '#general' }, active: route.hash === '#general' || !route.hash },
               { label: 'Roles', to: { hash: '#roles' }, active: route.hash === '#roles' },
+              { label: 'Delete Account', to: { hash: '#delete' }, active: route.hash === '#delete' },
             ]"
             orientation="vertical"
           />
@@ -84,13 +86,46 @@ const onDelete = async () => {
               :user="user"
               @success="onSuccess"
               @cancel="onCancel"
-              @delete="onDelete"
             />
           </div>
 
           <USeparator class="my-6" />
 
           <AdminUserRoles id="roles" :user-id="userId" />
+
+          <USeparator class="my-6" />
+
+          <div id="delete">
+            <UPageCard variant="subtle">
+              <div class="space-y-4">
+                <h3 class="text-sm font-medium text-error">
+                  Danger Zone
+                </h3>
+                <UAlert
+                  color="error"
+                  variant="subtle"
+                  icon="i-lucide-alert-triangle"
+                  title="Delete Account"
+                  description="Permanently delete this user account. This action cannot be undone and will remove all associated data."
+                />
+                <div class="flex max-sm:flex-col justify-between items-center gap-4">
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <USwitch v-model="confirmDelete" />
+                    I understand this action is permanent
+                  </label>
+                  <UButton
+                    color="error"
+                    variant="outline"
+                    label="Delete User"
+                    icon="i-lucide-trash-2"
+                    :disabled="!confirmDelete"
+                    :loading="isDeleting"
+                    @click="onDelete"
+                  />
+                </div>
+              </div>
+            </UPageCard>
+          </div>
         </template>
       </UPageBody>
     </UPage>

@@ -10,15 +10,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   success: [user: AdminUser]
   cancel: []
-  delete: []
 }>()
 
 const NAME_MAX_LENGTH = 100
 const EMAIL_MAX_LENGTH = 255
 
 const schema = z.object({
-  name: z.string().trim().max(NAME_MAX_LENGTH, `Name must be ${NAME_MAX_LENGTH} characters or less`).nullable(),
-  email: z.string().trim().email('Invalid email address').max(EMAIL_MAX_LENGTH, `Email must be ${EMAIL_MAX_LENGTH} characters or less`),
+  name: z.string().trim().max(NAME_MAX_LENGTH, `Name must be ${NAME_MAX_LENGTH} characters or less`).optional(),
+  email: z.email('Invalid email address').trim().max(EMAIL_MAX_LENGTH, `Email must be ${EMAIL_MAX_LENGTH} characters or less`),
   emailVerified: z.boolean(),
 })
 
@@ -63,8 +62,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     // Error is captured in refs
   }
 }
-
-const showDeleteConfirm = ref(false)
 </script>
 
 <template>
@@ -78,7 +75,7 @@ const showDeleteConfirm = ref(false)
     <!-- Header Card -->
     <UPageCard
       title="Edit User"
-      description="Update user details or delete the account."
+      description="Update user details."
       variant="naked"
       orientation="horizontal"
       class="mb-4"
@@ -91,15 +88,6 @@ const showDeleteConfirm = ref(false)
           @click="emit('cancel')"
         >
           Cancel
-        </UButton>
-        <UButton
-          variant="ghost"
-          color="error"
-          icon="i-lucide-trash-2"
-          :disabled="isLoading"
-          @click="showDeleteConfirm = true"
-        >
-          Delete User
         </UButton>
         <UButton
           form="user-form"
@@ -133,7 +121,7 @@ const showDeleteConfirm = ref(false)
     <!-- Form Fields Card -->
     <UPageCard variant="subtle">
       <!-- Avatar -->
-      <div class="flex justify-center pb-4">
+      <div class="flex pb-4">
         <AdminUserAvatar
           :user-id="user.id"
           :user-name="user.name"
@@ -200,43 +188,6 @@ const showDeleteConfirm = ref(false)
       </div>
     </UPageCard>
   </UForm>
-
-  <!-- Delete Confirmation Modal -->
-  <UModal v-model:open="showDeleteConfirm">
-    <template #content>
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-alert-triangle" class="text-error size-5" />
-            <span class="font-semibold">Delete User</span>
-          </div>
-        </template>
-
-        <p class="text-muted">
-          This action cannot be undone. All user data will be permanently deleted.
-        </p>
-
-        <template #footer>
-          <div class="flex gap-2 justify-end">
-            <UButton
-              variant="ghost"
-              color="neutral"
-              @click="showDeleteConfirm = false"
-            >
-              Cancel
-            </UButton>
-            <UButton
-              color="error"
-              icon="i-lucide-trash-2"
-              @click="emit('delete'); showDeleteConfirm = false"
-            >
-              Delete User
-            </UButton>
-          </div>
-        </template>
-      </UCard>
-    </template>
-  </UModal>
 </template>
 
 <style scoped>
