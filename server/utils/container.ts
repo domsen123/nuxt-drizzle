@@ -141,6 +141,9 @@ const getBlogTagsItemService = lazy(() =>
 const getBlogPostTagsItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.blogPostTags, tableName: 'blogPostTags', eventBus: getEventBus() }),
 )
+const getBlogCategoriesItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.blogCategories, tableName: 'blogCategories', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -260,5 +263,6 @@ export const container = {
     get blogPosts() { return getBlogPostsItemService() },
     get blogTags() { return getBlogTagsItemService() },
     get blogPostTags() { return getBlogPostTagsItemService() },
+    get blogCategories() { return getBlogCategoriesItemService() },
   },
 }

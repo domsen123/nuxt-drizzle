@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm'
+import { blogCategories } from './blog-categories'
 import { blogPostTags } from './blog-post-tags'
 import { blogPosts } from './blog-posts'
 import { blogTags } from './blog-tags'
@@ -145,7 +146,15 @@ export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
     fields: [blogPosts.authorId],
     references: [users.id],
   }),
+  category: one(blogCategories, {
+    fields: [blogPosts.categoryId],
+    references: [blogCategories.id],
+  }),
   postTags: many(blogPostTags),
+}))
+
+export const blogCategoriesRelations = relations(blogCategories, ({ many }) => ({
+  posts: many(blogPosts),
 }))
 
 export const blogTagsRelations = relations(blogTags, ({ many }) => ({

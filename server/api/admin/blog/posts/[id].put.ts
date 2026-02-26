@@ -9,6 +9,7 @@ const schema = z.object({
   content: z.string().trim().min(1),
   published: z.boolean().default(false),
   publishedAt: z.string().datetime().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
   tagIds: z.array(z.string()).default([]),
 })
 
@@ -55,6 +56,7 @@ export default defineEventHandler(async (event) => {
     content: data.content,
     published: data.published,
     publishedAt,
+    categoryId: data.categoryId ?? null,
   })
 
   // Delete + reinsert junction rows for tags

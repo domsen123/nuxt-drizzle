@@ -72,6 +72,7 @@ const schema = z.object({
   teaser: z.string().trim().max(TEASER_MAX_LENGTH).default(''),
   content: z.string().trim().min(1, 'Content is required'),
   published: z.boolean().default(false),
+  categoryId: z.string().optional(),
   tagIds: z.array(z.string()).default([]),
 })
 
@@ -83,6 +84,7 @@ const state = reactive<Schema>({
   teaser: props.post?.teaser ?? '',
   content: props.post?.content ?? '',
   published: props.post?.published ?? false,
+  categoryId: props.post?.categoryId ?? undefined,
   tagIds: props.post?.tags.map(t => t.id) ?? [],
 })
 
@@ -116,8 +118,16 @@ const resetSlugAutoGeneration = () => {
   state.slug = generateSlug(state.title)
 }
 
-// Fetch all tags for selection
+// Fetch all categories and tags for selection
+const { categories: allCategories } = useAdminBlogCategories(() => ({ limit: 200 }))
 const { tags: allTags } = useAdminBlogTags(() => ({ limit: 200 }))
+
+const categoryOptions = computed(() =>
+  allCategories.value.map(cat => ({
+    label: cat.name,
+    value: cat.id,
+  })),
+)
 
 const tagOptions = computed(() =>
   allTags.value.map(tag => ({
@@ -126,8 +136,20 @@ const tagOptions = computed(() =>
   })),
 )
 
+const { mutateAsync: createBlogCategory } = useCreateBlogCategory()
 const { mutateAsync: createBlogTag } = useCreateBlogTag()
 const toast = useToast()
+
+const onCreateCategory = async (name: string) => {
+  try {
+    const { category } = await createBlogCategory({ name, slug: generateSlug(name) })
+    state.categoryId = category.id
+    toast.add({ title: `Category "${name}" created`, color: 'success' })
+  }
+  catch {
+    toast.add({ title: `Failed to create category "${name}"`, color: 'error' })
+  }
+}
 
 const onCreate = async (name: string) => {
   try {
@@ -165,7 +187,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     ? calendarDateTimeToIso(scheduledDate.value)
     : null
 
-  const submitData = { ...event.data, publishedAt }
+  const submitData = { ...event.data, publishedAt, categoryId: event.data.categoryId ?? null }
 
   try {
     if (isEditMode.value) {
@@ -310,6 +332,20 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
               </UButton>
             </div>
           </div>
+        </UPageCard>
+
+        <!-- Category Box -->
+        <UPageCard title="Category" variant="subtle">
+          <UFormField name="categoryId">
+            <USelectMenu
+              v-model="state.categoryId"
+              :items="categoryOptions"
+              value-key="value"
+              placeholder="Select category..."
+              create-item
+              @create="onCreateCategory"
+            />
+          </UFormField>
         </UPageCard>
 
         <!-- Tags Box -->

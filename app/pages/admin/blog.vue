@@ -7,6 +7,7 @@ definePageMeta({
 
 const items = [
   { label: 'Posts', icon: 'i-lucide-file-text', to: ROUTES.admin.blogPosts },
+  { label: 'Categories', icon: 'i-lucide-folder', to: ROUTES.admin.blogCategories },
   { label: 'Tags', icon: 'i-lucide-tag', to: ROUTES.admin.blogTags },
 ]
 </script>

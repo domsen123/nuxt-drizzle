@@ -1,3 +1,4 @@
+export * from './blog-categories'
 export * from './blog-post-tags'
 export * from './blog-posts'
 export * from './blog-tags'

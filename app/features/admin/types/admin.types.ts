@@ -181,6 +181,12 @@ export interface AdminBlogPostTag {
   slug: string
 }
 
+export interface AdminBlogPostCategory {
+  id: string
+  name: string
+  slug: string
+}
+
 export interface AdminBlogPost {
   id: string
   title: string
@@ -190,7 +196,9 @@ export interface AdminBlogPost {
   published: boolean
   publishedAt: string | null
   authorId: string | null
+  categoryId: string | null
   author: AdminBlogPostAuthor | null
+  category: AdminBlogPostCategory | null
   tags: AdminBlogPostTag[]
   createdAt: string
   updatedAt: string
@@ -219,6 +227,7 @@ export interface CreateBlogPostInput {
   content: string
   published: boolean
   publishedAt?: string | null
+  categoryId?: string | null
   tagIds: string[]
 }
 
@@ -229,6 +238,7 @@ export interface UpdateBlogPostInput {
   content: string
   published: boolean
   publishedAt?: string | null
+  categoryId?: string | null
   tagIds: string[]
 }
 
@@ -263,6 +273,41 @@ export interface CreateBlogTagInput {
 }
 
 export interface UpdateBlogTagInput {
+  name: string
+  slug: string
+}
+
+// Blog category types
+export interface AdminBlogCategory {
+  id: string
+  name: string
+  slug: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminBlogCategoriesResponse {
+  categories: AdminBlogCategory[]
+  total: number
+}
+
+export interface AdminBlogCategoryResponse {
+  category: AdminBlogCategory
+}
+
+export interface AdminBlogCategoriesQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface CreateBlogCategoryInput {
+  name: string
+  slug: string
+}
+
+export interface UpdateBlogCategoryInput {
   name: string
   slug: string
 }

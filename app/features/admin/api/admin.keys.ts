@@ -1,4 +1,4 @@
-import type { AdminBlogPostsQueryParams, AdminBlogTagsQueryParams, AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQueryParams } from '../types/admin.types'
+import type { AdminBlogCategoriesQueryParams, AdminBlogPostsQueryParams, AdminBlogTagsQueryParams, AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQueryParams } from '../types/admin.types'
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -26,4 +26,7 @@ export const adminKeys = {
   blogTags: (params?: AdminBlogTagsQueryParams) => params
     ? [...adminKeys.all, 'blogTags', params] as const
     : [...adminKeys.all, 'blogTags'] as const,
+  blogCategories: (params?: AdminBlogCategoriesQueryParams) => params
+    ? [...adminKeys.all, 'blogCategories', params] as const
+    : [...adminKeys.all, 'blogCategories'] as const,
 }

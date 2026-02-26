@@ -1,4 +1,5 @@
 import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { blogCategories } from './blog-categories'
 import { users } from './users'
 
 export const blogPosts = pgTable('blog_posts', {
@@ -10,6 +11,7 @@ export const blogPosts = pgTable('blog_posts', {
   published: boolean('published').notNull().default(false),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   authorId: text('author_id').references(() => users.id, { onDelete: 'set null' }),
+  categoryId: text('category_id').references(() => blogCategories.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

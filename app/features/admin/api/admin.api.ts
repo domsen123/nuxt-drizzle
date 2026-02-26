@@ -1,5 +1,8 @@
 import type {
   AddTeamMemberInput,
+  AdminBlogCategoriesQueryParams,
+  AdminBlogCategoriesResponse,
+  AdminBlogCategoryResponse,
   AdminBlogPostResponse,
   AdminBlogPostsQueryParams,
   AdminBlogPostsResponse,
@@ -21,10 +24,12 @@ import type {
   AdminUserRolesResponse,
   AdminUsersQueryParams,
   AdminUsersResponse,
+  CreateBlogCategoryInput,
   CreateBlogPostInput,
   CreateBlogTagInput,
   CreateOrganisationInput,
   CreateTeamInput,
+  UpdateBlogCategoryInput,
   UpdateBlogPostInput,
   UpdateBlogTagInput,
   UpdateOrganisationInput,
@@ -153,5 +158,18 @@ export const useAdminApi = () => {
 
     deleteBlogTag: (id: string): Promise<{ success: boolean }> =>
       $api(`/api/admin/blog/tags/${id}`, { method: 'DELETE' }),
+
+    // Blog Categories
+    getBlogCategories: (params?: AdminBlogCategoriesQueryParams): Promise<AdminBlogCategoriesResponse> =>
+      $api('/api/admin/blog/categories', { query: params }),
+
+    createBlogCategory: (data: CreateBlogCategoryInput): Promise<AdminBlogCategoryResponse> =>
+      $api('/api/admin/blog/categories', { method: 'POST', body: data }),
+
+    updateBlogCategory: (id: string, data: UpdateBlogCategoryInput): Promise<AdminBlogCategoryResponse> =>
+      $api(`/api/admin/blog/categories/${id}`, { method: 'PUT', body: data }),
+
+    deleteBlogCategory: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/blog/categories/${id}`, { method: 'DELETE' }),
   }
 }

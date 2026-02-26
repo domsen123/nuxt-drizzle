@@ -9,6 +9,7 @@ const schema = z.object({
   content: z.string().trim().min(1),
   published: z.boolean().default(false),
   publishedAt: z.string().datetime().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
   tagIds: z.array(z.string()).default([]),
 })
 
@@ -32,6 +33,7 @@ export default defineEventHandler(async (event) => {
     published: data.published,
     publishedAt: data.published ? (data.publishedAt ? new Date(data.publishedAt) : new Date()) : null,
     authorId: user.id,
+    categoryId: data.categoryId ?? null,
   })
 
   // Create junction records for tags

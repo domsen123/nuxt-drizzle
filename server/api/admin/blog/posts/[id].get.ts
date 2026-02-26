@@ -14,10 +14,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Post not found' })
   }
 
-  // Fetch author and tags
-  const [author, postTags] = await Promise.all([
+  // Fetch author, category, and tags
+  const [author, category, postTags] = await Promise.all([
     post.authorId
       ? container.items.users.findOne({ id: { _eq: post.authorId } })
+      : null,
+    post.categoryId
+      ? container.items.blogCategories.findOne({ id: { _eq: post.categoryId } })
       : null,
     container.items.blogPostTags.findMany({ filter: { postId: { _eq: id } } }),
   ])
@@ -31,6 +34,7 @@ export default defineEventHandler(async (event) => {
     post: {
       ...post,
       author: author ? { id: author.id, name: author.name, email: author.email } : null,
+      category: category ? { id: category.id, name: category.name, slug: category.slug } : null,
       tags: tags.map(t => ({ id: t.id, name: t.name, slug: t.slug })),
     },
   }
