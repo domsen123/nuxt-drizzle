@@ -18,5 +18,3 @@ defineProps<{
     </template>
   </UDashboardPanel>
 </template>
-
-<style></style>
