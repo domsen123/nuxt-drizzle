@@ -24,17 +24,26 @@ import type {
   AdminUserRolesResponse,
   AdminUsersQueryParams,
   AdminUsersResponse,
+  ContentCreatorClustersQueryParams,
+  ContentCreatorClustersResponse,
+  ContentCreatorPillarsResponse,
+  ContentCreatorQueueResponse,
+  ContentCreatorSettingsResponse,
   CreateBlogCategoryInput,
   CreateBlogPostInput,
   CreateBlogTagInput,
   CreateOrganisationInput,
   CreateTeamInput,
+  ProcessQueueResponse,
+  SaveContentCreatorSettingsInput,
   UpdateBlogCategoryInput,
   UpdateBlogPostInput,
   UpdateBlogTagInput,
+  UpdateClusterInput,
   UpdateOrganisationInput,
   UpdateTeamInput,
   UpdateUserInput,
+  ValidateConnectionResponse,
 } from '../types/admin.types'
 
 /**
@@ -171,5 +180,51 @@ export const useAdminApi = () => {
 
     deleteBlogCategory: (id: string): Promise<{ success: boolean }> =>
       $api(`/api/admin/blog/categories/${id}`, { method: 'DELETE' }),
+
+    // Content Creator - Settings
+    getContentCreatorSettings: (): Promise<ContentCreatorSettingsResponse> =>
+      $api('/api/admin/blog/content-creator/settings'),
+
+    saveContentCreatorSettings: (data: SaveContentCreatorSettingsInput): Promise<ContentCreatorSettingsResponse> =>
+      $api('/api/admin/blog/content-creator/settings', { method: 'PUT', body: data }),
+
+    validateContentCreatorConnection: (): Promise<ValidateConnectionResponse> =>
+      $api('/api/admin/blog/content-creator/validate-connection', { method: 'POST' }),
+
+    // Content Creator - Pillars
+    getContentCreatorPillars: (params?: { status?: string }): Promise<ContentCreatorPillarsResponse> =>
+      $api('/api/admin/blog/content-creator/pillars', { query: params }),
+
+    generateContentCreatorPillars: (seedTopic: string): Promise<ContentCreatorPillarsResponse> =>
+      $api('/api/admin/blog/content-creator/pillars/generate', { method: 'POST', body: { seedTopic } }),
+
+    updateContentCreatorPillar: (id: string, action: 'confirm' | 'reject'): Promise<{ pillar: unknown }> =>
+      $api(`/api/admin/blog/content-creator/pillars/${id}`, { method: 'PUT', body: { action } }),
+
+    deleteContentCreatorPillar: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/blog/content-creator/pillars/${id}`, { method: 'DELETE' }),
+
+    // Content Creator - Clusters
+    getContentCreatorClusters: (params?: ContentCreatorClustersQueryParams): Promise<ContentCreatorClustersResponse> =>
+      $api('/api/admin/blog/content-creator/clusters', { query: params }),
+
+    generateContentCreatorClusters: (pillarId: string): Promise<{ clusters: unknown[] }> =>
+      $api('/api/admin/blog/content-creator/clusters/generate', { method: 'POST', body: { pillarId } }),
+
+    updateContentCreatorCluster: (id: string, data: UpdateClusterInput): Promise<{ cluster: unknown }> =>
+      $api(`/api/admin/blog/content-creator/clusters/${id}`, { method: 'PUT', body: data }),
+
+    deleteContentCreatorCluster: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/blog/content-creator/clusters/${id}`, { method: 'DELETE' }),
+
+    generateContentCreatorClusterContent: (id: string): Promise<{ blogPost: unknown }> =>
+      $api(`/api/admin/blog/content-creator/clusters/${id}/generate-content`, { method: 'POST' }),
+
+    // Content Creator - Queue
+    getContentCreatorQueue: (): Promise<ContentCreatorQueueResponse> =>
+      $api('/api/admin/blog/content-creator/queue'),
+
+    processContentCreatorQueue: (): Promise<ProcessQueueResponse> =>
+      $api('/api/admin/blog/content-creator/queue/process', { method: 'POST' }),
   }
 }

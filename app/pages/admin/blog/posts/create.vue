@@ -19,7 +19,7 @@ const onCancel = () => {
 </script>
 
 <template>
-  <div class="p-6 max-w-3xl">
+  <div class="p-6">
     <AdminBlogPostForm
       @success="onSuccess"
       @cancel="onCancel"

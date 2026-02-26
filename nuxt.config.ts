@@ -48,6 +48,8 @@ export default defineNuxtConfig({
     scheduledTasks: {
       // Run cleanup daily at 3:00 AM
       '0 3 * * *': ['cleanup:tokens'],
+      // Run content creator queue processing daily at 9:00 AM
+      '0 9 * * *': ['content-creator:generate'],
     },
     prerender: {
       routes: [

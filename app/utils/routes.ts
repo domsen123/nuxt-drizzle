@@ -32,6 +32,7 @@ export const ROUTES = {
     blogPostEdit: (id: string) => `/admin/blog/posts/${id}`,
     blogCategories: '/admin/blog/categories',
     blogTags: '/admin/blog/tags',
+    blogContentCreator: '/admin/blog/content-creator',
   },
   settings: {
     profile: '/settings',

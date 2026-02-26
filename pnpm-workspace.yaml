@@ -1,9 +1,13 @@
 catalogMode: prefer
 
 shellEmulator: true
+
 trustPolicy: no-downgrade
 
 catalog:
+  '@ai-sdk/anthropic': ^0.0.0
+  '@ai-sdk/google': ^0.0.0
+  '@ai-sdk/vue': ^0.0.0
   '@antfu/eslint-config': ^7.2.0
   '@faker-js/faker': ^10.2.0
   '@iconify-json/lucide': ^1.2.87
@@ -22,6 +26,7 @@ catalog:
   '@vue/test-utils': ^2.4.6
   '@vueuse/nuxt': ^14.1.0
   '@vueuse/router': ^14.1.0
+  ai: ^0.0.0
   bcrypt: ^6.0.0
   better-sqlite3: ^12.6.2
   date-fns: ^4.1.0

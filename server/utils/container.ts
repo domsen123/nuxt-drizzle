@@ -1,5 +1,6 @@
 import type { ImpersonationService } from '../features/admin/impersonation.service'
 import type { AuthService } from '../features/auth/auth.service'
+import type { ContentCreatorService } from '../features/content-creator/content-creator.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
 import type { FileStoreProvider } from '../features/files/file-store-provider.interface'
@@ -14,6 +15,7 @@ import type { EventBus } from '../infrastructure/events'
 import * as schema from '../database/schema'
 import { createImpersonationService } from '../features/admin/impersonation.service'
 import { createAuthService } from '../features/auth/auth.service'
+import { createContentCreatorService } from '../features/content-creator/content-creator.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
@@ -144,6 +146,15 @@ const getBlogPostTagsItemService = lazy(() =>
 const getBlogCategoriesItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.blogCategories, tableName: 'blogCategories', eventBus: getEventBus() }),
 )
+const getContentCreatorSettingsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.contentCreatorSettings, tableName: 'contentCreatorSettings', eventBus: getEventBus() }),
+)
+const getContentCreatorPillarsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.contentCreatorPillars, tableName: 'contentCreatorPillars', eventBus: getEventBus() }),
+)
+const getContentCreatorClustersItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.contentCreatorClusters, tableName: 'contentCreatorClusters', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -211,6 +222,17 @@ const getFileService = lazy(() =>
   }),
 )
 
+// Content Creator Service
+const getContentCreatorService = lazy(() =>
+  createContentCreatorService({
+    settingsItemService: getContentCreatorSettingsItemService(),
+    pillarsItemService: getContentCreatorPillarsItemService(),
+    clustersItemService: getContentCreatorClustersItemService(),
+    blogPostsItemService: getBlogPostsItemService(),
+    blogCategoriesItemService: getBlogCategoriesItemService(),
+  }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -243,6 +265,9 @@ export const container = {
   get imageProcessingService(): ImageProcessingService {
     return getImageProcessingService()
   },
+  get contentCreatorService(): ContentCreatorService {
+    return getContentCreatorService()
+  },
   get eventBus(): EventBus {
     return getEventBus()
   },
@@ -264,5 +289,8 @@ export const container = {
     get blogTags() { return getBlogTagsItemService() },
     get blogPostTags() { return getBlogPostTagsItemService() },
     get blogCategories() { return getBlogCategoriesItemService() },
+    get contentCreatorSettings() { return getContentCreatorSettingsItemService() },
+    get contentCreatorPillars() { return getContentCreatorPillarsItemService() },
+    get contentCreatorClusters() { return getContentCreatorClustersItemService() },
   },
 }

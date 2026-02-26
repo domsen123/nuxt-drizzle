@@ -23,6 +23,9 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/vue": "catalog:",
     "@iconify-json/lucide": "catalog:",
     "@iconify-json/simple-icons": "catalog:",
     "@nuxt/content": "catalog:",
@@ -35,6 +38,7 @@
     "@standard-schema/spec": "catalog:",
     "@vueuse/nuxt": "catalog:",
     "@vueuse/router": "catalog:",
+    "ai": "catalog:",
     "bcrypt": "catalog:",
     "better-sqlite3": "catalog:",
     "date-fns": "catalog:",

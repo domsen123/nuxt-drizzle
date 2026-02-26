@@ -118,9 +118,12 @@ const onExpandPillar = async (id: string) => {
         <ContentCreatorPillarGenerator />
 
         <div v-if="pillars.length > 0" class="space-y-3">
-          <h3 class="text-sm font-semibold text-highlighted">
-            Content Pillars
-          </h3>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-target" class="size-4 text-primary" />
+            <h3 class="text-sm font-semibold text-highlighted">
+              Content Pillars
+            </h3>
+          </div>
           <ContentCreatorPillarCard
             v-for="pillar in pillars"
             :key="pillar.id"

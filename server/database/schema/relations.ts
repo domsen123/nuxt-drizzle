@@ -3,6 +3,8 @@ import { blogCategories } from './blog-categories'
 import { blogPostTags } from './blog-post-tags'
 import { blogPosts } from './blog-posts'
 import { blogTags } from './blog-tags'
+import { contentCreatorClusters } from './content-creator-clusters'
+import { contentCreatorPillars } from './content-creator-pillars'
 import { files } from './files'
 import { organisationInvitations } from './organisation-invitations'
 import { organisationMembers } from './organisation-members'
@@ -155,6 +157,7 @@ export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
 
 export const blogCategoriesRelations = relations(blogCategories, ({ many }) => ({
   posts: many(blogPosts),
+  pillars: many(contentCreatorPillars),
 }))
 
 export const blogTagsRelations = relations(blogTags, ({ many }) => ({
@@ -169,5 +172,25 @@ export const blogPostTagsRelations = relations(blogPostTags, ({ one }) => ({
   tag: one(blogTags, {
     fields: [blogPostTags.tagId],
     references: [blogTags.id],
+  }),
+}))
+
+// Content Creator Relations
+export const contentCreatorPillarsRelations = relations(contentCreatorPillars, ({ one, many }) => ({
+  category: one(blogCategories, {
+    fields: [contentCreatorPillars.categoryId],
+    references: [blogCategories.id],
+  }),
+  clusters: many(contentCreatorClusters),
+}))
+
+export const contentCreatorClustersRelations = relations(contentCreatorClusters, ({ one }) => ({
+  pillar: one(contentCreatorPillars, {
+    fields: [contentCreatorClusters.pillarId],
+    references: [contentCreatorPillars.id],
+  }),
+  blogPost: one(blogPosts, {
+    fields: [contentCreatorClusters.blogPostId],
+    references: [blogPosts.id],
   }),
 }))
