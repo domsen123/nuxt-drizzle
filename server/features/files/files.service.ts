@@ -14,6 +14,8 @@ export interface UploadFileInput {
   uploadedBy: string
   entityType?: string
   entityId?: string
+  parentId?: string
+  variant?: string
 }
 
 export interface FileMetadata {
@@ -27,6 +29,8 @@ export interface FileMetadata {
   uploadedBy: string | null
   entityType: string | null
   entityId: string | null
+  parentId: string | null
+  variant: string | null
   url: string
   createdAt: Date
   updatedAt: Date
@@ -64,6 +68,8 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
     uploadedBy: record.uploadedBy,
     entityType: record.entityType,
     entityId: record.entityId,
+    parentId: record.parentId,
+    variant: record.variant,
     url: `${config.site.url}/api/files/${record.id}`,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -105,6 +111,8 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
       uploadedBy: input.uploadedBy,
       entityType: input.entityType ?? null,
       entityId: input.entityId ?? null,
+      parentId: input.parentId ?? null,
+      variant: input.variant ?? null,
     })
 
     return toMetadata(record)
@@ -117,12 +125,16 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
     return toMetadata(record)
   }
 
-  const getFilesByEntity = async (entityType: string, entityId: string): Promise<FileMetadata[]> => {
+  const getFilesByEntity = async (entityType: string, entityId: string, options?: { includeVariants?: boolean }): Promise<FileMetadata[]> => {
     const records = await filesItemService.findMany({
       filter: { entityType, entityId },
       sort: ['-createdAt'],
     })
-    return records.map(toMetadata)
+    const all = records.map(toMetadata)
+    if (options?.includeVariants)
+      return all
+    // By default, exclude variant children (parentId !== null)
+    return all.filter(f => !f.parentId)
   }
 
   const deleteFile = async (id: string): Promise<void> => {
@@ -131,10 +143,20 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
       throw createError({ statusCode: 404, statusMessage: 'File not found' })
     }
 
+    // If this is a parent file, delete variant storage files first (DB cascade handles records)
+    if (!record.parentId) {
+      const variants = await filesItemService.findMany({
+        filter: { parentId: id },
+      })
+      await Promise.all(
+        variants.map(v => fileStoreProvider.delete(v.storagePath)),
+      )
+    }
+
     // Delete from store
     await fileStoreProvider.delete(record.storagePath)
 
-    // Delete from DB
+    // Delete from DB (cascade will remove variant records for parent files)
     await filesItemService.delete(id)
   }
 

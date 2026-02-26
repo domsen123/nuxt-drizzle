@@ -33,6 +33,12 @@ export default defineNuxtConfig({
     }],
   },
 
+  // vite: {
+  //   ssr: {
+  //     external: ['sharp'],
+  //   },
+  // },
+
   compatibilityDate: '2024-07-11',
 
   nitro: {

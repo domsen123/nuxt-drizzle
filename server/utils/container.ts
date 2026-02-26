@@ -4,6 +4,7 @@ import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
 import type { FileStoreProvider } from '../features/files/file-store-provider.interface'
 import type { FileService } from '../features/files/files.service'
+import type { ImageProcessingService } from '../features/files/image-processing.service'
 import type { OrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { OrganisationsService } from '../features/organisations/organisations.service'
@@ -17,6 +18,7 @@ import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
 import { createFileService } from '../features/files/files.service'
+import { createImageProcessingService } from '../features/files/image-processing.service'
 import { createLocalFileStoreProvider } from '../features/files/providers/local.provider'
 import { createOrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import { createOrganisationMembersService } from '../features/organisation-members/organisation-members.service'
@@ -183,6 +185,11 @@ const getOrganisationInvitationsService = lazy(() =>
   }),
 )
 
+// Image Processing Service
+const getImageProcessingService = lazy(() =>
+  createImageProcessingService(),
+)
+
 // File Service
 const getFileService = lazy(() =>
   createFileService({
@@ -220,6 +227,9 @@ export const container = {
   },
   get fileService(): FileService {
     return getFileService()
+  },
+  get imageProcessingService(): ImageProcessingService {
+    return getImageProcessingService()
   },
   get eventBus(): EventBus {
     return getEventBus()

@@ -19,6 +19,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Not authorized to delete this file' })
   }
 
+  if (file.parentId) {
+    throw createError({ statusCode: 400, statusMessage: 'Cannot delete a variant directly. Delete the parent file instead.' })
+  }
+
   await container.fileService.deleteFile(id)
 
   return { success: true }

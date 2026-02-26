@@ -120,9 +120,17 @@ export const pendingEmailChangesRelations = relations(pendingEmailChanges, ({ on
   }),
 }))
 
-export const filesRelations = relations(files, ({ one }) => ({
+export const filesRelations = relations(files, ({ one, many }) => ({
   uploader: one(users, {
     fields: [files.uploadedBy],
     references: [users.id],
+  }),
+  parent: one(files, {
+    fields: [files.parentId],
+    references: [files.id],
+    relationName: 'fileVariants',
+  }),
+  variants: many(files, {
+    relationName: 'fileVariants',
   }),
 }))

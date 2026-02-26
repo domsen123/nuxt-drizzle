@@ -9,6 +9,8 @@ export interface FileMetadata {
   uploadedBy: string | null
   entityType: string | null
   entityId: string | null
+  parentId: string | null
+  variant: string | null
   url: string
   createdAt: string
   updatedAt: string

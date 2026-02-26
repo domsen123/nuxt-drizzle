@@ -15,6 +15,13 @@
       "when": 1772058414403,
       "tag": "0001_bouncy_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772063425874,
+      "tag": "0002_natural_toxin",
+      "breakpoints": true
     }
   ]
 }

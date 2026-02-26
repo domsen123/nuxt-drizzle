@@ -24,9 +24,9 @@ export const useFilesApi = () => {
       })
     },
 
-    getFilesByEntity: (entityType: string, entityId: string): Promise<FileListResponse> =>
+    getFilesByEntity: (entityType: string, entityId: string, options?: { includeVariants?: boolean }): Promise<FileListResponse> =>
       $api('/api/files/entity', {
-        query: { entityType, entityId },
+        query: { entityType, entityId, includeVariants: options?.includeVariants },
       }),
 
     deleteFile: (id: string): Promise<{ success: boolean }> =>
