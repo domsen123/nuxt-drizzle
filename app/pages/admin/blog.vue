@@ -1,0 +1,28 @@
+<script lang="ts" setup>
+definePageMeta({
+  layout: 'admin',
+  middleware: ['admin'],
+  redirect: ROUTES.admin.blogPosts,
+})
+
+const items = [
+  { label: 'Posts', icon: 'i-lucide-file-text', to: ROUTES.admin.blogPosts },
+  { label: 'Tags', icon: 'i-lucide-tag', to: ROUTES.admin.blogTags },
+]
+</script>
+
+<template>
+  <DashboardAdminPage title="Blog">
+    <template #header:append>
+      <UDashboardToolbar class="bg-elevated/50">
+        <UNavigationMenu
+          highlight
+          :items="items"
+        />
+      </UDashboardToolbar>
+    </template>
+    <NuxtPage />
+  </DashboardAdminPage>
+</template>
+
+<style></style>

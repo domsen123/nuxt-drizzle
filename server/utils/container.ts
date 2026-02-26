@@ -132,6 +132,15 @@ const getOrganisationInvitationsItemService = lazy(() =>
 const getFilesItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.files, tableName: 'files', eventBus: getEventBus() }),
 )
+const getBlogPostsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.blogPosts, tableName: 'blogPosts', eventBus: getEventBus() }),
+)
+const getBlogTagsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.blogTags, tableName: 'blogTags', eventBus: getEventBus() }),
+)
+const getBlogPostTagsItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.blogPostTags, tableName: 'blogPostTags', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -248,5 +257,8 @@ export const container = {
     get userRoles() { return getUserRolesItemService() },
     get organisationInvitations() { return getOrganisationInvitationsItemService() },
     get files() { return getFilesItemService() },
+    get blogPosts() { return getBlogPostsItemService() },
+    get blogTags() { return getBlogTagsItemService() },
+    get blogPostTags() { return getBlogPostTagsItemService() },
   },
 }

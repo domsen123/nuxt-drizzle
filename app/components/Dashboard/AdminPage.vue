@@ -12,6 +12,8 @@ defineProps<{
           <UDashboardSidebarCollapse />
         </template>
       </UDashboardNavbar>
+      <slot name="header:append">
+      </slot>
     </template>
     <template #body>
       <slot />

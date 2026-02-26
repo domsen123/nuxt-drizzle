@@ -1,4 +1,7 @@
 import { relations } from 'drizzle-orm'
+import { blogPostTags } from './blog-post-tags'
+import { blogPosts } from './blog-posts'
+import { blogTags } from './blog-tags'
 import { files } from './files'
 import { organisationInvitations } from './organisation-invitations'
 import { organisationMembers } from './organisation-members'
@@ -21,6 +24,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   teamMemberships: many(teamMembers),
   userRoles: many(userRoles),
   files: many(files),
+  blogPosts: many(blogPosts),
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -132,5 +136,29 @@ export const filesRelations = relations(files, ({ one, many }) => ({
   }),
   variants: many(files, {
     relationName: 'fileVariants',
+  }),
+}))
+
+// Blog Relations
+export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [blogPosts.authorId],
+    references: [users.id],
+  }),
+  postTags: many(blogPostTags),
+}))
+
+export const blogTagsRelations = relations(blogTags, ({ many }) => ({
+  postTags: many(blogPostTags),
+}))
+
+export const blogPostTagsRelations = relations(blogPostTags, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogPostTags.postId],
+    references: [blogPosts.id],
+  }),
+  tag: one(blogTags, {
+    fields: [blogPostTags.tagId],
+    references: [blogTags.id],
   }),
 }))

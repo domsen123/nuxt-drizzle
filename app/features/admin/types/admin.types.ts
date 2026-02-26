@@ -167,3 +167,100 @@ export interface UpdateTeamInput {
 export interface AddTeamMemberInput {
   userId: string
 }
+
+// Blog post types
+export interface AdminBlogPostAuthor {
+  id: string
+  name: string | null
+  email: string
+}
+
+export interface AdminBlogPostTag {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface AdminBlogPost {
+  id: string
+  title: string
+  slug: string
+  teaser: string | null
+  content: string
+  published: boolean
+  publishedAt: string | null
+  authorId: string | null
+  author: AdminBlogPostAuthor | null
+  tags: AdminBlogPostTag[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminBlogPostsResponse {
+  posts: AdminBlogPost[]
+  total: number
+}
+
+export interface AdminBlogPostResponse {
+  post: AdminBlogPost
+}
+
+export interface AdminBlogPostsQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface CreateBlogPostInput {
+  title: string
+  slug: string
+  teaser?: string | null
+  content: string
+  published: boolean
+  tagIds: string[]
+}
+
+export interface UpdateBlogPostInput {
+  title: string
+  slug: string
+  teaser?: string | null
+  content: string
+  published: boolean
+  tagIds: string[]
+}
+
+// Blog tag types
+export interface AdminBlogTag {
+  id: string
+  name: string
+  slug: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminBlogTagsResponse {
+  tags: AdminBlogTag[]
+  total: number
+}
+
+export interface AdminBlogTagResponse {
+  tag: AdminBlogTag
+}
+
+export interface AdminBlogTagsQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface CreateBlogTagInput {
+  name: string
+  slug: string
+}
+
+export interface UpdateBlogTagInput {
+  name: string
+  slug: string
+}

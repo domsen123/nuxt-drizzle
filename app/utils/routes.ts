@@ -26,6 +26,11 @@ export const ROUTES = {
     teamMembers: (teamId: string) => `/admin/teams/${teamId}/members`,
     users: '/admin/users',
     userEdit: (id: string) => `/admin/users/${id}`,
+    blog: '/admin/blog',
+    blogPosts: '/admin/blog/posts',
+    blogPostCreate: '/admin/blog/posts/create',
+    blogPostEdit: (id: string) => `/admin/blog/posts/${id}`,
+    blogTags: '/admin/blog/tags',
   },
   settings: {
     profile: '/settings',

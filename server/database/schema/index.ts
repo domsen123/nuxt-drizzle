@@ -1,3 +1,6 @@
+export * from './blog-post-tags'
+export * from './blog-posts'
+export * from './blog-tags'
 export * from './email-verification-tokens'
 export * from './files'
 export * from './organisation-invitations'

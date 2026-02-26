@@ -1,5 +1,11 @@
 import type {
   AddTeamMemberInput,
+  AdminBlogPostResponse,
+  AdminBlogPostsQueryParams,
+  AdminBlogPostsResponse,
+  AdminBlogTagResponse,
+  AdminBlogTagsQueryParams,
+  AdminBlogTagsResponse,
   AdminEligibleMembersResponse,
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
@@ -15,8 +21,12 @@ import type {
   AdminUserRolesResponse,
   AdminUsersQueryParams,
   AdminUsersResponse,
+  CreateBlogPostInput,
+  CreateBlogTagInput,
   CreateOrganisationInput,
   CreateTeamInput,
+  UpdateBlogPostInput,
+  UpdateBlogTagInput,
   UpdateOrganisationInput,
   UpdateTeamInput,
   UpdateUserInput,
@@ -114,5 +124,34 @@ export const useAdminApi = () => {
 
     getTeamEligibleMembers: (teamId: string): Promise<AdminEligibleMembersResponse> =>
       $api(`/api/admin/teams/${teamId}/eligible-members`),
+
+    // Blog Posts
+    getBlogPosts: (params?: AdminBlogPostsQueryParams): Promise<AdminBlogPostsResponse> =>
+      $api('/api/admin/blog/posts', { query: params }),
+
+    getBlogPost: (id: string): Promise<AdminBlogPostResponse> =>
+      $api(`/api/admin/blog/posts/${id}`),
+
+    createBlogPost: (data: CreateBlogPostInput): Promise<AdminBlogPostResponse> =>
+      $api('/api/admin/blog/posts', { method: 'POST', body: data }),
+
+    updateBlogPost: (id: string, data: UpdateBlogPostInput): Promise<AdminBlogPostResponse> =>
+      $api(`/api/admin/blog/posts/${id}`, { method: 'PUT', body: data }),
+
+    deleteBlogPost: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/blog/posts/${id}`, { method: 'DELETE' }),
+
+    // Blog Tags
+    getBlogTags: (params?: AdminBlogTagsQueryParams): Promise<AdminBlogTagsResponse> =>
+      $api('/api/admin/blog/tags', { query: params }),
+
+    createBlogTag: (data: CreateBlogTagInput): Promise<AdminBlogTagResponse> =>
+      $api('/api/admin/blog/tags', { method: 'POST', body: data }),
+
+    updateBlogTag: (id: string, data: UpdateBlogTagInput): Promise<AdminBlogTagResponse> =>
+      $api(`/api/admin/blog/tags/${id}`, { method: 'PUT', body: data }),
+
+    deleteBlogTag: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/blog/tags/${id}`, { method: 'DELETE' }),
   }
 }

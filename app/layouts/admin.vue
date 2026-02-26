@@ -34,6 +34,11 @@ const navItems: NavigationMenuItem[][] = [
       icon: 'i-lucide-users-round',
       to: ROUTES.admin.teams,
     },
+    {
+      label: 'Blog',
+      icon: 'i-lucide-newspaper',
+      to: ROUTES.admin.blog,
+    },
   ],
 ]
 
