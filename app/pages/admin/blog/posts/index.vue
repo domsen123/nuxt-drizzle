@@ -27,6 +27,8 @@ const { mutateAsync: deletePost } = useDeleteBlogPost()
 const columns: TableColumn<AdminBlogPost>[] = [
   { accessorKey: 'title', header: 'Title' },
   { accessorKey: 'published', header: 'Status' },
+  { accessorKey: 'category', header: 'Category' },
+  { accessorKey: 'tags', header: 'Tags' },
   { accessorKey: 'author', header: 'Author' },
   { accessorKey: 'createdAt', header: 'Created' },
   { id: 'actions' },
@@ -147,6 +149,26 @@ const getActionsItems = (post: AdminBlogPost): DropdownMenuItem[][] => [
         </UBadge>
       </template>
 
+      <template #category-cell="{ row }">
+        <span class="text-sm text-muted">
+          {{ row.original.category?.name || '-' }}
+        </span>
+      </template>
+
+      <template #tags-cell="{ row }">
+        <div class="flex flex-wrap gap-1">
+          <UBadge
+            v-for="tag in row.original.tags"
+            :key="tag.id"
+            variant="subtle"
+            size="xs"
+          >
+            {{ tag.name }}
+          </UBadge>
+          <span v-if="!row.original.tags.length" class="text-sm text-muted">-</span>
+        </div>
+      </template>
+
       <template #author-cell="{ row }">
         <span class="text-sm text-muted">
           {{ row.original.author?.name || row.original.author?.email || '-' }}
@@ -191,6 +213,19 @@ const getActionsItems = (post: AdminBlogPost): DropdownMenuItem[][] => [
             <p class="text-muted text-xs truncate">
               {{ item.slug }}
             </p>
+            <div v-if="item.category || item.tags.length" class="flex flex-wrap items-center gap-1 mt-1">
+              <UBadge v-if="item.category" variant="outline" size="xs">
+                {{ item.category.name }}
+              </UBadge>
+              <UBadge
+                v-for="tag in item.tags"
+                :key="tag.id"
+                variant="subtle"
+                size="xs"
+              >
+                {{ tag.name }}
+              </UBadge>
+            </div>
           </div>
         </div>
       </template>
