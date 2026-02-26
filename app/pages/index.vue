@@ -13,13 +13,5 @@ useSeoMeta({
 
 <template>
   <div>
-    <UPageHero
-      :title="title"
-      :description="description"
-    >
-      <template #top>
-        <HeroBackground />
-      </template>
-    </UPageHero>
   </div>
 </template>
