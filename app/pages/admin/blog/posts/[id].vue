@@ -27,7 +27,7 @@ const onCancel = () => {
 </script>
 
 <template>
-  <div class="p-6 max-w-3xl">
+  <div class="p-6">
     <div v-if="isLoading" class="flex items-center justify-center py-12">
       <UIcon name="i-lucide-loader-2" class="animate-spin size-8 text-muted" />
     </div>

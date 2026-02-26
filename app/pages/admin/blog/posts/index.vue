@@ -40,6 +40,14 @@ const formatDate = (dateString: string) => {
   })
 }
 
+const getPostStatus = (post: AdminBlogPost) => {
+  if (!post.published)
+    return { label: 'Draft', color: 'neutral' as const }
+  if (post.publishedAt && new Date(post.publishedAt) > new Date())
+    return { label: 'Scheduled', color: 'warning' as const }
+  return { label: 'Published', color: 'success' as const }
+}
+
 const onSelectPost = (post: AdminBlogPost) => {
   router.push(ROUTES.admin.blogPostEdit(post.id))
 }
@@ -132,10 +140,10 @@ const getActionsItems = (post: AdminBlogPost): DropdownMenuItem[][] => [
 
       <template #published-cell="{ row }">
         <UBadge
-          :color="row.original.published ? 'success' : 'neutral'"
+          :color="getPostStatus(row.original).color"
           variant="subtle"
         >
-          {{ row.original.published ? 'Published' : 'Draft' }}
+          {{ getPostStatus(row.original).label }}
         </UBadge>
       </template>
 
@@ -173,11 +181,11 @@ const getActionsItems = (post: AdminBlogPost): DropdownMenuItem[][] => [
                 {{ item.title }}
               </p>
               <UBadge
-                :color="item.published ? 'success' : 'neutral'"
+                :color="getPostStatus(item).color"
                 variant="subtle"
                 size="xs"
               >
-                {{ item.published ? 'Published' : 'Draft' }}
+                {{ getPostStatus(item).label }}
               </UBadge>
             </div>
             <p class="text-muted text-xs truncate">

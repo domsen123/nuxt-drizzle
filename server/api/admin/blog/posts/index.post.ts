@@ -8,6 +8,7 @@ const schema = z.object({
   teaser: z.string().trim().max(500).transform(v => v || null).nullable().optional(),
   content: z.string().trim().min(1),
   published: z.boolean().default(false),
+  publishedAt: z.string().datetime().nullable().optional(),
   tagIds: z.array(z.string()).default([]),
 })
 
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     teaser: data.teaser ?? null,
     content: data.content,
     published: data.published,
-    publishedAt: data.published ? new Date() : null,
+    publishedAt: data.published ? (data.publishedAt ? new Date(data.publishedAt) : new Date()) : null,
     authorId: user.id,
   })
 

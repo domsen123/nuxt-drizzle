@@ -8,6 +8,7 @@ const schema = z.object({
   teaser: z.string().trim().max(500).transform(v => v || null).nullable().optional(),
   content: z.string().trim().min(1),
   published: z.boolean().default(false),
+  publishedAt: z.string().datetime().nullable().optional(),
   tagIds: z.array(z.string()).default([]),
 })
 
@@ -35,13 +36,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: 'A post with this slug already exists' })
   }
 
-  // Toggle publishedAt on publish state change
-  let publishedAt = existing.publishedAt
-  if (data.published && !existing.published) {
-    publishedAt = new Date()
-  }
-  else if (!data.published) {
+  // Determine publishedAt based on publish state and explicit value
+  let publishedAt: Date | null = existing.publishedAt
+  if (!data.published) {
     publishedAt = null
+  }
+  else if (data.publishedAt !== undefined) {
+    publishedAt = data.publishedAt ? new Date(data.publishedAt) : new Date()
+  }
+  else if (!existing.published) {
+    publishedAt = new Date()
   }
 
   const post = await container.items.blogPosts.update(id, {

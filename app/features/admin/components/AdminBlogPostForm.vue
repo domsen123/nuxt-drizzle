@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { EditorToolbarItem, FormSubmitEvent } from '@nuxt/ui'
 import type { AdminBlogPost } from '../types/admin.types'
+import { CalendarDateTime } from '@internationalized/date'
 import * as z from 'zod'
 
 const props = defineProps<{
@@ -12,12 +13,58 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const toolbarItems: EditorToolbarItem[][] = [
+  [
+    { kind: 'undo', icon: 'i-lucide-undo', tooltip: { text: 'Undo' } },
+    { kind: 'redo', icon: 'i-lucide-redo', tooltip: { text: 'Redo' } },
+  ],
+  [
+    {
+      icon: 'i-lucide-heading',
+      tooltip: { text: 'Headings' },
+      content: { align: 'start' },
+      items: [
+        { kind: 'heading', level: 1, icon: 'i-lucide-heading-1', label: 'Heading 1' },
+        { kind: 'heading', level: 2, icon: 'i-lucide-heading-2', label: 'Heading 2' },
+        { kind: 'heading', level: 3, icon: 'i-lucide-heading-3', label: 'Heading 3' },
+      ],
+    },
+    { kind: 'bulletList', icon: 'i-lucide-list', tooltip: { text: 'Bullet List' } },
+    { kind: 'orderedList', icon: 'i-lucide-list-ordered', tooltip: { text: 'Ordered List' } },
+    { kind: 'blockquote', icon: 'i-lucide-text-quote', tooltip: { text: 'Blockquote' } },
+    { kind: 'codeBlock', icon: 'i-lucide-square-code', tooltip: { text: 'Code Block' } },
+    { kind: 'horizontalRule', icon: 'i-lucide-separator-horizontal', tooltip: { text: 'Horizontal Rule' } },
+  ],
+  [
+    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold', tooltip: { text: 'Bold' } },
+    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic', tooltip: { text: 'Italic' } },
+    { kind: 'mark', mark: 'strike', icon: 'i-lucide-strikethrough', tooltip: { text: 'Strikethrough' } },
+    { kind: 'mark', mark: 'code', icon: 'i-lucide-code', tooltip: { text: 'Code' } },
+  ],
+  [
+    { kind: 'link', icon: 'i-lucide-link', tooltip: { text: 'Link' } },
+  ],
+]
+
 const TITLE_MAX_LENGTH = 200
 const SLUG_MAX_LENGTH = 200
 const TEASER_MAX_LENGTH = 500
 
 const isEditMode = computed(() => !!props.post)
 const slugManuallyEdited = ref(false)
+
+// Scheduled publish date
+const isoToCalendarDateTime = (iso: string): CalendarDateTime => {
+  const d = new Date(iso)
+  return new CalendarDateTime(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes())
+}
+
+const calendarDateTimeToIso = (cdt: CalendarDateTime): string =>
+  new Date(cdt.year, cdt.month - 1, cdt.day, cdt.hour, cdt.minute).toISOString()
+
+const scheduledDate = shallowRef<CalendarDateTime | undefined>(
+  props.post?.publishedAt ? isoToCalendarDateTime(props.post.publishedAt) : undefined,
+)
 
 const schema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(TITLE_MAX_LENGTH),
@@ -37,6 +84,18 @@ const state = reactive<Schema>({
   content: props.post?.content ?? '',
   published: props.post?.published ?? false,
   tagIds: props.post?.tags.map(t => t.id) ?? [],
+})
+
+const isScheduled = computed(() =>
+  state.published && scheduledDate.value && new Date(calendarDateTimeToIso(scheduledDate.value)) > new Date(),
+)
+
+const publishStatusLabel = computed(() => {
+  if (!state.published)
+    return 'Draft'
+  if (isScheduled.value)
+    return 'Scheduled'
+  return 'Published'
 })
 
 const generateSlug = (title: string): string =>
@@ -88,12 +147,18 @@ const apiError = computed(() => {
 })
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
+  const publishedAt = state.published && scheduledDate.value
+    ? calendarDateTimeToIso(scheduledDate.value)
+    : null
+
+  const submitData = { ...event.data, publishedAt }
+
   try {
     if (isEditMode.value) {
-      await updatePost({ id: props.post!.id, data: event.data })
+      await updatePost({ id: props.post!.id, data: submitData })
     }
     else {
-      await createPost(event.data)
+      await createPost(submitData)
     }
     emit('success')
   }
@@ -111,33 +176,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     class="space-y-4"
     @submit="onSubmit"
   >
-    <!-- Header Card -->
-    <UPageCard
-      :title="isEditMode ? 'Edit Post' : 'New Post'"
-      :description="isEditMode ? 'Update the post details below.' : 'Fill in the details to create a new blog post.'"
-      variant="naked"
-      orientation="horizontal"
-      class="mb-4"
-    >
-      <div class="flex gap-2 lg:ms-auto">
-        <UButton
-          variant="ghost"
-          color="neutral"
-          :disabled="isLoading"
-          @click="emit('cancel')"
-        >
-          Cancel
-        </UButton>
-        <UButton
-          form="blog-post-form"
-          type="submit"
-          :loading="isLoading"
-        >
-          {{ isEditMode ? 'Save Changes' : 'Create Post' }}
-        </UButton>
-      </div>
-    </UPageCard>
-
     <!-- Error Alert -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
@@ -157,128 +195,135 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       />
     </Transition>
 
-    <!-- Form Fields Card -->
-    <UPageCard variant="subtle">
-      <!-- Title Field -->
-      <UFormField
-        name="title"
-        label="Title"
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <div class="w-full max-w-lg">
+    <!-- Two-column layout: Editor + Sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Main Editor -->
+      <div class="lg:col-span-9 space-y-4">
+        <!-- Title -->
+        <UFormField name="title">
           <UInput
             v-model="state.title"
-            placeholder="My Awesome Blog Post"
+            placeholder="Enter title here"
+            size="xl"
             :maxlength="TITLE_MAX_LENGTH"
           />
-        </div>
-      </UFormField>
+        </UFormField>
 
-      <USeparator />
+        <!-- Permalink -->
+        <UFormField name="slug">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="text-muted shrink-0">Permalink:</span>
+            <UInput
+              v-model="state.slug"
+              placeholder="my-awesome-blog-post"
+              size="xs"
+              variant="subtle"
+              :maxlength="SLUG_MAX_LENGTH"
+              class="flex-1"
+              @input="onSlugInput"
+            />
+            <button
+              v-if="!isEditMode && slugManuallyEdited"
+              type="button"
+              class="text-primary hover:text-primary/80 transition-colors text-xs font-medium inline-flex items-center gap-1 shrink-0"
+              @click="resetSlugAutoGeneration"
+            >
+              <UIcon name="i-lucide-refresh-cw" class="size-3" />
+              Auto
+            </button>
+          </div>
+        </UFormField>
 
-      <!-- Slug Field -->
-      <UFormField
-        name="slug"
-        label="URL Slug"
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <template #description>
-          <span>
-            A unique identifier used in URLs.
-            <template v-if="!isEditMode && slugManuallyEdited">
-              <button
-                type="button"
-                class="text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1 ms-1"
-                @click="resetSlugAutoGeneration"
-              >
-                <UIcon name="i-lucide-refresh-cw" class="size-3" />
-                Auto-generate
-              </button>
-            </template>
-          </span>
-        </template>
-        <div class="w-full max-w-lg">
-          <UInput
-            v-model="state.slug"
-            placeholder="my-awesome-blog-post"
-            :maxlength="SLUG_MAX_LENGTH"
-            @input="onSlugInput"
-          />
-        </div>
-      </UFormField>
-
-      <USeparator />
-
-      <!-- Teaser Field -->
-      <UFormField
-        name="teaser"
-        label="Teaser"
-        description="A short summary shown in post listings."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <div class="w-full max-w-lg">
-          <UTextarea
-            v-model="state.teaser"
-            placeholder="A brief description of this post..."
-            :maxlength="TEASER_MAX_LENGTH"
-            :rows="2"
-          />
-        </div>
-      </UFormField>
-
-      <USeparator />
-
-      <!-- Content Field -->
-      <UFormField
-        name="content"
-        label="Content"
-        description="Markdown supported."
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <div class="w-full max-w-lg">
-          <UTextarea
+        <!-- Content -->
+        <UFormField name="content">
+          <UEditor
+            v-slot="{ editor }"
             v-model="state.content"
+            content-type="markdown"
             placeholder="Write your post content here..."
-            :rows="12"
-          />
-        </div>
-      </UFormField>
+            class="w-full min-h-120 flex flex-col gap-4 rounded-lg bg-elevated/50 ring ring-default p-4"
+          >
+            <UEditorToolbar :editor="editor" :items="toolbarItems" class="pb-4 border-b border-default" />
+          </UEditor>
+        </UFormField>
+      </div>
 
-      <USeparator />
+      <!-- Sidebar Meta Boxes -->
+      <div class="lg:col-span-3 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <!-- Publish Box -->
+        <UPageCard title="Publish" variant="subtle">
+          <div class="space-y-4">
+            <UFormField name="published">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted">
+                  Status: <span class="font-medium text-default">{{ publishStatusLabel }}</span>
+                </span>
+                <USwitch v-model="state.published" size="sm" />
+              </div>
+            </UFormField>
 
-      <!-- Tags Field -->
-      <UFormField
-        name="tagIds"
-        label="Tags"
-        description="Select tags for this post."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <div class="w-full max-w-lg">
-          <USelectMenu
-            v-model="state.tagIds"
-            :items="tagOptions"
-            value-key="value"
-            multiple
-            placeholder="Select tags..."
-          />
-        </div>
-      </UFormField>
+            <UFormField label="Publish date" class="grid grid-cols-2">
+              <div>
+                <UInputDate
+                  v-model="scheduledDate"
+                  granularity="minute"
+                  :hide-time-zone="true"
+                  size="sm"
+                />
+                <span class="text-xs text-muted">Leave empty for immediate</span>
+              </div>
+            </UFormField>
 
-      <USeparator />
+            <USeparator />
 
-      <!-- Published Toggle -->
-      <UFormField
-        name="published"
-        label="Published"
-        description="Make this post visible to the public."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <USwitch v-model="state.published" />
-      </UFormField>
-    </UPageCard>
+            <div class="flex gap-2 justify-end">
+              <UButton
+                variant="ghost"
+                color="neutral"
+                size="sm"
+                :disabled="isLoading"
+                @click="emit('cancel')"
+              >
+                Cancel
+              </UButton>
+              <UButton
+                form="blog-post-form"
+                type="submit"
+                size="sm"
+                :loading="isLoading"
+              >
+                {{ isEditMode ? 'Update' : 'Publish' }}
+              </UButton>
+            </div>
+          </div>
+        </UPageCard>
+
+        <!-- Tags Box -->
+        <UPageCard title="Tags" variant="subtle">
+          <UFormField name="tagIds">
+            <USelectMenu
+              v-model="state.tagIds"
+              :items="tagOptions"
+              value-key="value"
+              multiple
+              placeholder="Select tags..."
+            />
+          </UFormField>
+        </UPageCard>
+
+        <!-- Excerpt Box -->
+        <UPageCard title="Excerpt" variant="subtle">
+          <UFormField name="teaser">
+            <UTextarea
+              v-model="state.teaser"
+              placeholder="Write a short summary..."
+              :maxlength="TEASER_MAX_LENGTH"
+              :rows="3"
+            />
+          </UFormField>
+        </UPageCard>
+      </div>
+    </div>
   </UForm>
 </template>
 

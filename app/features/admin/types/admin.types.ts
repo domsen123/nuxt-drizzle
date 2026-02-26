@@ -218,6 +218,7 @@ export interface CreateBlogPostInput {
   teaser?: string | null
   content: string
   published: boolean
+  publishedAt?: string | null
   tagIds: string[]
 }
 
@@ -227,6 +228,7 @@ export interface UpdateBlogPostInput {
   teaser?: string | null
   content: string
   published: boolean
+  publishedAt?: string | null
   tagIds: string[]
 }
 
