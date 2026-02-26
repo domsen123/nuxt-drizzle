@@ -1,6 +1,6 @@
 # Nuxt SaaS Starter
 
-A production-ready, full-stack SaaS starter template built with Nuxt 4, featuring multi-tenant organizations, teams, role-based access control, authentication, and more. Built using **vertical slice architecture** for maintainability and scalability.
+A production-ready, full-stack SaaS starter template built with Nuxt 4, featuring multi-tenant organizations, teams, role-based access control, authentication, file management, and more. Built using **vertical slice architecture** for maintainability and scalability.
 
 ## Features
 
@@ -12,19 +12,25 @@ A production-ready, full-stack SaaS starter template built with Nuxt 4, featurin
 - **Admin Impersonation** - Super admins can impersonate users for debugging and support
 - **User Profile Management** - Update profile, change password, and email change workflow
 - **Admin Dashboard** - Manage all organizations, users, teams, and view platform statistics
+- **File Management** - Pluggable file storage with local and S3 providers, entity-based file associations
+- **Image Processing** - Server-side image variant generation with Sharp (multi-size avatars in WebP)
+- **Avatar Cropping** - Client-side circular cropping with vue-advanced-cropper and multi-size variant storage
 - **Event Bus** - Event-driven architecture for loose coupling between features
 - **Email System** - Pluggable email providers with template support (LiquidJS)
+- **Scheduled Tasks** - Automated cleanup of expired tokens via Nitro scheduled tasks
 
 ## Tech Stack
 
 | Category | Technology |
 |----------|------------|
-| **Framework** | Nuxt 4.2.2 (Vue 3) |
+| **Framework** | Nuxt 4.3.0 (Vue 3) |
 | **UI** | Nuxt UI 4 + Tailwind CSS |
 | **Database** | PostgreSQL + Drizzle ORM |
 | **State** | Pinia + Pinia Colada (server-state caching) |
 | **Validation** | Zod v4 |
+| **Image Processing** | Sharp + vue-advanced-cropper |
 | **Email** | Nodemailer + LiquidJS templates |
+| **SEO** | @nuxtjs/seo + nuxt-og-image |
 | **Testing** | Vitest |
 | **Package Manager** | pnpm 10.23.0 |
 | **Node** | 22+ |
@@ -116,6 +122,19 @@ NUXT_SMTP_PORT=587
 NUXT_SMTP_USER=user@example.com
 NUXT_SMTP_PASS=password
 NUXT_SMTP_FROM=noreply@example.com
+
+# Storage Configuration
+NUXT_STORAGE_PROVIDER=local            # local|s3
+NUXT_STORAGE_LOCAL_PATH=./storage/uploads
+NUXT_STORAGE_MAX_FILE_SIZE=5242880     # 5MB
+NUXT_STORAGE_ALLOWED_MIME_TYPES=image/jpeg,image/png,image/webp,image/gif
+
+# S3 Settings (when using s3 provider)
+NUXT_S3_BUCKET=your-bucket
+NUXT_S3_REGION=us-east-1
+NUXT_S3_ENDPOINT=https://s3.amazonaws.com
+NUXT_S3_ACCESS_KEY_ID=your-key
+NUXT_S3_SECRET_ACCESS_KEY=your-secret
 ```
 
 ## Architecture
@@ -133,7 +152,8 @@ This project follows **vertical slice architecture** - features are organized as
 │   │   ├── organisation-members/ # Member management
 │   │   ├── organisation-invitations/ # Invitation handling
 │   │   ├── permissions/          # Client-side permission checking
-│   │   └── admin/                # Admin dashboard
+│   │   ├── files/                # File upload, deletion, queries
+│   │   └── admin/                # Admin dashboard & user management
 │   ├── components/               # Shared global components (App-prefixed)
 │   ├── layouts/                  # Page layouts (default, auth, admin)
 │   ├── pages/                    # File-based routing
@@ -143,12 +163,13 @@ This project follows **vertical slice architecture** - features are organized as
 │   ├── features/                 # Feature services
 │   │   ├── auth/                 # Auth service, tokens, sessions
 │   │   ├── email/                # Email service, providers, templates
-│   │   ├── impersonation/        # Admin impersonation
+│   │   ├── admin/                # Admin impersonation
 │   │   ├── organisations/        # Organization CRUD
 │   │   ├── organisation-invitations/ # Invitation service
 │   │   ├── organisation-members/ # Member management
 │   │   ├── profile/              # Profile service
-│   │   └── rbac/                 # Role-based access control
+│   │   ├── rbac/                 # Role-based access control
+│   │   └── files/                # File storage, image processing
 │   ├── database/
 │   │   ├── schema/               # Drizzle ORM schemas
 │   │   └── migrations/           # Generated migrations
@@ -298,16 +319,6 @@ team:member:remove          # Remove team members
 team:member:role:assign     # Assign team roles
 ```
 
-**Permission Check Example:**
-```typescript
-// In API route
-await requirePermission(event, {
-  permission: PERMISSIONS.ORGANISATION_MEMBER_INVITE,
-  scope: 'organisation',
-  getScopeId: (event) => getRouterParam(event, 'orgId')
-})
-```
-
 ### Invitation System
 
 Token-based invitation system for adding users to organizations.
@@ -326,16 +337,6 @@ Token-based invitation system for adding users to organizations.
 - Revoke pending invitations
 - Email pre-verified on acceptance
 
-**API Endpoints:**
-```
-GET    /api/auth/invitations/[token]/validate      # Validate invitation
-POST   /api/auth/invitations/[token]/accept        # Accept invitation
-GET    /api/admin/organisations/[id]/invitations   # List invitations
-POST   /api/admin/organisations/[id]/invitations   # Create invitation
-DELETE /api/admin/organisations/[id]/invitations/[invitationId]  # Revoke
-POST   /api/admin/organisations/[id]/invitations/[invitationId]/resend  # Resend
-```
-
 ### Admin Impersonation
 
 Super admins can impersonate any user for debugging and support.
@@ -347,12 +348,6 @@ Super admins can impersonate any user for debugging and support.
 - Clear UI indication of impersonation state
 - Return to original session when stopped
 
-**API Endpoints:**
-```
-POST   /api/admin/users/[id]/impersonate     # Start impersonation
-POST   /api/auth/impersonation/stop          # Stop impersonation
-```
-
 ### User Profile Management
 
 Complete profile management with secure email change workflow.
@@ -363,15 +358,30 @@ Complete profile management with secure email change workflow.
 - Email change with verification to NEW email
 - View and cancel pending email changes
 
+### File Management & Image Processing
+
+Pluggable file storage system with entity-based associations and automatic image variant generation.
+
+**Storage Features:**
+- Pluggable storage providers (local filesystem, S3-ready)
+- Entity-based file associations (polymorphic: entity type + entity ID)
+- Automatic image variant generation via Sharp
+- Parent-child file relationships (original to variants)
+- Configurable max file size and allowed MIME types
+
+**Avatar System:**
+- Client-side circular cropping with vue-advanced-cropper
+- Multi-size variant generation: sm (64px), md (128px), lg (256px)
+- WebP conversion for optimization (PNG preserved as PNG)
+- Responsive variant selection on display with fallback chain
+- Automatic cleanup of previous avatars on replacement
+
 **API Endpoints:**
 ```
-GET    /api/profile                          # Get current user profile
-PUT    /api/profile                          # Update profile (name)
-PUT    /api/profile/password                 # Change password
-POST   /api/profile/email/request-change     # Request email change
-GET    /api/profile/email/pending            # Get pending email change
-GET    /api/profile/email/confirm            # Confirm email change
-DELETE /api/profile/email/cancel             # Cancel email change
+POST   /api/files                      # Upload file
+GET    /api/files                      # List files by entity
+DELETE /api/files/[id]                 # Delete file
+GET    /api/files/[id]/serve           # Serve file content
 ```
 
 ### Admin Dashboard
@@ -381,28 +391,10 @@ Full administrative capabilities for platform management.
 **Features:**
 - View platform statistics (users, orgs, teams)
 - Manage all organizations (CRUD)
-- Manage all users (CRUD)
+- Manage all users (CRUD, avatar upload)
 - Manage all teams (CRUD)
 - Handle invitations
 - Impersonate users
-
-**API Endpoints:**
-```
-GET    /api/admin/stats                           # Platform statistics
-GET    /api/admin/organisations                   # List all orgs
-POST   /api/admin/organisations                   # Create org
-GET    /api/admin/organisations/[id]              # Get org details
-PUT    /api/admin/organisations/[id]              # Update org
-DELETE /api/admin/organisations/[id]              # Delete org
-GET    /api/admin/organisations/[id]/teams        # List org teams
-POST   /api/admin/organisations/[id]/teams        # Create team
-GET    /api/admin/organisations/[id]/members      # List org members
-POST   /api/admin/organisations/[id]/members      # Add member
-GET    /api/admin/users                           # List all users
-GET    /api/admin/users/[id]                      # Get user details
-PUT    /api/admin/users/[id]                      # Update user
-DELETE /api/admin/users/[id]                      # Delete user
-```
 
 ### Event Bus
 
@@ -414,17 +406,6 @@ Event-driven architecture for decoupling features.
 '[tableName]:created'     // e.g., 'users:created'
 '[tableName]:updated'     // e.g., 'organisations:updated'
 '[tableName]:deleted'     // e.g., 'sessions:deleted'
-```
-
-**Usage:**
-```typescript
-// Emit event
-eventBus.emit('users:created', { data: user, operation: 'created' })
-
-// Listen for events
-eventBus.on('auth:user-registered', async (user) => {
-  await assignDefaultRole(user.id)
-})
 ```
 
 ### Email System
@@ -462,10 +443,35 @@ Pluggable email system with template support.
 | `email_verification_tokens` | Email verification |
 | `password_reset_tokens` | Password reset |
 | `pending_email_changes` | Email change workflow |
+| `files` | File metadata, variants, and entity associations |
 
 ### ID Format
 
 All tables use ULID (Universally Unique Lexicographically Sortable Identifier) for primary keys.
+
+## Pages
+
+| Path | Description |
+|------|-------------|
+| `/` | Home/dashboard |
+| `/401` | Unauthorized page |
+| `/auth/sign-in` | Login page |
+| `/auth/sign-up` | Registration page |
+| `/auth/forgot-password` | Password reset request |
+| `/auth/reset-password` | Reset password form |
+| `/auth/verify-email` | Email verification |
+| `/auth/confirm-email` | Confirm email change |
+| `/auth/accept-invitation` | Accept org invitation |
+| `/settings` | User profile settings |
+| `/settings/security` | Password & session management |
+| `/admin` | Admin dashboard |
+| `/admin/organisations` | Admin: Organization management |
+| `/admin/organisations/create` | Admin: Create organization |
+| `/admin/organisations/[id]` | Admin: Organization details |
+| `/admin/teams` | Admin: Team management |
+| `/admin/teams/[id]` | Admin: Team details |
+| `/admin/users` | Admin: User management |
+| `/admin/users/[id]` | Admin: User details |
 
 ## Key Patterns
 
@@ -529,26 +535,6 @@ const { data, isLoading, error } = useQuery({
   query: () => useAuthApi().getSession()
 })
 ```
-
-## Pages
-
-| Path | Description |
-|------|-------------|
-| `/` | Home/dashboard |
-| `/auth/sign-in` | Login page |
-| `/auth/sign-up` | Registration page |
-| `/auth/forgot-password` | Password reset request |
-| `/auth/reset-password` | Reset password form |
-| `/auth/verify-email` | Email verification |
-| `/auth/confirm-email` | Confirm email change |
-| `/auth/accept-invitation` | Accept org invitation |
-| `/settings/` | User profile settings |
-| `/admin/organisations` | Admin: Organization management |
-| `/admin/organisations/[id]` | Admin: Organization details |
-| `/admin/teams` | Admin: Team management |
-| `/admin/teams/[id]` | Admin: Team details |
-| `/admin/users` | Admin: User management |
-| `/admin/users/[id]` | Admin: User details |
 
 ## Security
 
