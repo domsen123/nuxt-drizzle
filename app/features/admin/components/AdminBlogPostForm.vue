@@ -126,6 +126,20 @@ const tagOptions = computed(() =>
   })),
 )
 
+const { mutateAsync: createBlogTag } = useCreateBlogTag()
+const toast = useToast()
+
+const onCreate = async (name: string) => {
+  try {
+    const { tag } = await createBlogTag({ name, slug: generateSlug(name) })
+    state.tagIds.push(tag.id)
+    toast.add({ title: `Tag "${name}" created`, color: 'success' })
+  }
+  catch {
+    toast.add({ title: `Failed to create tag "${name}"`, color: 'error' })
+  }
+}
+
 const { mutateAsync: createPost, asyncStatus: createStatus, error: createError } = useCreateBlogPost()
 const { mutateAsync: updatePost, asyncStatus: updateStatus, error: updateError } = useUpdateBlogPost()
 
@@ -307,6 +321,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
               value-key="value"
               multiple
               placeholder="Select tags..."
+              create-item
+              @create="onCreate"
             />
           </UFormField>
         </UPageCard>
