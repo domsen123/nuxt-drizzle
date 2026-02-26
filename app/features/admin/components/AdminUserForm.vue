@@ -132,6 +132,15 @@ const showDeleteConfirm = ref(false)
 
     <!-- Form Fields Card -->
     <UPageCard variant="subtle">
+      <!-- Avatar -->
+      <div class="flex justify-center pb-4">
+        <AdminUserAvatar
+          :user-id="user.id"
+          :user-name="user.name"
+          :user-email="user.email"
+        />
+      </div>
+
       <!-- Email Field -->
       <UFormField
         name="email"

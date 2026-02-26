@@ -130,9 +130,7 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
       >
         <template #name-cell="{ row }">
           <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-              <UIcon name="i-lucide-user" class="size-5 text-primary" />
-            </div>
+            <AppUserAvatar :user-id="row.original.id" :name="row.original.name" :email="row.original.email" size="lg" />
             <div class="text-sm">
               <p class="text-highlighted font-medium">
                 {{ row.original.name || 'No name' }}
@@ -172,9 +170,7 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
 
         <template #mobile-card="{ item }">
           <div class="flex items-center gap-3 p-4">
-            <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
-              <UIcon name="i-lucide-user" class="size-5 text-primary" />
-            </div>
+            <AppUserAvatar :user-id="item.id" :name="item.name" :email="item.email" size="lg" class="shrink-0" />
             <div class="min-w-0 flex-1">
               <p class="text-highlighted font-medium truncate">
                 {{ item.name || 'No name' }}
