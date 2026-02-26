@@ -4,7 +4,7 @@ export default antfu({
   vue: true,
   typescript: true,
   markdown: false,
-  yaml: true,
+  yaml: false,
   rules: {
     'antfu/top-level-function': 'off',
     'no-console': 'off',
