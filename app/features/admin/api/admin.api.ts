@@ -10,6 +10,9 @@ import type {
   AdminBlogTagsQueryParams,
   AdminBlogTagsResponse,
   AdminEligibleMembersResponse,
+  AdminMediaFileResponse,
+  AdminMediaFilesQueryParams,
+  AdminMediaFilesResponse,
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
@@ -40,6 +43,7 @@ import type {
   UpdateBlogPostInput,
   UpdateBlogTagInput,
   UpdateClusterInput,
+  UpdateMediaMetadataInput,
   UpdateOrganisationInput,
   UpdateTeamInput,
   UpdateUserInput,
@@ -226,5 +230,18 @@ export const useAdminApi = () => {
 
     processContentCreatorQueue: (): Promise<ProcessQueueResponse> =>
       $api('/api/admin/blog/content-creator/queue/process', { method: 'POST' }),
+
+    // Media Library
+    getMediaFiles: (params?: AdminMediaFilesQueryParams): Promise<AdminMediaFilesResponse> =>
+      $api('/api/admin/media', { query: params }),
+
+    getMediaFile: (id: string): Promise<AdminMediaFileResponse> =>
+      $api(`/api/admin/media/${id}`),
+
+    updateMediaMetadata: (id: string, data: UpdateMediaMetadataInput): Promise<AdminMediaFileResponse> =>
+      $api(`/api/admin/media/${id}`, { method: 'PUT', body: data }),
+
+    deleteMediaFile: (id: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/media/${id}`, { method: 'DELETE' }),
   }
 }

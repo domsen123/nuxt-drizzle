@@ -6,6 +6,7 @@ import type { EmailService } from '../features/email/email.service'
 import type { FileStoreProvider } from '../features/files/file-store-provider.interface'
 import type { FileService } from '../features/files/files.service'
 import type { ImageProcessingService } from '../features/files/image-processing.service'
+import type { MediaLibraryService } from '../features/files/media-library.service'
 import type { OrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import type { OrganisationMembersService } from '../features/organisation-members/organisation-members.service'
 import type { OrganisationsService } from '../features/organisations/organisations.service'
@@ -21,6 +22,7 @@ import { createConsoleEmailProvider } from '../features/email/providers/console.
 import { createNodemailerProvider } from '../features/email/providers/nodemailer.provider'
 import { createFileService } from '../features/files/files.service'
 import { createImageProcessingService } from '../features/files/image-processing.service'
+import { createMediaLibraryService } from '../features/files/media-library.service'
 import { createLocalFileStoreProvider } from '../features/files/providers/local.provider'
 import { createOrganisationInvitationsService } from '../features/organisation-invitations/organisation-invitations.service'
 import { createOrganisationMembersService } from '../features/organisation-members/organisation-members.service'
@@ -155,6 +157,9 @@ const getContentCreatorPillarsItemService = lazy(() =>
 const getContentCreatorClustersItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.contentCreatorClusters, tableName: 'contentCreatorClusters', eventBus: getEventBus() }),
 )
+const getFileMetadataItemService = lazy(() =>
+  createItemService({ db: getDatabase('app'), table: schema.fileMetadata, tableName: 'fileMetadata', eventBus: getEventBus() }),
+)
 
 // RBAC Service (depends on ItemServices above)
 const getRbacService = lazy(() =>
@@ -233,6 +238,15 @@ const getContentCreatorService = lazy(() =>
   }),
 )
 
+// Media Library Service
+const getMediaLibraryService = lazy(() =>
+  createMediaLibraryService({
+    filesItemService: getFilesItemService(),
+    fileMetadataItemService: getFileMetadataItemService(),
+    config,
+  }),
+)
+
 // Public exports
 export const container = {
   get authService(): AuthService {
@@ -268,6 +282,9 @@ export const container = {
   get contentCreatorService(): ContentCreatorService {
     return getContentCreatorService()
   },
+  get mediaLibraryService(): MediaLibraryService {
+    return getMediaLibraryService()
+  },
   get eventBus(): EventBus {
     return getEventBus()
   },
@@ -292,5 +309,6 @@ export const container = {
     get contentCreatorSettings() { return getContentCreatorSettingsItemService() },
     get contentCreatorPillars() { return getContentCreatorPillarsItemService() },
     get contentCreatorClusters() { return getContentCreatorClustersItemService() },
+    get fileMetadata() { return getFileMetadataItemService() },
   },
 }

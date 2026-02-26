@@ -420,3 +420,50 @@ export interface ProcessQueueResponse {
   clusterId?: string
   blogPostId?: string
 }
+
+// Media Library types
+export interface AdminMediaMetadata {
+  id: string
+  alt: string | null
+  title: string | null
+  description: string | null
+  focusX: number
+  focusY: number
+}
+
+export interface AdminMediaFile {
+  id: string
+  filename: string
+  originalName: string
+  mimeType: string
+  size: number
+  url: string
+  entityType: string | null
+  createdAt: string
+  updatedAt: string
+  metadata: AdminMediaMetadata | null
+}
+
+export interface AdminMediaFilesResponse {
+  files: AdminMediaFile[]
+  total: number
+}
+
+export interface AdminMediaFileResponse {
+  file: AdminMediaFile
+}
+
+export interface AdminMediaFilesQueryParams {
+  search?: string
+  sort?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface UpdateMediaMetadataInput {
+  alt?: string | null
+  title?: string | null
+  description?: string | null
+  focusX?: number
+  focusY?: number
+}

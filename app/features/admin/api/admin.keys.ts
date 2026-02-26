@@ -1,4 +1,4 @@
-import type { AdminBlogCategoriesQueryParams, AdminBlogPostsQueryParams, AdminBlogTagsQueryParams, AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQueryParams, ContentCreatorClustersQueryParams } from '../types/admin.types'
+import type { AdminBlogCategoriesQueryParams, AdminBlogPostsQueryParams, AdminBlogTagsQueryParams, AdminMediaFilesQueryParams, AdminOrganisationsQueryParams, AdminTeamsQueryParams, AdminUsersQueryParams, ContentCreatorClustersQueryParams } from '../types/admin.types'
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -37,4 +37,8 @@ export const adminKeys = {
     ? [...adminKeys.all, 'contentCreatorClusters', params] as const
     : [...adminKeys.all, 'contentCreatorClusters'] as const,
   contentCreatorQueue: () => [...adminKeys.all, 'contentCreatorQueue'] as const,
+  mediaFiles: (params?: AdminMediaFilesQueryParams) => params
+    ? [...adminKeys.all, 'mediaFiles', params] as const
+    : [...adminKeys.all, 'mediaFiles'] as const,
+  mediaFile: (id: string) => [...adminKeys.all, 'mediaFile', id] as const,
 }

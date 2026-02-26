@@ -33,6 +33,7 @@ export const ROUTES = {
     blogCategories: '/admin/blog/categories',
     blogTags: '/admin/blog/tags',
     blogContentCreator: '/admin/blog/content-creator',
+    media: '/admin/media',
   },
   settings: {
     profile: '/settings',
@@ -40,5 +41,9 @@ export const ROUTES = {
   },
   errors: {
     unauthorized: '/401',
+  },
+  dashboard: {
+    home: '/dashboard',
+    overview: '/dashboard/overview',
   },
 } as const

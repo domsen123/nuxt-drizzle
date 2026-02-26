@@ -57,6 +57,13 @@
       "when": 1772124214415,
       "tag": "0007_clever_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772138723970,
+      "tag": "0008_lying_sprite",
+      "breakpoints": true
     }
   ]
 }

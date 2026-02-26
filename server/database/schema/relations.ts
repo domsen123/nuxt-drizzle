@@ -5,6 +5,7 @@ import { blogPosts } from './blog-posts'
 import { blogTags } from './blog-tags'
 import { contentCreatorClusters } from './content-creator-clusters'
 import { contentCreatorPillars } from './content-creator-pillars'
+import { fileMetadata } from './file-metadata'
 import { files } from './files'
 import { organisationInvitations } from './organisation-invitations'
 import { organisationMembers } from './organisation-members'
@@ -139,6 +140,14 @@ export const filesRelations = relations(files, ({ one, many }) => ({
   }),
   variants: many(files, {
     relationName: 'fileVariants',
+  }),
+  metadata: one(fileMetadata),
+}))
+
+export const fileMetadataRelations = relations(fileMetadata, ({ one }) => ({
+  file: one(files, {
+    fields: [fileMetadata.fileId],
+    references: [files.id],
   }),
 }))
 

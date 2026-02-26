@@ -39,6 +39,11 @@ const navItems: NavigationMenuItem[][] = [
       icon: 'i-lucide-newspaper',
       to: ROUTES.admin.blog,
     },
+    {
+      label: 'Media',
+      icon: 'i-lucide-images',
+      to: ROUTES.admin.media,
+    },
   ],
 ]
 

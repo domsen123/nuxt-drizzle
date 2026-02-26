@@ -23,6 +23,7 @@ pnpm docker:up              # Start PostgreSQL container
 pnpm docker:clean           # Clean/rebuild containers
 pnpm db:push                # Push schema to database
 pnpm db:generate            # Generate migrations
+pnpm db:migrate             # Apply migrations
 pnpm db:studio              # Open Drizzle Studio UI
 ```
 
@@ -74,7 +75,7 @@ This project follows **vertical slice architecture** - features are organized as
 
 1. Define schema in `server/database/schema/*.ts`
 2. Run `pnpm db:generate` to create migration
-3. Run `pnpm db:push` to apply to database
+3. Run `pnpm db:migrate` to apply migrations
 
 ## Environment Variables
 
