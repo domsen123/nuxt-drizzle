@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EditorCustomHandlers, EditorToolbarItem, FormSubmitEvent } from '@nuxt/ui'
 import type { Editor } from '@tiptap/vue-3'
-import type { AdminBlogPost } from '../types/admin.types'
+import type { AdminBlogPost, AdminMediaFile } from '../types/admin.types'
 import { CalendarDateTime } from '@internationalized/date'
 import * as z from 'zod'
 import { ImageUpload } from './EditorImageUploadExtension'
@@ -15,11 +15,32 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+// Media picker state
+const editorRef = ref<Editor | null>(null)
+const isMediaPickerOpen = ref(false)
+
+const onMediaSelected = (file: AdminMediaFile) => {
+  if (!editorRef.value)
+    return
+  editorRef.value
+    .chain()
+    .focus()
+    .setImage({
+      src: file.url,
+      alt: file.metadata?.alt || file.originalName,
+      title: file.metadata?.title || undefined,
+    })
+    .run()
+}
+
 const customHandlers = {
   imageUpload: {
-    canExecute: (editor: Editor) => editor.can().insertContent({ type: 'imageUpload' }),
-    execute: (editor: Editor) => editor.chain().focus().insertContent({ type: 'imageUpload' }),
-    isActive: (editor: Editor) => editor.isActive('imageUpload'),
+    canExecute: (editor: Editor) => editor.can().setImage({ src: '' }),
+    execute: (editor: Editor) => {
+      editorRef.value = editor
+      isMediaPickerOpen.value = true
+    },
+    isActive: (editor: Editor) => editor.isActive('image'),
     isDisabled: undefined,
   },
 } satisfies EditorCustomHandlers
@@ -390,6 +411,12 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
         </UPageCard>
       </div>
     </div>
+
+    <!-- Media Picker Modal -->
+    <AdminMediaPickerModal
+      v-model:open="isMediaPickerOpen"
+      @select="onMediaSelected"
+    />
   </UForm>
 </template>
 
