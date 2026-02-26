@@ -19,30 +19,46 @@ const navItems: NavigationMenuItem[][] = [
       icon: 'i-lucide-layout-dashboard',
       to: ROUTES.admin.home,
     },
+  ],
+  [
     {
-      label: 'Users',
-      icon: 'i-lucide-users',
-      to: ROUTES.admin.users,
+      label: 'Authentication',
+      icon: 'i-lucide-shield',
+      children: [
+        {
+          label: 'Users',
+          icon: 'i-lucide-users',
+          to: ROUTES.admin.users,
+        },
+        {
+          label: 'Organisations',
+          icon: 'i-lucide-building-2',
+          to: ROUTES.admin.organisations,
+        },
+        {
+          label: 'Teams',
+          icon: 'i-lucide-users-round',
+          to: ROUTES.admin.teams,
+        },
+      ],
     },
+  ],
+  [
     {
-      label: 'Organisations',
-      icon: 'i-lucide-building-2',
-      to: ROUTES.admin.organisations,
-    },
-    {
-      label: 'Teams',
-      icon: 'i-lucide-users-round',
-      to: ROUTES.admin.teams,
-    },
-    {
-      label: 'Blog',
-      icon: 'i-lucide-newspaper',
-      to: ROUTES.admin.blog,
-    },
-    {
-      label: 'Media',
-      icon: 'i-lucide-images',
-      to: ROUTES.admin.media,
+      label: 'Content',
+      icon: 'i-lucide-file-text',
+      children: [
+        {
+          label: 'Blog',
+          icon: 'i-lucide-newspaper',
+          to: ROUTES.admin.blog,
+        },
+        {
+          label: 'Media',
+          icon: 'i-lucide-images',
+          to: ROUTES.admin.media,
+        },
+      ],
     },
   ],
 ]
@@ -114,12 +130,20 @@ const userMenuItems = computed(() => {
   return [accountItem, backToAppItem, signOutItem]
 })
 
-// Compute active state for nav items
+// Compute active state for nav items (including children)
+const isActive = (item: NavigationMenuItem) =>
+  typeof item.to === 'string' && (item.to === route.path || (item.to !== ROUTES.admin.home && route.path.startsWith(item.to)))
+
 const navItemsWithActive = computed(() =>
   navItems.map(group =>
     group.map(item => ({
       ...item,
-      active: item.to === route.path || (item.to !== ROUTES.admin.home && route.path.startsWith(item.to as string)),
+      active: isActive(item),
+      defaultOpen: item.children?.some(child => isActive(child)),
+      children: item.children?.map(child => ({
+        ...child,
+        active: isActive(child),
+      })),
     })),
   ),
 )

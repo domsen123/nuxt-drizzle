@@ -34,6 +34,7 @@ export const ROUTES = {
     blogTags: '/admin/blog/tags',
     blogContentCreator: '/admin/blog/content-creator',
     media: '/admin/media',
+    mediaEdit: (id: string) => `/admin/media/${id}`,
   },
   settings: {
     profile: '/settings',

@@ -11,6 +11,7 @@ export { useAdminBlogPosts } from './composables/useAdminBlogPosts'
 export { useCreateBlogTag, useDeleteBlogTag, useUpdateBlogTag } from './composables/useAdminBlogTagMutations'
 export { useAdminBlogTags } from './composables/useAdminBlogTags'
 // Media Library Composables
+export { useAdminMediaFile } from './composables/useAdminMediaFile'
 export { useAdminMediaFiles } from './composables/useAdminMediaFiles'
 export { useDeleteMediaFile, useUpdateMediaMetadata } from './composables/useAdminMediaMutations'
 // Organisation Composables
