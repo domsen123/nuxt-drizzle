@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { EditorToolbarItem, FormSubmitEvent } from '@nuxt/ui'
+import type { EditorCustomHandlers, EditorToolbarItem, FormSubmitEvent } from '@nuxt/ui'
+import type { Editor } from '@tiptap/vue-3'
 import type { AdminBlogPost } from '../types/admin.types'
 import { CalendarDateTime } from '@internationalized/date'
 import * as z from 'zod'
+import { ImageUpload } from './EditorImageUploadExtension'
 
 const props = defineProps<{
   post?: AdminBlogPost
@@ -13,7 +15,16 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const toolbarItems: EditorToolbarItem[][] = [
+const customHandlers = {
+  imageUpload: {
+    canExecute: (editor: Editor) => editor.can().insertContent({ type: 'imageUpload' }),
+    execute: (editor: Editor) => editor.chain().focus().insertContent({ type: 'imageUpload' }),
+    isActive: (editor: Editor) => editor.isActive('imageUpload'),
+    isDisabled: undefined,
+  },
+} satisfies EditorCustomHandlers
+
+const toolbarItems: EditorToolbarItem<typeof customHandlers>[][] = [
   [
     { kind: 'undo', icon: 'i-lucide-undo', tooltip: { text: 'Undo' } },
     { kind: 'redo', icon: 'i-lucide-redo', tooltip: { text: 'Redo' } },
@@ -43,6 +54,7 @@ const toolbarItems: EditorToolbarItem[][] = [
   ],
   [
     { kind: 'link', icon: 'i-lucide-link', tooltip: { text: 'Link' } },
+    { kind: 'imageUpload', icon: 'i-lucide-image', tooltip: { text: 'Add image' } },
   ],
 ]
 
@@ -275,6 +287,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           <UEditor
             v-slot="{ editor }"
             v-model="state.content"
+            :extensions="[ImageUpload]"
+            :handlers="customHandlers"
             content-type="markdown"
             placeholder="Write your post content here..."
             class="w-full min-h-120 flex flex-col gap-4 rounded-lg bg-elevated/50 ring ring-default p-4"

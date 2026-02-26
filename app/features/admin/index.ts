@@ -2,6 +2,9 @@
 export { useAdminApi } from './api/admin.api'
 export { adminKeys } from './api/admin.keys'
 
+// Editor Extensions
+export { ImageUpload } from './components/EditorImageUploadExtension'
+
 export { useAdminBlogCategories } from './composables/useAdminBlogCategories'
 export { useCreateBlogCategory, useDeleteBlogCategory, useUpdateBlogCategory } from './composables/useAdminBlogCategoryMutations'
 // Blog Composables
