@@ -17,6 +17,9 @@ A production-ready, full-stack SaaS starter template built with Nuxt 4, featurin
 - **Avatar Cropping** - Client-side circular cropping with vue-advanced-cropper and multi-size variant storage
 - **Event Bus** - Event-driven architecture for loose coupling between features
 - **Email System** - Pluggable email providers with template support (LiquidJS)
+- **Blog Management** - Create and manage blog posts with categories, tags, rich text editor with image embedding, and scheduled publishing
+- **Media Library** - Centralized media management with metadata (alt text, title, description), focus point selection, and search
+- **AI Content Creator** *(WIP)* - AI-powered content pipeline: generate content pillars from seed topics, create topic clusters, and produce blog posts with multi-provider support (Anthropic, Google)
 - **Scheduled Tasks** - Automated cleanup of expired tokens via Nitro scheduled tasks
 
 ## Tech Stack
@@ -153,7 +156,7 @@ This project follows **vertical slice architecture** - features are organized as
 │   │   ├── organisation-invitations/ # Invitation handling
 │   │   ├── permissions/          # Client-side permission checking
 │   │   ├── files/                # File upload, deletion, queries
-│   │   └── admin/                # Admin dashboard & user management
+│   │   ├── admin/                # Admin dashboard, blog, and media management
 │   ├── components/               # Shared global components (App-prefixed)
 │   ├── layouts/                  # Page layouts (default, auth, admin)
 │   ├── pages/                    # File-based routing
@@ -169,9 +172,10 @@ This project follows **vertical slice architecture** - features are organized as
 │   │   ├── organisation-members/ # Member management
 │   │   ├── profile/              # Profile service
 │   │   ├── rbac/                 # Role-based access control
-│   │   └── files/                # File storage, image processing
+│   │   ├── files/                # File storage, image processing, media library
+│   │   └── content-creator/      # AI content generation pipeline
 │   ├── database/
-│   │   ├── schema/               # Drizzle ORM schemas
+│   │   ├── schema/               # Drizzle ORM schemas (incl. blog, content-creator, file-metadata)
 │   │   └── migrations/           # Generated migrations
 │   ├── infrastructure/
 │   │   ├── database/             # Database client, ItemService
@@ -384,6 +388,81 @@ DELETE /api/files/[id]                 # Delete file
 GET    /api/files/[id]/serve           # Serve file content
 ```
 
+### Blog Management
+
+Full blog system with posts, categories, tags, and scheduled publishing.
+
+**Features:**
+- Posts with title, slug, teaser, content, published status, and scheduled publishing
+- Category and tag CRUD with post associations
+- Rich text editor with embedded image upload via media library
+- Author tracking and publish date management
+
+**API Endpoints:**
+```
+GET    /api/admin/blog/posts                # List posts (filterable, paginated)
+POST   /api/admin/blog/posts                # Create post
+GET    /api/admin/blog/posts/[id]           # Get post
+PUT    /api/admin/blog/posts/[id]           # Update post
+DELETE /api/admin/blog/posts/[id]           # Delete post
+GET    /api/admin/blog/categories           # List categories
+POST   /api/admin/blog/categories           # Create category
+PUT    /api/admin/blog/categories/[id]      # Update category
+DELETE /api/admin/blog/categories/[id]      # Delete category
+GET    /api/admin/blog/tags                 # List tags
+POST   /api/admin/blog/tags                 # Create tag
+PUT    /api/admin/blog/tags/[id]            # Update tag
+DELETE /api/admin/blog/tags/[id]            # Delete tag
+```
+
+### Media Library
+
+Centralized media management extending the file storage system with rich metadata and search.
+
+**Features:**
+- Search, sort, and paginate uploaded media
+- File metadata: alt text, title, description, focus point (x/y coordinates)
+- Media picker modal for blog editor integration
+- Detail view for individual media file management
+
+**API Endpoints:**
+```
+GET    /api/admin/media                     # List media (searchable, paginated)
+GET    /api/admin/media/[id]               # Get media details
+PUT    /api/admin/media/[id]               # Update media metadata
+DELETE /api/admin/media/[id]               # Delete media file
+```
+
+### AI Content Creator *(WIP)*
+
+AI-powered content pipeline for generating blog posts from strategic content pillars.
+
+**Features:**
+- Multi-provider support (Anthropic, Google) with encrypted API key storage
+- Content pillar generation from seed topics
+- Cluster generation from pillars with keywords and descriptions
+- Blog post content generation from clusters
+- Queue management with priority and scheduled production
+- Status workflow: `idea` -> `approved` -> `queued` -> `generating` -> `generated` (or `failed`)
+
+**API Endpoints:**
+```
+GET    /api/admin/blog/content-creator/settings              # Get AI settings
+PUT    /api/admin/blog/content-creator/settings              # Update AI settings
+POST   /api/admin/blog/content-creator/validate-connection   # Test provider connection
+GET    /api/admin/blog/content-creator/pillars               # List pillars
+POST   /api/admin/blog/content-creator/pillars/generate      # Generate pillars from seed
+PUT    /api/admin/blog/content-creator/pillars/[id]          # Update pillar
+DELETE /api/admin/blog/content-creator/pillars/[id]          # Delete pillar
+GET    /api/admin/blog/content-creator/clusters              # List clusters
+POST   /api/admin/blog/content-creator/clusters/generate     # Generate clusters from pillar
+PUT    /api/admin/blog/content-creator/clusters/[id]         # Update cluster
+DELETE /api/admin/blog/content-creator/clusters/[id]         # Delete cluster
+POST   /api/admin/blog/content-creator/clusters/[id]/generate-content  # Generate blog content
+GET    /api/admin/blog/content-creator/queue                 # View generation queue
+POST   /api/admin/blog/content-creator/queue/process         # Process queued items
+```
+
 ### Admin Dashboard
 
 Full administrative capabilities for platform management.
@@ -444,6 +523,14 @@ Pluggable email system with template support.
 | `password_reset_tokens` | Password reset |
 | `pending_email_changes` | Email change workflow |
 | `files` | File metadata, variants, and entity associations |
+| `file_metadata` | Image alt text, title, description, focus point |
+| `blog_posts` | Blog post content and metadata |
+| `blog_categories` | Blog post categories |
+| `blog_tags` | Blog post tags |
+| `blog_post_tags` | Post-tag junction table |
+| `content_creator_settings` | AI provider configuration |
+| `content_creator_pillars` | Content strategy pillars |
+| `content_creator_clusters` | Topic clusters for content generation |
 
 ### ID Format
 
@@ -472,6 +559,14 @@ All tables use ULID (Universally Unique Lexicographically Sortable Identifier) f
 | `/admin/teams/[id]` | Admin: Team details |
 | `/admin/users` | Admin: User management |
 | `/admin/users/[id]` | Admin: User details |
+| `/admin/blog/posts` | Admin: Blog post management |
+| `/admin/blog/posts/create` | Admin: Create blog post |
+| `/admin/blog/posts/[id]` | Admin: Edit blog post |
+| `/admin/blog/categories` | Admin: Category management |
+| `/admin/blog/tags` | Admin: Tag management |
+| `/admin/blog/content-creator` | Admin: AI content creator |
+| `/admin/media` | Admin: Media library |
+| `/admin/media/[id]` | Admin: Media file details |
 
 ## Key Patterns
 

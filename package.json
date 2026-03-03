@@ -24,7 +24,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/anthropic": "^3.0.48",
     "@ai-sdk/google": "catalog:",
     "@ai-sdk/vue": "catalog:",
     "@iconify-json/lucide": "catalog:",
