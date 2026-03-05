@@ -11,7 +11,7 @@ const organisationId = computed(() => route.params.id as string)
 
 const { organisation } = useAdminOrganisation(organisationId)
 
-const links = computed<NavigationMenuItem[][]>(() => [[
+const links = computed<NavigationMenuItem[]>(() => [
   {
     label: 'General',
     icon: 'i-lucide-settings',
@@ -28,7 +28,7 @@ const links = computed<NavigationMenuItem[][]>(() => [[
     icon: 'i-lucide-users-round',
     to: ROUTES.admin.organisationTeams(organisationId.value),
   },
-]])
+])
 </script>
 
 <template>
@@ -40,8 +40,8 @@ const links = computed<NavigationMenuItem[][]>(() => [[
     ]"
   >
     <template #header:append>
-      <UDashboardToolbar>
-        <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
+      <UDashboardToolbar class="bg-elevated/50">
+        <UNavigationMenu :items="links" highlight />
       </UDashboardToolbar>
     </template>
 
