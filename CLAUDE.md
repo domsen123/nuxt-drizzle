@@ -93,7 +93,7 @@ const { data, isLoading } = useQuery(queryOptions, () => ({ param: value.value }
 
 ## Reference
 
-See `ARCHITECTURE.md` for comprehensive vertical slice architecture documentation, including feature checklists and anti-patterns.
+See `_ARCHITECTURE.md` for comprehensive vertical slice architecture documentation, including feature checklists and anti-patterns.
 
 ## Styles
 - use arrow functions if possible
