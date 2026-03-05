@@ -42,9 +42,11 @@ const onUpdate = async (provider: string, data: { enabled: boolean, config: Reco
       <template #left>
         <DashboardPageAside>
           <UNavigationMenu
-            :items="[
-              { label: 'Providers', to: { hash: '#providers' }, active: route.hash === '#providers' || !route.hash },
-            ]"
+            :items="(providers ?? []).map((p) => ({
+              label: p.provider === 'credentials' ? 'Email & Password' : p.provider === 'anonymous' ? 'Anonymous' : p.provider,
+              to: { hash: `#${p.provider}` },
+              active: route.hash === `#${p.provider}` || (!route.hash && p === providers![0]),
+            }))"
             orientation="vertical"
           />
         </DashboardPageAside>
@@ -62,14 +64,17 @@ const onUpdate = async (provider: string, data: { enabled: boolean, config: Reco
           icon="i-lucide-alert-circle"
         />
 
-        <div v-else id="providers" class="space-y-6">
-          <AdminAuthProviderCard
-            v-for="provider in providers"
-            :key="provider.id"
-            :provider="provider"
-            :loading="savingProvider === provider.provider && updateStatus === 'loading'"
-            @update="(data) => onUpdate(provider.provider, data)"
-          />
+        <div v-else>
+          <template v-for="(provider, index) in providers" :key="provider.id">
+            <USeparator v-if="index > 0" class="my-6" />
+            <div :id="provider.provider">
+              <AdminAuthProviderCard
+                :provider="provider"
+                :loading="savingProvider === provider.provider && updateStatus === 'loading'"
+                @update="(data) => onUpdate(provider.provider, data)"
+              />
+            </div>
+          </template>
         </div>
       </UPageBody>
     </UPage>

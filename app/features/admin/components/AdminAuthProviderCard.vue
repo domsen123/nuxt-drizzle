@@ -54,14 +54,6 @@ const providerDescription = computed(() => {
   return descriptions[props.provider.provider] ?? ''
 })
 
-const providerIcon = computed(() => {
-  const icons: Record<string, string> = {
-    credentials: 'i-lucide-key-round',
-    anonymous: 'i-lucide-user-round',
-  }
-  return icons[props.provider.provider] ?? 'i-lucide-shield'
-})
-
 const onSave = () => {
   const config: Record<string, unknown> = { ...props.provider.config }
   if (isAnonymous.value) {
@@ -72,40 +64,15 @@ const onSave = () => {
 </script>
 
 <template>
-  <UPageCard>
-    <div class="space-y-4">
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <UIcon :name="providerIcon" class="size-5 text-muted" />
-          <div>
-            <h3 class="text-sm font-medium">
-              {{ providerLabel }}
-            </h3>
-            <p class="text-sm text-muted">
-              {{ providerDescription }}
-            </p>
-          </div>
-        </div>
-        <USwitch
-          v-model="enabled"
-          :disabled="isCredentials"
-        />
-      </div>
-
-      <template v-if="isAnonymous">
-        <USeparator />
-        <UFormField label="Session Duration (days)">
-          <UInput
-            v-model.number="sessionDurationDays"
-            type="number"
-            :min="1"
-            :max="365"
-            class="w-32"
-          />
-        </UFormField>
-      </template>
-
-      <div v-if="!isCredentials" class="flex justify-end">
+  <div>
+    <!-- Header Card -->
+    <UPageCard
+      :title="providerLabel"
+      :description="providerDescription"
+      variant="naked"
+      orientation="horizontal"
+    >
+      <div v-if="!isCredentials" class="flex gap-2 lg:ms-auto">
         <UButton
           label="Save"
           :disabled="!isDirty"
@@ -113,6 +80,34 @@ const onSave = () => {
           @click="onSave"
         />
       </div>
-    </div>
-  </UPageCard>
+    </UPageCard>
+
+    <!-- Form Fields Card -->
+    <UPageCard variant="subtle">
+      <UFormField
+        label="Enabled"
+        :description="isCredentials ? 'Credentials authentication is always enabled.' : 'Enable or disable this authentication provider.'"
+        class="flex max-sm:flex-col justify-between items-center gap-4"
+      >
+        <USwitch
+          v-model="enabled"
+          :disabled="isCredentials"
+        />
+      </UFormField>
+
+      <UFormField
+        v-if="isAnonymous"
+        label="Session Duration (days)"
+        description="How long anonymous sessions remain active before expiring."
+      >
+        <UInput
+          v-model.number="sessionDurationDays"
+          type="number"
+          :min="1"
+          :max="365"
+          class="w-32"
+        />
+      </UFormField>
+    </UPageCard>
+  </div>
 </template>
