@@ -34,7 +34,7 @@ export { useAdminTeams } from './composables/useAdminTeams'
 // User Composables
 export { useAdminUser } from './composables/useAdminUser'
 export { useDeleteUser, useUpdateUser } from './composables/useAdminUserMutations'
-export { useAdminUserRoles } from './composables/useAdminUserRoles'
+export { useAdminGlobalRoles, useAdminUserRoles, useAssignUserRole, useRemoveUserRole } from './composables/useAdminUserRoles'
 
 export { useAdminUsers } from './composables/useAdminUsers'
 // Content Creator Composables
@@ -66,6 +66,7 @@ export type {
   AdminBlogTagsQueryParams,
   AdminBlogTagsResponse,
   AdminEligibleMembersResponse,
+  AdminGlobalRolesResponse,
   // Media Library types
   AdminMediaFile,
   AdminMediaFileResponse,

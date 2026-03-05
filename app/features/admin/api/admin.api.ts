@@ -11,6 +11,7 @@ import type {
   AdminBlogTagsQueryParams,
   AdminBlogTagsResponse,
   AdminEligibleMembersResponse,
+  AdminGlobalRolesResponse,
   AdminMediaFileResponse,
   AdminMediaFilesQueryParams,
   AdminMediaFilesResponse,
@@ -103,6 +104,20 @@ export const useAdminApi = () => {
 
     getUserRoles: (userId: string): Promise<AdminUserRolesResponse> =>
       $api(`/api/admin/users/${userId}/roles`),
+
+    assignUserRole: (userId: string, roleId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/users/${userId}/roles`, {
+        method: 'POST',
+        body: { roleId },
+      }),
+
+    removeUserRole: (userId: string, roleId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/users/${userId}/roles/${roleId}`, {
+        method: 'DELETE',
+      }),
+
+    getGlobalRoles: (): Promise<AdminGlobalRolesResponse> =>
+      $api('/api/rbac/roles'),
 
     // Teams
     getTeams: (params?: AdminTeamsQueryParams): Promise<AdminTeamsResponse> =>

@@ -120,6 +120,10 @@ export interface AdminUserRolesResponse {
   roles: AdminUserRole[]
 }
 
+export interface AdminGlobalRolesResponse {
+  roles: AdminUserRole[]
+}
+
 // Team response type (single team)
 export interface AdminTeamResponse {
   team: AdminTeam
