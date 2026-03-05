@@ -1,5 +1,5 @@
 import type { DatabaseClient } from '../../infrastructure/database/client'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { authProviders } from '../../database/schema'
 
 interface AnonymousConfig {
@@ -59,9 +59,38 @@ export const createAuthProvidersService = ({ db }: CreateAuthProvidersServiceDep
     }
   }
 
+  const listProviders = async () => {
+    return db
+      .select()
+      .from(authProviders)
+      .orderBy(asc(authProviders.displayOrder))
+  }
+
+  const updateProvider = async (provider: string, data: { enabled: boolean, config: Record<string, unknown> }) => {
+    const [updated] = await db
+      .update(authProviders)
+      .set({
+        enabled: data.enabled,
+        config: data.config,
+        updatedAt: new Date(),
+      })
+      .where(eq(authProviders.provider, provider))
+      .returning()
+
+    if (!updated) {
+      throw new Error(`Provider "${provider}" not found`)
+    }
+
+    cache.delete(provider)
+
+    return updated
+  }
+
   return {
     getProvider,
     getAnonymousConfig,
+    listProviders,
+    updateProvider,
   }
 }
 

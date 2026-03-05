@@ -422,6 +422,26 @@ export interface ProcessQueueResponse {
   blogPostId?: string
 }
 
+// Auth Provider types
+export interface AdminAuthProvider {
+  id: string
+  provider: string
+  enabled: boolean
+  config: Record<string, unknown>
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminAuthProvidersResponse {
+  providers: AdminAuthProvider[]
+}
+
+export interface UpdateAuthProviderInput {
+  enabled: boolean
+  config: Record<string, unknown>
+}
+
 // Media Library types
 export interface AdminMediaMetadata {
   id: string

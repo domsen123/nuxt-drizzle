@@ -41,4 +41,5 @@ export const adminKeys = {
     ? [...adminKeys.all, 'mediaFiles', params] as const
     : [...adminKeys.all, 'mediaFiles'] as const,
   mediaFile: (id: string) => [...adminKeys.all, 'mediaFile', id] as const,
+  authProviders: () => [...adminKeys.all, 'authProviders'] as const,
 }

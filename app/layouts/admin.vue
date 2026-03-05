@@ -61,6 +61,19 @@ const navItems: NavigationMenuItem[][] = [
       ],
     },
   ],
+  [
+    {
+      label: 'Settings',
+      icon: 'i-lucide-settings',
+      children: [
+        {
+          label: 'Authentication',
+          icon: 'i-lucide-shield-check',
+          to: ROUTES.admin.settingsAuthentication,
+        },
+      ],
+    },
+  ],
 ]
 
 const handleLogout = () => {

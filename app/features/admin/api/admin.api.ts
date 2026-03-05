@@ -1,5 +1,6 @@
 import type {
   AddTeamMemberInput,
+  AdminAuthProvidersResponse,
   AdminBlogCategoriesQueryParams,
   AdminBlogCategoriesResponse,
   AdminBlogCategoryResponse,
@@ -39,6 +40,7 @@ import type {
   CreateTeamInput,
   ProcessQueueResponse,
   SaveContentCreatorSettingsInput,
+  UpdateAuthProviderInput,
   UpdateBlogCategoryInput,
   UpdateBlogPostInput,
   UpdateBlogTagInput,
@@ -230,6 +232,16 @@ export const useAdminApi = () => {
 
     processContentCreatorQueue: (): Promise<ProcessQueueResponse> =>
       $api('/api/admin/blog/content-creator/queue/process', { method: 'POST' }),
+
+    // Auth Providers
+    getAuthProviders: (): Promise<AdminAuthProvidersResponse> =>
+      $api('/api/admin/settings/auth-providers'),
+
+    updateAuthProvider: (provider: string, data: UpdateAuthProviderInput): Promise<{ provider: AdminAuthProvidersResponse['providers'][number] }> =>
+      $api(`/api/admin/settings/auth-providers/${provider}`, {
+        method: 'PUT',
+        body: data,
+      }),
 
     // Media Library
     getMediaFiles: (params?: AdminMediaFilesQueryParams): Promise<AdminMediaFilesResponse> =>
