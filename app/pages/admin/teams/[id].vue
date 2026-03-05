@@ -28,39 +28,33 @@ const links = computed<NavigationMenuItem[][]>(() => [[
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="team?.name ?? 'Team'">
-        <template #leading>
-          <UButton
-            icon="i-lucide-arrow-left"
-            color="neutral"
-            variant="ghost"
-            :to="ROUTES.admin.teams"
-          />
-        </template>
-        <template #trailing>
-          <UButton
-            v-if="team?.organisation"
-            :to="ROUTES.admin.organisationEdit(team.organisation.id)"
-            color="neutral"
-            variant="link"
-            size="sm"
-            class="text-muted hover:text-default"
-          >
-            <UIcon name="i-lucide-building-2" class="size-4 mr-1" />
-            {{ team.organisation.name }}
-          </UButton>
-        </template>
-      </UDashboardNavbar>
+  <DashboardAdminPage
+    :title="team?.name ?? 'Team'"
+    :breadcrumb="[
+      { label: 'Teams', to: ROUTES.admin.teams },
+      { label: team?.name ?? 'Team' },
+    ]"
+  >
+    <template #trailing>
+      <UButton
+        v-if="team?.organisation"
+        :to="ROUTES.admin.organisationEdit(team.organisation.id)"
+        color="neutral"
+        variant="link"
+        size="sm"
+        class="text-muted hover:text-default"
+      >
+        <UIcon name="i-lucide-building-2" class="size-4 mr-1" />
+        {{ team.organisation.name }}
+      </UButton>
+    </template>
 
+    <template #header:append>
       <UDashboardToolbar>
         <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
       </UDashboardToolbar>
     </template>
 
-    <template #body>
-      <NuxtPage />
-    </template>
-  </UDashboardPanel>
+    <NuxtPage />
+  </DashboardAdminPage>
 </template>

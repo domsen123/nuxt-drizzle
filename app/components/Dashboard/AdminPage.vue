@@ -1,6 +1,9 @@
 <script lang="ts" setup>
+import type { BreadcrumbItem } from '@nuxt/ui'
+
 defineProps<{
   title: string
+  breadcrumb?: BreadcrumbItem[]
 }>()
 </script>
 
@@ -11,9 +14,14 @@ defineProps<{
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+        <template v-if="breadcrumb" #title>
+          <UBreadcrumb :items="breadcrumb" />
+        </template>
+        <template v-if="$slots.trailing" #trailing>
+          <slot name="trailing" />
+        </template>
       </UDashboardNavbar>
-      <slot name="header:append">
-      </slot>
+      <slot name="header:append" />
     </template>
     <template #body>
       <slot />

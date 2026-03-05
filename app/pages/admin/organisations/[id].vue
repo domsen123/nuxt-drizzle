@@ -32,26 +32,19 @@ const links = computed<NavigationMenuItem[][]>(() => [[
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="organisation?.name ?? 'Organisation'">
-        <template #leading>
-          <UButton
-            icon="i-lucide-arrow-left"
-            color="neutral"
-            variant="ghost"
-            :to="ROUTES.admin.organisations"
-          />
-        </template>
-      </UDashboardNavbar>
-
+  <DashboardAdminPage
+    :title="organisation?.name ?? 'Organisation'"
+    :breadcrumb="[
+      { label: 'Organisations', to: ROUTES.admin.organisations },
+      { label: organisation?.name ?? 'Organisation' },
+    ]"
+  >
+    <template #header:append>
       <UDashboardToolbar>
         <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
       </UDashboardToolbar>
     </template>
 
-    <template #body>
-      <NuxtPage />
-    </template>
-  </UDashboardPanel>
+    <NuxtPage />
+  </DashboardAdminPage>
 </template>
