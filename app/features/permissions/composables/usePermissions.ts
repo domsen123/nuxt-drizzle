@@ -3,14 +3,14 @@ import { usePermissionsApi } from '../api/permissions.api'
 import { permissionsKeys } from '../api/permissions.keys'
 
 export const usePermissions = () => {
-  const { isAuthenticated } = useSession()
+  const { isAuthenticated, isAnonymous } = useSession()
   const permissionsApi = usePermissionsApi()
 
   const query = useQuery({
     key: permissionsKeys.my(),
     query: () => permissionsApi.getMyPermissions(),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: () => isAuthenticated.value,
+    enabled: () => isAuthenticated.value && !isAnonymous.value,
   })
 
   const globalPermissions = computed(() =>

@@ -13,6 +13,7 @@ export const useSession = () => {
 
   const user = computed(() => query.data.value?.user ?? null)
   const isAuthenticated = computed(() => !!user.value)
+  const isAnonymous = computed(() => user.value?.authProvider === 'anonymous')
   const isLoading = computed(() => query.status.value === 'pending')
 
   // Impersonation state
@@ -25,6 +26,7 @@ export const useSession = () => {
     isAuthenticated,
     isLoading,
     impersonation,
+    isAnonymous,
     isImpersonating,
   }
 }
