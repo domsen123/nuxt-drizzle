@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   })
 
   // Auto-login the user after accepting invitation
-  const authResult = await container.authService.login(result.user.email, parsed.data.password, true)
+  const authResult = await container.authService.login(result.user.email!, parsed.data.password, true)
 
   // Set session cookie
   setSessionCookie(event, authResult.token, authResult.session.expiresAt)

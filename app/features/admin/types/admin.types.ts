@@ -38,8 +38,9 @@ export interface UpdateOrganisationInput {
 // User types
 export interface AdminUser {
   id: string
-  email: string
+  email: string | null
   name: string | null
+  authProvider: string
   emailVerified: boolean
   createdAt: string
   updatedAt: string

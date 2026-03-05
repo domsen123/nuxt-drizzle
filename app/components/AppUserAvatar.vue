@@ -2,7 +2,7 @@
 const props = withDefaults(defineProps<{
   userId: string
   name: string | null
-  email: string
+  email: string | null
   size?: '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
 }>(), {
   size: 'md',
@@ -44,7 +44,7 @@ const avatarSrc = computed(() => {
   return legacyOriginal?.url ?? files.value[0]!.url
 })
 
-const displayName = computed(() => props.name || props.email)
+const displayName = computed(() => props.name || props.email || undefined)
 </script>
 
 <template>

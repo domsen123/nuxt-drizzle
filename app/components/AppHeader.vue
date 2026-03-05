@@ -120,11 +120,11 @@ const userMenuItems = computed(() => {
             :loading="isLoggingOut"
           >
             <UAvatar
-              :alt="user.name ?? user.email"
+              :alt="user.name ?? user.email ?? undefined"
               size="2xs"
             />
             <span class="hidden lg:inline truncate max-w-32">
-              {{ user.name || user.email }}
+              {{ user.name || user.email || 'Guest' }}
             </span>
             <UIcon name="i-lucide-chevron-down" class="hidden lg:inline" />
           </UButton>
@@ -171,7 +171,7 @@ const userMenuItems = computed(() => {
       <!-- Mobile menu auth section -->
       <template v-if="isAuthenticated && user">
         <div class="px-2.5 py-2 text-sm text-muted">
-          Signed in as {{ user.email }}
+          Signed in as {{ user.email ?? 'Guest' }}
         </div>
         <UButton
           v-if="isImpersonating"

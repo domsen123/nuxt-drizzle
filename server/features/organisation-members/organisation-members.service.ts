@@ -10,7 +10,7 @@ export interface OrganisationMemberWithUser {
   updatedAt: Date
   user: {
     id: string
-    email: string
+    email: string | null
     name: string | null
   }
   role: {
@@ -95,7 +95,7 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
         updatedAt: member.updatedAt,
         user: {
           id: user?.id ?? member.userId,
-          email: user?.email ?? 'unknown',
+          email: user?.email ?? null,
           name: user?.name ?? null,
         },
         role: primaryRole

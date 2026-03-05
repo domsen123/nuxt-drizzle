@@ -104,10 +104,10 @@ const navItemsWithActive = computed(() =>
             :loading="isLoggingOut"
           >
             <UAvatar
-              :alt="user?.name ?? user?.email"
+              :alt="user?.name ?? user?.email ?? undefined"
               size="2xs"
             />
-            <span class="truncate">{{ user?.name || user?.email }}</span>
+            <span class="truncate">{{ user?.name || user?.email || 'Guest' }}</span>
             <UIcon name="i-lucide-chevron-down" class="ml-auto" />
           </UButton>
         </UDropdownMenu>

@@ -25,7 +25,7 @@ type Schema = z.output<typeof schema>
 
 const state = reactive<Schema>({
   name: props.user.name ?? '',
-  email: props.user.email,
+  email: props.user.email ?? '',
   emailVerified: props.user.emailVerified,
 })
 

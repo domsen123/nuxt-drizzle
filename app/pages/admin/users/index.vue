@@ -136,7 +136,7 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
                 {{ row.original.name || 'No name' }}
               </p>
               <p class="text-muted text-xs">
-                {{ row.original.email }}
+                {{ row.original.email ?? 'No email' }}
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ const getActionsItems = (row: AdminUser): DropdownMenuItem[][] => {
                 {{ item.name || 'No name' }}
               </p>
               <p class="text-muted text-xs truncate">
-                {{ item.email }}
+                {{ item.email ?? 'No email' }}
               </p>
             </div>
             <UBadge

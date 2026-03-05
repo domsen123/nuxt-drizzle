@@ -34,7 +34,7 @@ export interface AcceptInvitationInput {
 }
 
 export interface AcceptInvitationResult {
-  user: { id: string, email: string, name: string | null }
+  user: { id: string, email: string | null, name: string | null }
   organisationId: string
   organisationName: string
 }

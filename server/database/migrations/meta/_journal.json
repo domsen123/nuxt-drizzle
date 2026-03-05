@@ -64,6 +64,13 @@
       "when": 1772138723970,
       "tag": "0008_lying_sprite",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1772699740586,
+      "tag": "0009_talented_luminals",
+      "breakpoints": true
     }
   ]
 }

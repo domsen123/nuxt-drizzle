@@ -13,9 +13,18 @@ export default defineEventHandler(async (event) => {
 
   const { email, password, name } = result
 
-  const authResult = await container.authService.register(email, password, name)
+  // If current user is anonymous, upgrade their account instead of creating a new one
+  const currentUser = event.context.user
+  const isAnonymousUpgrade = currentUser && currentUser.authProvider === 'anonymous'
 
-  setSessionCookie(event, authResult.token, authResult.session.expiresAt)
+  const authResult = await container.authService.register(email, password, name, {
+    existingUserId: isAnonymousUpgrade ? currentUser.id : undefined,
+  })
+
+  // Only set a new cookie if this is not an upgrade (upgrade keeps existing session)
+  if (!isAnonymousUpgrade) {
+    setSessionCookie(event, authResult.token, authResult.session.expiresAt)
+  }
 
   return {
     user: authResult.user,

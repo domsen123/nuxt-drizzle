@@ -20,7 +20,7 @@ const filteredMembers = computed(() => {
   const query = search.value.toLowerCase()
   return props.members.filter(member =>
     member.user.name?.toLowerCase().includes(query)
-    || member.user.email.toLowerCase().includes(query),
+    || member.user.email?.toLowerCase().includes(query),
   )
 })
 

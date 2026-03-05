@@ -13,7 +13,7 @@ const EMAIL_CHANGE_TOKEN_EXPIRY_HOURS = 24
 
 export interface UserProfile {
   id: string
-  email: string
+  email: string | null
   name: string | null
   createdAt: Date
   updatedAt: Date
@@ -246,7 +246,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
   ): Promise<{ success: boolean }> => {
     const user = await usersItemService.readOne(userId)
 
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw createError({ statusCode: 404, statusMessage: 'User not found' })
     }
 

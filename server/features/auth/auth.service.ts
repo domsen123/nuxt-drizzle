@@ -55,9 +55,9 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     return safeUser
   }
 
-  const createSession = async (userId: string, remember: boolean = false): Promise<{ session: Session, token: string }> => {
+  const createSession = async (userId: string, remember: boolean = false, expiryDaysOverride?: number): Promise<{ session: Session, token: string }> => {
     const token = generateSessionToken()
-    const expiryDays = remember ? SESSION_EXPIRY_LONG_DAYS : SESSION_EXPIRY_SHORT_DAYS
+    const expiryDays = expiryDaysOverride ?? (remember ? SESSION_EXPIRY_LONG_DAYS : SESSION_EXPIRY_SHORT_DAYS)
     const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000)
 
     const [session] = await db
@@ -87,8 +87,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       .where(eq(users.id, userId))
       .limit(1)
 
-    if (!user) {
-      console.error(`[Email Verification] User not found: ${userId}`)
+    if (!user || !user.email) {
+      console.error(`[Email Verification] User not found or has no email: ${userId}`)
       return { success: false }
     }
 
@@ -134,9 +134,36 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     return { success: true }
   }
 
+  const createAnonymousUser = async (sessionDurationDays: number): Promise<AuthServiceResult> => {
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: ulid(),
+        authProvider: 'anonymous',
+      })
+      .returning()
+
+    if (!user) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to create anonymous user',
+      })
+    }
+
+    const { session, token } = await createSession(user.id, false, sessionDurationDays)
+
+    return {
+      user: omitPasswordHash(user),
+      session,
+      token,
+    }
+  }
+
   interface RegisterOptions {
     /** Skip sending verification email and mark user as verified (for seeding) */
     skipVerification?: boolean
+    /** Existing anonymous user ID to upgrade to a full account */
+    existingUserId?: string
   }
 
   const register = async (
@@ -158,24 +185,67 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       })
     }
 
-    const passwordHash = await hashPassword(password)
+    const hashedPassword = await hashPassword(password)
 
-    const [user] = await db
-      .insert(users)
-      .values({
-        id: ulid(),
-        email: email.toLowerCase(),
-        passwordHash,
-        name,
-        emailVerified: options?.skipVerification ?? false,
-      })
-      .returning()
+    let user: User
 
-    if (!user) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to create user',
-      })
+    if (options?.existingUserId) {
+      // Upgrade anonymous user to credentials
+      const [existingAnon] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, options.existingUserId))
+        .limit(1)
+
+      if (!existingAnon || existingAnon.authProvider !== 'anonymous') {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid user for upgrade',
+        })
+      }
+
+      const [updated] = await db
+        .update(users)
+        .set({
+          email: email.toLowerCase(),
+          passwordHash: hashedPassword,
+          name,
+          authProvider: 'credentials',
+          emailVerified: options?.skipVerification ?? false,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, options.existingUserId))
+        .returning()
+
+      if (!updated) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Failed to upgrade user',
+        })
+      }
+
+      user = updated
+    }
+    else {
+      const [created] = await db
+        .insert(users)
+        .values({
+          id: ulid(),
+          email: email.toLowerCase(),
+          passwordHash: hashedPassword,
+          name,
+          emailVerified: options?.skipVerification ?? false,
+        })
+        .returning()
+
+      if (!created) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Failed to create user',
+        })
+      }
+
+      user = created
     }
 
     // Emit user registered event for other features (e.g., RBAC role assignment)
@@ -184,6 +254,29 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       email: user.email,
       timestamp: new Date(),
     })
+
+    // For upgrade flow, keep existing session; for new users, create a new one
+    if (options?.existingUserId) {
+      // Reuse existing session — caller should keep existing cookie
+      const existingSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, user.id))
+        .limit(1)
+
+      const session = existingSessions[0]
+      if (!session) {
+        // Fallback: create new session if none exists
+        const { session: newSession, token } = await createSession(user.id)
+        return { user: omitPasswordHash(user), session: newSession, token }
+      }
+
+      return {
+        user: omitPasswordHash(user),
+        session,
+        token: session.token,
+      }
+    }
 
     const { session, token } = await createSession(user.id)
 
@@ -208,7 +301,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       .where(eq(users.email, email.toLowerCase()))
       .limit(1)
 
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw createError({
         statusCode: 401,
         statusMessage: 'Invalid credentials',
@@ -289,7 +382,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       .limit(1)
 
     // Always return success to prevent email enumeration
-    if (!user) {
+    if (!user || !user.email) {
       console.log(`[Password Reset] Email not found: ${email}`)
       return { success: true }
     }
@@ -526,6 +619,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
   return {
     register,
     login,
+    createAnonymousUser,
     createSession,
     validateSession,
     invalidateSession,
