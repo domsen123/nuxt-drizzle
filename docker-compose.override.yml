@@ -1,0 +1,13 @@
+# Lokale Entwicklungs-Overrides.
+# Wird von `docker compose` automatisch mit docker-compose.yml gemerged.
+#
+# Im Dev-Workflow läuft die Nuxt-App via `pnpm dev` auf dem Host -> wir starten
+# bewusst nur den postgres-Service (siehe `pnpm docker:up`). Hier wird der
+# DB-Port auf den Host gemappt, damit Drizzle/`pnpm db:*` zugreifen können.
+services:
+  postgres:
+    # Lokal gibt es keine Coolify-Magic-Envs -> Passwort aus .env verwenden
+    environment:
+      POSTGRES_PASSWORD: ${NUXT_DATABASE_PASSWORD}
+    ports:
+      - '${NUXT_DATABASE_PORT}:5432'
