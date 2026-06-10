@@ -42,7 +42,6 @@
     "@vueuse/router": "catalog:",
     "ai": "catalog:",
     "bcrypt": "catalog:",
-    "better-sqlite3": "catalog:",
     "date-fns": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
