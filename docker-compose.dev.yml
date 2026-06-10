@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18
-    container_name: nuxt-drizzle-postgres-db
+    container_name: db-voice
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${NUXT_DATABASE_NAME}
