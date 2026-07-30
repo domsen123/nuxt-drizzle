@@ -11,7 +11,7 @@ const organisationId = computed(() => route.params.id as string)
 
 const { organisation } = useAdminOrganisation(organisationId)
 
-const links = computed<NavigationMenuItem[][]>(() => [[
+const links = computed<NavigationMenuItem[]>(() => [
   {
     label: 'General',
     icon: 'i-lucide-settings',
@@ -28,30 +28,23 @@ const links = computed<NavigationMenuItem[][]>(() => [[
     icon: 'i-lucide-users-round',
     to: ROUTES.admin.organisationTeams(organisationId.value),
   },
-]])
+])
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="organisation?.name ?? 'Organisation'">
-        <template #leading>
-          <UButton
-            icon="i-lucide-arrow-left"
-            color="neutral"
-            variant="ghost"
-            :to="ROUTES.admin.organisations"
-          />
-        </template>
-      </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
+  <DashboardAdminPage
+    :title="organisation?.name ?? 'Organisation'"
+    :breadcrumb="[
+      { label: 'Organisations', to: ROUTES.admin.organisations },
+      { label: organisation?.name ?? 'Organisation' },
+    ]"
+  >
+    <template #header:append>
+      <UDashboardToolbar class="bg-elevated/50">
+        <UNavigationMenu :items="links" highlight />
       </UDashboardToolbar>
     </template>
 
-    <template #body>
-      <NuxtPage />
-    </template>
-  </UDashboardPanel>
+    <NuxtPage />
+  </DashboardAdminPage>
 </template>

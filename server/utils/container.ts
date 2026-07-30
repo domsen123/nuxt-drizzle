@@ -1,4 +1,5 @@
 import type { ImpersonationService } from '../features/admin/impersonation.service'
+import type { AuthProvidersService } from '../features/auth/auth-providers.service'
 import type { AuthService } from '../features/auth/auth.service'
 import type { ContentCreatorService } from '../features/content-creator/content-creator.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
@@ -15,6 +16,7 @@ import type { RbacService } from '../features/rbac/rbac.service'
 import type { EventBus } from '../infrastructure/events'
 import * as schema from '../database/schema'
 import { createImpersonationService } from '../features/admin/impersonation.service'
+import { createAuthProvidersService } from '../features/auth/auth-providers.service'
 import { createAuthService } from '../features/auth/auth.service'
 import { createContentCreatorService } from '../features/content-creator/content-creator.service'
 import { createEmailService } from '../features/email/email.service'
@@ -87,6 +89,12 @@ const getAuthService = lazy(() =>
     db: getDatabase('app'),
     emailService: getEmailService(),
     eventBus: getEventBus(),
+  }),
+)
+
+const getAuthProvidersService = lazy(() =>
+  createAuthProvidersService({
+    db: getDatabase('app'),
   }),
 )
 
@@ -251,6 +259,9 @@ const getMediaLibraryService = lazy(() =>
 export const container = {
   get authService(): AuthService {
     return getAuthService()
+  },
+  get authProvidersService(): AuthProvidersService {
+    return getAuthProvidersService()
   },
   get emailService(): EmailService {
     return getEmailService()

@@ -150,16 +150,13 @@ const previewUrl = computed(() => {
         label="Organisation Name"
         description="Will appear on receipts, invoices, and other communication."
         required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <div class="w-full max-w-sm">
-          <UInput
-            v-model="state.name"
-            placeholder="Acme Corporation"
-            autocomplete="organization"
-            :maxlength="NAME_MAX_LENGTH"
-          />
-        </div>
+        <UInput
+          v-model="state.name"
+          placeholder="Acme Corporation"
+          autocomplete="organization"
+          :maxlength="NAME_MAX_LENGTH"
+        />
       </UFormField>
 
       <USeparator />
@@ -169,7 +166,6 @@ const previewUrl = computed(() => {
         name="slug"
         label="URL Slug"
         required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <template #description>
           <span>
@@ -189,33 +185,31 @@ const previewUrl = computed(() => {
             </template>
           </span>
         </template>
-        <div class="w-full max-w-sm">
-          <UInput
-            v-model="state.slug"
-            placeholder="acme-corp"
-            :maxlength="SLUG_MAX_LENGTH"
-            :disabled="isEditMode"
-            @input="onSlugInput"
-          >
-            <template v-if="isEditMode" #trailing>
-              <UIcon name="i-lucide-lock" class="size-4 text-muted" />
-            </template>
-          </UInput>
-          <!-- URL Preview -->
-          <Transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="opacity-0"
-            enter-to-class="opacity-100"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-          >
-            <p v-if="previewUrl" class="mt-2 text-xs text-muted">
-              <UIcon name="i-lucide-globe" class="size-3 inline-block me-1" />
-              {{ previewUrl }}
-            </p>
-          </Transition>
-        </div>
+        <UInput
+          v-model="state.slug"
+          placeholder="acme-corp"
+          :maxlength="SLUG_MAX_LENGTH"
+          :disabled="isEditMode"
+          @input="onSlugInput"
+        >
+          <template v-if="isEditMode" #trailing>
+            <UIcon name="i-lucide-lock" class="size-4 text-muted" />
+          </template>
+        </UInput>
+        <!-- URL Preview -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <p v-if="previewUrl" class="mt-2 text-xs text-muted">
+            <UIcon name="i-lucide-globe" class="size-3 inline-block me-1" />
+            {{ previewUrl }}
+          </p>
+        </Transition>
       </UFormField>
     </UPageCard>
   </UForm>

@@ -1,5 +1,6 @@
 import type {
   AddTeamMemberInput,
+  AdminAuthProvidersResponse,
   AdminBlogCategoriesQueryParams,
   AdminBlogCategoriesResponse,
   AdminBlogCategoryResponse,
@@ -10,6 +11,7 @@ import type {
   AdminBlogTagsQueryParams,
   AdminBlogTagsResponse,
   AdminEligibleMembersResponse,
+  AdminGlobalRolesResponse,
   AdminMediaFileResponse,
   AdminMediaFilesQueryParams,
   AdminMediaFilesResponse,
@@ -39,6 +41,7 @@ import type {
   CreateTeamInput,
   ProcessQueueResponse,
   SaveContentCreatorSettingsInput,
+  UpdateAuthProviderInput,
   UpdateBlogCategoryInput,
   UpdateBlogPostInput,
   UpdateBlogTagInput,
@@ -101,6 +104,20 @@ export const useAdminApi = () => {
 
     getUserRoles: (userId: string): Promise<AdminUserRolesResponse> =>
       $api(`/api/admin/users/${userId}/roles`),
+
+    assignUserRole: (userId: string, roleId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/users/${userId}/roles`, {
+        method: 'POST',
+        body: { roleId },
+      }),
+
+    removeUserRole: (userId: string, roleId: string): Promise<{ success: boolean }> =>
+      $api(`/api/admin/users/${userId}/roles/${roleId}`, {
+        method: 'DELETE',
+      }),
+
+    getGlobalRoles: (): Promise<AdminGlobalRolesResponse> =>
+      $api('/api/rbac/roles'),
 
     // Teams
     getTeams: (params?: AdminTeamsQueryParams): Promise<AdminTeamsResponse> =>
@@ -230,6 +247,16 @@ export const useAdminApi = () => {
 
     processContentCreatorQueue: (): Promise<ProcessQueueResponse> =>
       $api('/api/admin/blog/content-creator/queue/process', { method: 'POST' }),
+
+    // Auth Providers
+    getAuthProviders: (): Promise<AdminAuthProvidersResponse> =>
+      $api('/api/admin/settings/auth-providers'),
+
+    updateAuthProvider: (provider: string, data: UpdateAuthProviderInput): Promise<{ provider: AdminAuthProvidersResponse['providers'][number] }> =>
+      $api(`/api/admin/settings/auth-providers/${provider}`, {
+        method: 'PUT',
+        body: data,
+      }),
 
     // Media Library
     getMediaFiles: (params?: AdminMediaFilesQueryParams): Promise<AdminMediaFilesResponse> =>

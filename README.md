@@ -5,6 +5,7 @@ A production-ready, full-stack SaaS starter template built with Nuxt 4, featurin
 ## Features
 
 - **Authentication System** - Complete auth flow with sign up, sign in, password reset, email verification, and session management
+- **Anonymous Authentication** - Auto-session creation on first visit with seamless upgrade-to-credentials flow
 - **Multi-Tenant Organizations** - Create and manage organizations with unique slugs and member management
 - **Team Management** - Organize members into teams within organizations
 - **Role-Based Access Control (RBAC)** - Polymorphic roles supporting global, organization, and team scopes with 27+ permissions
@@ -213,6 +214,8 @@ Complete authentication system with session-based auth using httpOnly cookies.
 - Password reset flow (1-hour token expiry)
 - Session management (view, revoke individual or all sessions)
 - Sliding window session refresh
+- Anonymous authentication (auto-session on first visit)
+- Upgrade anonymous account to full credentials (email/password)
 
 **API Endpoints:**
 ```
@@ -236,6 +239,7 @@ DELETE /api/auth/sessions/others       # Revoke all other sessions
 - httpOnly, Secure (production), SameSite=Lax cookies
 - Single-use verification tokens
 - Email enumeration prevention on password reset
+- Anonymous sessions with configurable duration
 
 ### Organizations & Teams
 
@@ -474,6 +478,7 @@ Full administrative capabilities for platform management.
 - Manage all teams (CRUD)
 - Handle invitations
 - Impersonate users
+- Authentication provider settings
 
 ### Event Bus
 
@@ -531,6 +536,7 @@ Pluggable email system with template support.
 | `content_creator_settings` | AI provider configuration |
 | `content_creator_pillars` | Content strategy pillars |
 | `content_creator_clusters` | Topic clusters for content generation |
+| `auth_providers` | Authentication provider settings (e.g., anonymous, credentials) |
 
 ### ID Format
 
@@ -567,6 +573,7 @@ All tables use ULID (Universally Unique Lexicographically Sortable Identifier) f
 | `/admin/blog/content-creator` | Admin: AI content creator |
 | `/admin/media` | Admin: Media library |
 | `/admin/media/[id]` | Admin: Media file details |
+| `/admin/settings/authentication` | Admin: Authentication provider settings |
 
 ## Key Patterns
 

@@ -38,8 +38,9 @@ export interface UpdateOrganisationInput {
 // User types
 export interface AdminUser {
   id: string
-  email: string
+  email: string | null
   name: string | null
+  authProvider: string
   emailVerified: boolean
   createdAt: string
   updatedAt: string
@@ -116,6 +117,10 @@ export interface AdminUserRole {
 }
 
 export interface AdminUserRolesResponse {
+  roles: AdminUserRole[]
+}
+
+export interface AdminGlobalRolesResponse {
   roles: AdminUserRole[]
 }
 
@@ -419,6 +424,26 @@ export interface ProcessQueueResponse {
   message?: string
   clusterId?: string
   blogPostId?: string
+}
+
+// Auth Provider types
+export interface AdminAuthProvider {
+  id: string
+  provider: string
+  enabled: boolean
+  config: Record<string, unknown>
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminAuthProvidersResponse {
+  providers: AdminAuthProvider[]
+}
+
+export interface UpdateAuthProviderInput {
+  enabled: boolean
+  config: Record<string, unknown>
 }
 
 // Media Library types

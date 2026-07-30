@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1771414784958,
-      "tag": "0000_safe_proemial_gods",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1772058414403,
-      "tag": "0001_bouncy_risque",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1772063425874,
-      "tag": "0002_natural_toxin",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1772101544257,
-      "tag": "0003_wakeful_mach_iv",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1772116783375,
-      "tag": "0004_kind_dragon_lord",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772119932737,
-      "tag": "0005_gorgeous_tattoo",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1772122054520,
-      "tag": "0006_old_sharon_carter",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1772124214415,
-      "tag": "0007_clever_nightmare",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1772138723970,
-      "tag": "0008_lying_sprite",
+      "when": 1772716030968,
+      "tag": "0000_material_hex",
       "breakpoints": true
     }
   ]

@@ -24,27 +24,18 @@ const onCancel = () => {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Create Organisation">
-        <template #leading>
-          <UButton
-            icon="i-lucide-arrow-left"
-            color="neutral"
-            variant="ghost"
-            :to="ROUTES.admin.organisations"
-          />
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div class="p-6 max-w-xl">
-        <AdminOrganisationForm
-          @success="onSuccess"
-          @cancel="onCancel"
-        />
-      </div>
-    </template>
-  </UDashboardPanel>
+  <DashboardAdminPage
+    title="Create Organisation"
+    :breadcrumb="[
+      { label: 'Organisations', to: ROUTES.admin.organisations },
+      { label: 'Create' },
+    ]"
+  >
+    <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-3xl mx-auto py-6 px-6 lg:py-12">
+      <AdminOrganisationForm
+        @success="onSuccess"
+        @cancel="onCancel"
+      />
+    </div>
+  </DashboardAdminPage>
 </template>

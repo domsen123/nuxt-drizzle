@@ -1,4 +1,5 @@
 import type { Storage } from 'unstorage'
+import { Buffer } from 'node:buffer'
 import { Liquid } from 'liquidjs'
 
 const engine = new Liquid()

@@ -15,10 +15,10 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 
-// Redirect if already logged in
-const { isAuthenticated } = useSession()
-watch(isAuthenticated, (authenticated) => {
-  if (authenticated) {
+// Redirect if already logged in (but allow anonymous users to sign up for upgrade)
+const { isAuthenticated, isAnonymous } = useSession()
+watch([isAuthenticated, isAnonymous], ([authenticated, anonymous]) => {
+  if (authenticated && !anonymous) {
     const redirect = route.query.redirect as string | undefined
     router.push(redirect || ROUTES.start)
   }

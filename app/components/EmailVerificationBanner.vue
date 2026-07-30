@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { user } = useSession()
+const { user, isAnonymous } = useSession()
 const toast = useToast()
 const { mutateAsync: resendVerification, asyncStatus } = useResendVerification()
 
@@ -8,7 +8,7 @@ const dismissed = ref(false)
 const isLoading = computed(() => asyncStatus.value === 'loading')
 
 const shouldShow = computed(() => {
-  return user.value && !user.value.emailVerified && !dismissed.value
+  return user.value && !isAnonymous.value && !user.value.emailVerified && !dismissed.value
 })
 
 const handleResend = async () => {

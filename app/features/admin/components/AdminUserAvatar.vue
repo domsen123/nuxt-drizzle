@@ -2,7 +2,7 @@
 const props = defineProps<{
   userId: string
   userName: string | null
-  userEmail: string
+  userEmail: string | null
 }>()
 
 const toast = useToast()
@@ -143,7 +143,7 @@ const removeAvatar = async () => {
       <UAvatar
         v-else
         :src="avatarSrc"
-        :alt="userName || userEmail"
+        :alt="userName || userEmail || undefined"
         size="3xl"
         :ui="{ root: 'cursor-pointer' }"
         @click="openFilePicker"

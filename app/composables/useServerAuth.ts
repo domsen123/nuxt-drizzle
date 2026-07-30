@@ -28,6 +28,7 @@ export const useServerAuth = () => {
   return {
     user: auth?.user ?? null,
     isAuthenticated: !!auth?.user,
+    isAnonymous: auth?.user?.authProvider === 'anonymous',
     impersonation: auth?.impersonation ?? null,
     isImpersonating: !!auth?.impersonation,
     permissions: auth?.permissions ?? defaultPermissions,

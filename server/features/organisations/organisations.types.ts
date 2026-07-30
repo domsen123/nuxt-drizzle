@@ -12,7 +12,7 @@ export interface OrganisationWithOwner {
   updatedAt: Date
   owner: {
     id: string
-    email: string
+    email: string | null
     name: string | null
   }
 }

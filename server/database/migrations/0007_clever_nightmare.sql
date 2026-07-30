@@ -1,1 +1,0 @@
-ALTER TABLE "content_creator_settings" ADD COLUMN "model" text;

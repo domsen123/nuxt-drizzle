@@ -4,7 +4,7 @@ import { useStopImpersonation } from '~/features/admin/composables/useImpersonat
 const router = useRouter()
 const toast = useToast()
 
-const { user, isAuthenticated, isLoading, isImpersonating } = useSession()
+const { user, isAuthenticated, isAnonymous, isLoading, isImpersonating } = useSession()
 const { isGlobalAdmin } = usePermissions()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
@@ -112,7 +112,7 @@ const userMenuItems = computed(() => {
       </template>
 
       <!-- Authenticated state -->
-      <template v-else-if="isAuthenticated && user">
+      <template v-else-if="isAuthenticated && user && !isAnonymous">
         <UDropdownMenu :items="userMenuItems">
           <UButton
             color="neutral"
@@ -120,11 +120,11 @@ const userMenuItems = computed(() => {
             :loading="isLoggingOut"
           >
             <UAvatar
-              :alt="user.name ?? user.email"
+              :alt="user.name ?? user.email ?? undefined"
               size="2xs"
             />
             <span class="hidden lg:inline truncate max-w-32">
-              {{ user.name || user.email }}
+              {{ user.name || user.email || 'Guest' }}
             </span>
             <UIcon name="i-lucide-chevron-down" class="hidden lg:inline" />
           </UButton>
@@ -169,9 +169,9 @@ const userMenuItems = computed(() => {
       <USeparator class="my-6" />
 
       <!-- Mobile menu auth section -->
-      <template v-if="isAuthenticated && user">
+      <template v-if="isAuthenticated && user && !isAnonymous">
         <div class="px-2.5 py-2 text-sm text-muted">
-          Signed in as {{ user.email }}
+          Signed in as {{ user.email ?? 'Guest' }}
         </div>
         <UButton
           v-if="isImpersonating"

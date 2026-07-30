@@ -18,7 +18,7 @@ export type CrudEventKey = `${string}:${'created' | 'updated' | 'deleted'}`
 // move this to ./server/types/*.ts if its get more and more types
 export interface UserRegisteredPayload {
   userId: string
-  email: string
+  email: string | null
   timestamp: Date
 }
 

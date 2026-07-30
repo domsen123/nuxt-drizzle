@@ -1,6 +1,8 @@
 import { join } from 'node:path'
 import process from 'node:process'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { ulid } from 'ulid'
+import { authProviders } from '../database/schema'
 import { getSystemRoleId, seedRbac } from '../features/rbac/rbac.seed'
 import { getDatabase } from '../infrastructure/database/client'
 import { container } from '../utils/container'
@@ -103,10 +105,42 @@ const seedAdmin = async () => {
   console.log('[Init] Admin seed completed')
 }
 
+// ─── Auth Providers Seed ────────────────────────────────────────────────────
+const seedAuthProviders = async () => {
+  console.log('[Init] Seeding auth providers...')
+  const db = getDatabase('app')
+
+  const existing = await db.select().from(authProviders).limit(1)
+  if (existing.length > 0) {
+    console.log('[Init] Auth providers already seeded')
+    return
+  }
+
+  await db.insert(authProviders).values([
+    {
+      id: ulid(),
+      provider: 'credentials',
+      enabled: true,
+      config: {},
+      displayOrder: 0,
+    },
+    {
+      id: ulid(),
+      provider: 'anonymous',
+      enabled: false,
+      config: { sessionDurationDays: 30 },
+      displayOrder: 1,
+    },
+  ])
+
+  console.log('[Init] Auth providers seeded')
+}
+
 // ─── Main Plugin ─────────────────────────────────────────────────────────────
 export default defineNitroPlugin(async () => {
   await runMigration()
   await runRbacSeed()
+  await seedAuthProviders()
   registerRbacListeners()
   registerEventBusLogging()
   await seedAdmin()

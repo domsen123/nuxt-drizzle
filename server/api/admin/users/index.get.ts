@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     container.items.users.findMany({
       filter,
       sort: sortArray,
-      fields: ['id', 'email', 'name', 'emailVerified', 'createdAt', 'updatedAt'],
+      fields: ['id', 'email', 'name', 'authProvider', 'emailVerified', 'createdAt', 'updatedAt'],
       limit,
       offset,
     }),

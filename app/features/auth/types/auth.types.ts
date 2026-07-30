@@ -1,7 +1,8 @@
 export interface AuthUser {
   id: string
-  email: string
+  email: string | null
   name: string | null
+  authProvider: string
   emailVerified: boolean
   createdAt: string
   updatedAt: string

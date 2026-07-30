@@ -1,0 +1,71 @@
+# Production-Stack für Coolify (Base-Datei).
+#
+# Lokal wird diese Datei automatisch mit docker-compose.override.yml gemerged
+# (siehe `pnpm docker:up` -> startet nur den postgres-Service für `pnpm dev`).
+# Coolify deployt ausschliesslich diese Datei (Override wird dort ignoriert).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Coolify generiert hierfür automatisch eine Domain + Traefik-Routing
+      SERVICE_FQDN_APP_3000: ${SERVICE_FQDN_APP_3000:-}
+      # App-Config
+      NUXT_SITE_NAME: ${NUXT_SITE_NAME}
+      NUXT_SITE_ENV: ${NUXT_SITE_ENV:-production}
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL}
+      # Secrets: von Coolify automatisch generiert & persistiert (Magic Envs)
+      NUXT_AUTH_SECRET: ${SERVICE_BASE64_64_AUTHSECRET}
+      NUXT_OG_IMAGE_SECRET: ${SERVICE_BASE64_OGIMAGE}
+      # DB-Verbindung -> interner Compose-Service "postgres"
+      NUXT_DATABASE_HOST: postgres
+      NUXT_DATABASE_PORT: 5432
+      NUXT_DATABASE_USER: ${NUXT_DATABASE_USER:-postgres}
+      NUXT_DATABASE_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      NUXT_DATABASE_NAME: ${NUXT_DATABASE_NAME:-app}
+      # E-Mail
+      NUXT_EMAIL_PROVIDER: ${NUXT_EMAIL_PROVIDER:-console}
+      NUXT_SMTP_HOST: ${NUXT_SMTP_HOST:-}
+      NUXT_SMTP_PORT: ${NUXT_SMTP_PORT:-587}
+      NUXT_SMTP_USER: ${NUXT_SMTP_USER:-}
+      NUXT_SMTP_PASS: ${NUXT_SMTP_PASS:-}
+      NUXT_SMTP_FROM: ${NUXT_SMTP_FROM:-}
+      # Storage
+      NUXT_STORAGE_PROVIDER: ${NUXT_STORAGE_PROVIDER:-local}
+    expose:
+      - '3000'
+    volumes:
+      # Persistenter Upload-Storage (bei NUXT_STORAGE_PROVIDER=local)
+      - app_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'node -e "fetch(\"http://localhost:3000\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${NUXT_DATABASE_NAME:-app}
+      POSTGRES_USER: ${NUXT_DATABASE_USER:-postgres}
+      # Gleiche Magic-Env wie die App -> Passwörter bleiben synchron
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${NUXT_DATABASE_USER:-postgres} -d ${NUXT_DATABASE_NAME:-app}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+  app_storage:
