@@ -52,7 +52,13 @@ export default defineNuxtConfig({
       '0 9 * * *': ['content-creator:generate'],
     },
     prerender: {
-      routes: [],
+      // Public, session-independent pages only. Crawling would statically bake
+      // auth-gated routes with an empty auth payload, which bypasses the server
+      // auth middleware and redirects signed-in users on a hard reload.
+      routes: [
+        '/privacy-policy',
+        '/terms-of-service',
+      ],
       crawlLinks: false,
     },
   },

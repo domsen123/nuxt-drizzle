@@ -411,9 +411,10 @@ Self-implemented email/password authentication. No external library.
 - Computed: isAuthenticated
 - Pattern: Not Pinia Colada (special case, global state)
 
-**Auth Plugin** (app/plugins/auth.ts)
-- Runs on app init
-- Calls auth.fetch() to hydrate session state
+**Auth Plugin** (app/plugins/api.ts)
+- Runs on app init, provides $api with SSR cookie forwarding
+- Pre-fetches session + permissions during SSR into nuxtApp.payload.auth
+- Seeds the Pinia Colada cache so useSession() does not re-fetch
 
 **Route Protection**
 - Use Nuxt middleware for protected pages

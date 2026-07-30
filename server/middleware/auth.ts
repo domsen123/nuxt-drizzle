@@ -7,6 +7,10 @@ export default defineEventHandler(async (event) => {
   event.context.user = null
   event.context.impersonation = null
 
+  // Prerender requests carry no session and reach no database.
+  if (import.meta.prerender)
+    return
+
   const token = getSessionToken(event)
 
   if (!token) {

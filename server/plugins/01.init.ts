@@ -138,6 +138,12 @@ const seedAuthProviders = async () => {
 
 // ─── Main Plugin ─────────────────────────────────────────────────────────────
 export default defineNitroPlugin(async () => {
+  // The prerenderer boots a full Nitro server at build time. Migrating and
+  // seeding from there would mutate whichever database the build machine points
+  // at, so initialisation only belongs to a real server start.
+  if (import.meta.prerender)
+    return
+
   await runMigration()
   await runRbacSeed()
   await seedAuthProviders()

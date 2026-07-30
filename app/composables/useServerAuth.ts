@@ -12,7 +12,7 @@ interface ServerAuthPayload {
  * Safe to use in middleware because it doesn't use Pinia-Colada/inject().
  *
  * Note: This composable reads from nuxtApp.payload.auth which is populated
- * by the auth.server.ts plugin during SSR.
+ * by app/plugins/api.ts during SSR.
  */
 export const useServerAuth = () => {
   const nuxtApp = useNuxtApp()

@@ -5,11 +5,17 @@ import dotenv from 'dotenv'
 const envArg = process.argv.find(arg => arg.startsWith('--dotenv=')) || '--dotenv=.env'
 const envFile = envArg.split('=')[1] || '.env'
 
+// The prerenderer boots this bundle at build time, where runtime secrets are
+// deliberately absent - .dockerignore excludes .env and the Dockerfile build
+// stage sets no NUXT_* vars. Prerendered routes must not depend on them, so
+// validation is skipped there instead of failing the build.
+const isPrerender = import.meta.prerender === true
+
 // Try to load .env file, but don't fail if it doesn't exist in production
 const envFound = dotenv.config({
   path: envFile,
 })
-if (envFound.error && process.env.NODE_ENV !== 'production') {
+if (envFound.error && !isPrerender && process.env.NODE_ENV !== 'production') {
   throw new Error(`⚠️  Couldn't find ${envFile} file  ⚠️`)
 }
 
@@ -27,11 +33,13 @@ const requiredEnvVars = [
   'NUXT_AUTH_SECRET',
 ]
 
-requiredEnvVars.forEach((key) => {
-  if (!process.env[key]) {
-    throw new Error(`⚠️  Missing required environment variable: ${key} ⚠️`)
-  }
-})
+if (!isPrerender) {
+  requiredEnvVars.forEach((key) => {
+    if (!process.env[key]) {
+      throw new Error(`⚠️  Missing required environment variable: ${key} ⚠️`)
+    }
+  })
+}
 
 export const config = {
   site: {
