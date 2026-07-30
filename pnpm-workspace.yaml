@@ -34,7 +34,7 @@ catalog:
   liquidjs: ^10.27.0
   mitt: ^3.0.1
   nodemailer: ^8.0.11
-  nuxt: ^4.4.8
+  nuxt: ^4.5.1
   nuxt-mcp-dev: ^0.3.2
   nuxt-og-image: ^6.5.3
   pinia: ^3.0.4
