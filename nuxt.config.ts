@@ -52,10 +52,8 @@ export default defineNuxtConfig({
       '0 9 * * *': ['content-creator:generate'],
     },
     prerender: {
-      routes: [
-        '/',
-      ],
-      crawlLinks: true,
+      routes: [],
+      crawlLinks: false,
     },
   },
 })

@@ -29,6 +29,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   // Pre-fetch auth during SSR for middleware and seed Pinia Colada cache
   if (import.meta.server) {
+    // Resolve the cache synchronously, before any await. Past an await the Vue
+    // app context is gone and useQueryCache() would fall back to the global
+    // activePinia - which by then may belong to a concurrent SSR request (or be
+    // unset after its app:rendered hook).
+    const queryCache = useQueryCache()
+
     try {
       const session = await api<SessionResponse>('/api/auth/session')
 
@@ -53,7 +59,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       }
 
       // Seed Pinia Colada cache so useSession() doesn't re-fetch
-      const queryCache = useQueryCache()
       queryCache.setQueryData(authKeys.session(), {
         user: session?.user ?? null,
         impersonation: session?.impersonation ?? null,
