@@ -1,6 +1,7 @@
 {
   "name": "nuxt-ui-template-saas",
   "type": "module",
+  "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.23.0",
   "scripts": {
@@ -23,7 +24,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "test": "dotenv -e .env.test -- vitest",
-    "test:run": "dotenv -e .env.test -- vitest run"
+    "test:run": "dotenv -e .env.test -- vitest run",
+    "release": "changelogen --release --push"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:",
@@ -67,6 +69,7 @@
     "@types/bcrypt": "catalog:",
     "@types/nodemailer": "catalog:",
     "@vue/test-utils": "catalog:",
+    "changelogen": "catalog:",
     "dotenv-cli": "catalog:",
     "drizzle-kit": "catalog:",
     "eslint": "catalog:",

@@ -23,6 +23,7 @@ catalog:
   ai: ^7.0.84
   bcrypt: ^6.0.0
   better-sqlite3: ^13.0.3
+  changelogen: ^0.6.2
   date-fns: ^4.4.0
   dotenv: ^17.4.2
   dotenv-cli: ^11.0.0
