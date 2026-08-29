@@ -137,7 +137,7 @@ export const createContentCreatorService = (deps: CreateContentCreatorServiceDep
     const { object } = await generateObject({
       model,
       schema: pillarSchema,
-      system: [
+      instructions: [
         'You are an SEO content strategist.',
         languageInstruction,
         brandVoice ? `Brand voice guidelines:\n${brandVoice}` : '',
@@ -231,7 +231,7 @@ Return pillar names and short descriptions.`,
     const { object } = await generateObject({
       model,
       schema: clusterSchema,
-      system: [
+      instructions: [
         'You are an SEO content strategist.',
         languageInstruction,
         brandVoice ? `Brand voice guidelines:\n${brandVoice}` : '',
@@ -306,7 +306,7 @@ For each post:
 
       const { text: content } = await generateText({
         model,
-        system: systemPrompt,
+        instructions: systemPrompt,
         prompt: `Write a comprehensive blog post with the following details:
 Title: ${cluster.title}
 ${cluster.description ? `Topic: ${cluster.description}` : ''}

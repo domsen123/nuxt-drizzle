@@ -1,8 +1,8 @@
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { buildDatabaseUri } from '../../database/helper'
 import * as schema from '../../database/schema'
+import { buildDatabaseUri } from '../../database/uri'
 import config from '../../utils/config'
 
 const dbAppClient = postgres(buildDatabaseUri(config.database), {

@@ -369,12 +369,22 @@ Self-implemented email/password authentication. No external library.
 
 ### 5.5 Middleware
 
-**Server Middleware** (server/middleware/auth.ts)
+**Server Middleware** (server/middleware/01.auth.ts)
 - Runs on every request
 - Reads session token from cookie
 - Validates session via auth service
 - Injects session + user into event.context
 - Does NOT block requests (null if no session)
+
+**Anonymous Middleware** (server/middleware/02.anon-auth.ts)
+- Runs after 01.auth.ts - Nitro sorts server middleware by filename
+- Mints a user + session when the anonymous provider is enabled and the request
+  carries no session
+- Only for page navigations: GET, no /api or /_ prefix, no file extension,
+  Accept contains text/html
+- Sets the response cookie and patches the incoming cookie header, so the
+  internal API calls of the SSR render already see the new session
+- Best effort: logs database errors instead of failing the request
 
 **Auth Guard** (server/features/auth/auth.guard.ts)
 - Used in route handlers

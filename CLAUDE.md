@@ -45,7 +45,8 @@ This project follows **vertical slice architecture** - features are organized as
   - `database/schema/` - Drizzle ORM schemas
   - `database/migrations/` - Generated migrations
   - `infrastructure/database/client.ts` - Drizzle client setup
-  - `middleware/auth.ts` - Session injection
+  - `middleware/01.auth.ts` - Session injection (Nitro sorts middleware by filename)
+  - `middleware/02.anon-auth.ts` - Anonymous session for page requests
   - `utils/container.ts` - Dependency injection composition root
   - `api/` - API routes (thin, delegate to services)
 

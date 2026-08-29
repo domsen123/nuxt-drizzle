@@ -138,6 +138,7 @@ const userMenuItems = computed(() => {
           color="neutral"
           variant="ghost"
           :to="ROUTES.auth.signIn"
+          aria-label="Sign in"
           class="lg:hidden"
         />
 

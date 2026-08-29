@@ -92,9 +92,12 @@ pnpm db:push                # Push schema to database
 pnpm db:generate            # Generate migrations
 pnpm db:studio              # Open Drizzle Studio UI
 
-# Testing
+# Testing (needs .env.test, see Testing section)
+pnpm docker:test:up         # Start the test PostgreSQL container
+pnpm test:db:push           # Push schema to the test database
 pnpm test                   # Run tests in watch mode
 pnpm test:run               # Run tests once
+pnpm docker:test:down       # Stop the test container and drop its volume
 ```
 
 ## Environment Variables
@@ -660,15 +663,29 @@ const { data, isLoading, error } = useQuery({
 
 ## Testing
 
+The suite runs against a real PostgreSQL database and truncates every table after
+each test. It therefore uses its own environment file, `.env.test`, so it never
+touches the database in `.env`. Give it a port and a database name that differ
+from your development setup.
+
 ```bash
+# One-time setup
+cp .env.test.example .env.test
+pnpm docker:test:up         # Start the test container on NUXT_DATABASE_PORT
+pnpm test:db:push           # Create the tables
+
 # Run tests in watch mode
 pnpm test
 
 # Run tests once
 pnpm test:run
+
+# Tear the test database down
+pnpm docker:test:down
 ```
 
 Test files are located in `tests/` directory with factories for creating test data.
+They share one database, so `vitest.config.ts` runs the files sequentially.
 
 ## Extending the Project
 

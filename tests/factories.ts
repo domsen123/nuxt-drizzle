@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { ulid } from 'ulid'
 
 export const createOrganisationData = (overrides = {}) => ({
   name: faker.company.name(),
@@ -29,5 +30,16 @@ export const createOrganisationMemberData = (organisationId: string, userId: str
 export const createTeamMemberData = (teamId: string, userId: string, overrides = {}) => ({
   teamId,
   userId,
+  ...overrides,
+})
+
+// `server/plugins/01.init.ts` seeds this table at server start. Tests run without
+// that plugin, so they insert the rows they need themselves.
+export const createAuthProviderData = (provider: string, overrides = {}) => ({
+  id: ulid(),
+  provider,
+  enabled: false,
+  config: {},
+  displayOrder: 0,
   ...overrides,
 })

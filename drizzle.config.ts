@@ -1,5 +1,5 @@
 import { defineConfig } from 'drizzle-kit'
-import { buildDatabaseUri } from './server/database/helper'
+import { buildDatabaseUri } from './server/database/uri'
 import { config } from './server/utils/config'
 
 export default defineConfig({

@@ -1,62 +1,59 @@
 catalog:
-  '@ai-sdk/anthropic': ^3.0.82
-  '@ai-sdk/google': ^3.0.80
-  '@ai-sdk/vue': ^3.0.199
-  '@antfu/eslint-config': ^9.0.0
-  '@faker-js/faker': ^10.4.0
-  '@iconify-json/lucide': ^1.2.111
-  '@iconify-json/simple-icons': ^1.2.86
-  '@nuxt/content': ^3.14.0
-  '@nuxt/image': ^2.0.0
-  '@nuxt/test-utils': ^4.0.3
-  '@nuxt/ui': ^4.8.2
-  '@nuxtjs/seo': ^5.2.1
-  '@pinia/colada': ^1.3.1
-  '@pinia/colada-nuxt': ^1.0.1
-  '@pinia/nuxt': ^0.11.3
+  '@ai-sdk/anthropic': ^4.0.45
+  '@ai-sdk/google': ^4.0.57
+  '@ai-sdk/vue': ^4.0.84
+  '@antfu/eslint-config': ^9.3.0
+  '@faker-js/faker': ^10.6.0
+  '@iconify-json/lucide': ^1.2.126
+  '@iconify-json/simple-icons': ^1.2.93
+  '@nuxt/content': ^3.16.0
+  '@nuxt/image': ^2.1.0
+  '@nuxt/test-utils': ^4.2.0
+  '@nuxt/ui': ^4.11.0
+  '@nuxtjs/seo': ^5.3.14
+  '@pinia/colada': ^1.4.2
+  '@pinia/colada-nuxt': ^1.0.2
+  '@pinia/nuxt': ^1.0.2
   '@standard-schema/spec': ^1.1.0
   '@types/bcrypt': ^6.0.0
-  '@types/nodemailer': ^8.0.0
-  '@vue/test-utils': ^2.4.11
-  '@vueuse/nuxt': ^14.3.0
-  '@vueuse/router': ^14.3.0
-  ai: ^6.0.199
+  '@types/nodemailer': ^8.0.1
+  '@vue/test-utils': ^2.5.0
+  '@vueuse/nuxt': ^14.4.0
+  '@vueuse/router': ^14.4.0
+  ai: ^7.0.84
   bcrypt: ^6.0.0
-  better-sqlite3: ^12.6.2
+  better-sqlite3: ^13.0.3
   date-fns: ^4.4.0
   dotenv: ^17.4.2
   dotenv-cli: ^11.0.0
   drizzle-kit: ^0.31.10
   drizzle-orm: ^0.45.2
-  eslint: ^10.4.1
-  happy-dom: ^20.10.2
+  eslint: ^10.9.1
+  happy-dom: ^20.11.13
   hookable: ^6.1.1
-  liquidjs: ^10.27.0
+  liquidjs: ^10.29.0
   mitt: ^3.0.1
-  nodemailer: ^8.0.11
-  nuxt: ^4.5.1
+  nodemailer: ^9.0.6
+  nuxt: ^4.5.2
   nuxt-mcp-dev: ^0.3.2
-  nuxt-og-image: ^6.5.3
-  pinia: ^3.0.4
-  playwright-core: ^1.60.0
+  nuxt-og-image: ^6.7.8
+  pinia: ^4.0.3
+  playwright-core: ^1.62.1
   postgres: ^3.4.9
-  sharp: ^0.34.5
-  tsx: ^4.22.4
-  typescript: ^6.0.3
+  sharp: ^0.35.4
+  tsx: ^4.23.12
+  # TypeScript 7 is out, but vue-tsc 3.3.11 still requires typescript/lib/tsc,
+  # which 7.0 no longer exports, and typescript-eslint 8.68 caps at <6.1.0.
+  # Move to 7 once both support it.
+  typescript: ~6.0.3
   ulid: ^3.0.2
-  undici: ^8.4.1
-  vitest: ^4.1.8
+  undici: ^8.10.0
+  vitest: ^4.1.11
   vue-advanced-cropper: ^2.8.9
-  vue-tsc: ^3.3.4
-  zod: ^4.4.3
+  vue-tsc: ^3.3.11
+  zod: ^4.5.1
 
 catalogMode: prefer
-
-# nuxt-schema-org 6.2.0 ships a devtools page importing `isProductionMode`
-# from `#imports`, an auto-import no released nuxt-site-config provides (broken
-# upstream release). Pin to last working 6.1.x until fixed upstream.
-overrides:
-  nuxt-schema-org: 6.1.3
 
 onlyBuiltDependencies:
   - '@parcel/watcher'
@@ -67,3 +64,10 @@ onlyBuiltDependencies:
   - vue-demi
 
 shellEmulator: true
+
+# nuxt-og-image 6.7.8 still declares sharp ^0.34.0. It only calls
+# sharp(buffer, options).jpeg(options).toBuffer(), which is unchanged in 0.35.
+# Drop the rule once nuxt-og-image widens its peer range.
+peerDependencyRules:
+  allowedVersions:
+    nuxt-og-image>sharp: '0.35'
