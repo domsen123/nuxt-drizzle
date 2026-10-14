@@ -1,108 +1,53 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-import type { AdminUser } from '../types/admin.types'
+import { formatDistanceToNowStrict } from 'date-fns'
 import { useAdminUsers } from '../composables/useAdminUsers'
+import AdminRecentCard from './AdminRecentCard.vue'
 
 const { users, status } = useAdminUsers({ limit: 5, sort: ['-createdAt'] })
 
-const columns: TableColumn<AdminUser>[] = [
-  { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'emailVerified', header: 'Verified' },
-  { accessorKey: 'createdAt', header: 'Created' },
-]
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-const onSelect = (user: AdminUser) => {
-  navigateTo(`/admin/users/${user.id}`)
-}
+const relativeDate = (dateString: string) =>
+  formatDistanceToNowStrict(new Date(dateString), { addSuffix: true })
 </script>
 
 <template>
-  <AppResponsiveTable
-    :columns="columns"
-    :data="users"
+  <AdminRecentCard
+    title="Recent Users"
+    icon="i-lucide-users"
+    :view-all-to="ROUTES.admin.users"
     :loading="status === 'pending'"
-    :searchable="false"
+    :empty="!users.length"
     empty-icon="i-lucide-users"
     empty-text="No users yet"
-    @select="onSelect"
   >
-    <template #header-extra>
-      <div class="flex items-center justify-between flex-1">
-        <div class="flex items-center gap-2">
-          <div class="inline-flex items-center justify-center size-8 rounded-full bg-primary/10 ring ring-inset ring-primary/25">
-            <UIcon name="i-lucide-users" class="size-4 text-primary" />
-          </div>
-          <h3 class="text-xs uppercase text-muted font-medium">
-            Recent Users
-          </h3>
-        </div>
-        <NuxtLink
-          to="/admin/users"
-          class="text-sm text-primary hover:underline"
-        >
-          View all
-        </NuxtLink>
-      </div>
-    </template>
-
-    <template #name-cell="{ row }">
-      <div class="flex items-center gap-3">
-        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-          <UIcon name="i-lucide-user" class="size-5 text-primary" />
-        </div>
-        <div class="text-sm">
-          <p class="text-highlighted font-medium">
-            {{ row.original.name || 'No name' }}
-          </p>
-          <p class="text-muted text-xs">
-            {{ row.original.email }}
-          </p>
-        </div>
-      </div>
-    </template>
-
-    <template #emailVerified-cell="{ row }">
-      <UBadge
-        :color="row.original.emailVerified ? 'success' : 'neutral'"
-        variant="subtle"
+    <li v-for="user in users" :key="user.id">
+      <NuxtLink
+        :to="ROUTES.admin.userEdit(user.id)"
+        class="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated sm:px-5"
       >
-        {{ row.original.emailVerified ? 'Verified' : 'Unverified' }}
-      </UBadge>
-    </template>
-
-    <template #createdAt-cell="{ row }">
-      {{ formatDate(row.original.createdAt) }}
-    </template>
-
-    <template #mobile-card="{ item }">
-      <div class="flex items-center gap-3 p-4">
-        <div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 shrink-0">
-          <UIcon name="i-lucide-user" class="size-5 text-primary" />
-        </div>
+        <UAvatar :alt="user.name || user.email || undefined" size="md" />
         <div class="min-w-0 flex-1">
-          <p class="text-highlighted font-medium truncate">
-            {{ item.name || 'No name' }}
+          <p class="truncate text-sm font-medium text-highlighted">
+            {{ user.name || 'No name' }}
           </p>
-          <p class="text-muted text-xs truncate">
-            {{ item.email }}
+          <p class="truncate text-xs text-muted">
+            {{ user.email }}
           </p>
         </div>
         <UBadge
-          :color="item.emailVerified ? 'success' : 'neutral'"
+          :color="user.emailVerified ? 'success' : 'warning'"
           variant="subtle"
-          class="shrink-0"
+          size="sm"
         >
-          {{ item.emailVerified ? 'Verified' : 'Unverified' }}
+          {{ user.emailVerified ? 'Verified' : 'Unverified' }}
         </UBadge>
-      </div>
-    </template>
-  </AppResponsiveTable>
+        <span class="hidden whitespace-nowrap text-xs text-muted sm:block">
+          {{ relativeDate(user.createdAt) }}
+        </span>
+        <UIcon
+          name="i-lucide-chevron-right"
+          class="size-4 shrink-0 text-dimmed transition-transform group-hover:translate-x-0.5"
+        />
+      </NuxtLink>
+    </li>
+  </AdminRecentCard>
 </template>
