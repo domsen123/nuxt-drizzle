@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.2.0
+
+[compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.1.0...v1.2.0)
+
+### 🚀 Enhancements
+
+- **i18n:** Add English/German localization with per-user locale preference ([6342056](https://github.com/domsen123/nuxt-drizzle/commit/6342056))
+- **footer:** Add privacy and imprint links, point GitHub button to repo ([7c03319](https://github.com/domsen123/nuxt-drizzle/commit/7c03319))
+
+### ❤️ Contributors
+
+- Domsen123 <dmarx@marxulm.de>
+
 ## v1.1.0
 
 [compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.0.0...v1.1.0)
