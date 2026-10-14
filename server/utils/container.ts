@@ -123,16 +123,6 @@ const getRegistrationPolicyService = lazy(() =>
   }),
 )
 
-const getOauthService = lazy(() =>
-  createOauthService({
-    db: getDatabase('app'),
-    authProvidersService: getAuthProvidersService(),
-    authService: getAuthService(),
-    registrationPolicyService: getRegistrationPolicyService(),
-    eventBus: getEventBus(),
-  }),
-)
-
 // ItemService instances - one per table
 const getUsersItemService = lazy(() =>
   createItemService({ db: getDatabase('app'), table: schema.users, tableName: 'users', eventBus: getEventBus() }),
@@ -261,6 +251,19 @@ const getFileService = lazy(() =>
     fileStoreProvider: getFileStoreProvider(),
     filesItemService: getFilesItemService(),
     config,
+  }),
+)
+
+// OAuth Service (depends on FileService and ImageProcessingService above)
+const getOauthService = lazy(() =>
+  createOauthService({
+    db: getDatabase('app'),
+    authProvidersService: getAuthProvidersService(),
+    authService: getAuthService(),
+    registrationPolicyService: getRegistrationPolicyService(),
+    fileService: getFileService(),
+    imageProcessingService: getImageProcessingService(),
+    eventBus: getEventBus(),
   }),
 )
 

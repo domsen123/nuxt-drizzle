@@ -1,19 +1,35 @@
 import type { User } from '../../database/schema'
 import type { DatabaseClient } from '../../infrastructure/database/client'
 import type { EventBus } from '../../infrastructure/events'
+import type { FileService } from '../files/files.service'
+import type { ImageProcessingService } from '../files/image-processing.service'
 import type { AuthProvidersService } from './auth-providers.service'
 import type { AuthService, AuthServiceResult } from './auth.service'
 import type { EncryptedSecret } from './config-crypto.utils'
 import type { RegistrationPolicyService } from './registration-policy.service'
+import { Buffer } from 'node:buffer'
 import { createHash, randomBytes } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import { ulid } from 'ulid'
 import { userIdentities, users } from '../../database/schema'
 import { config } from '../../utils/config'
+import { AVATAR_VARIANT_SPECS } from '../files/image-processing.service'
 import { decryptSecret } from './config-crypto.utils'
 
-const MICROSOFT_SCOPES = 'openid profile email'
+// `User.Read` lets the callback fetch the profile photo from Graph. It is the
+// default delegated permission of every Azure app registration.
+const MICROSOFT_SCOPES = 'openid profile email User.Read'
 const USERINFO_ENDPOINT = 'https://graph.microsoft.com/oidc/userinfo'
+const PHOTO_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/photo/$value'
+
+const AVATAR_ENTITY_TYPE = 'user-avatar'
+
+const MIME_EXTENSIONS: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+}
 
 export type OAuthErrorCode = 'oauth_failed' | 'oauth_no_email' | 'provider_disabled' | 'registration_disabled'
 
@@ -53,10 +69,12 @@ export interface CreateOauthServiceDeps {
   authProvidersService: AuthProvidersService
   authService: AuthService
   registrationPolicyService: RegistrationPolicyService
+  fileService: FileService
+  imageProcessingService: ImageProcessingService
   eventBus?: EventBus
 }
 
-export const createOauthService = ({ db, authProvidersService, authService, registrationPolicyService, eventBus }: CreateOauthServiceDeps) => {
+export const createOauthService = ({ db, authProvidersService, authService, registrationPolicyService, fileService, imageProcessingService, eventBus }: CreateOauthServiceDeps) => {
   const redirectUri = `${config.site.url}/api/auth/oauth/microsoft/callback`
 
   const getMicrosoftConfig = async (provider: string): Promise<Required<MicrosoftProviderConfig>> => {
@@ -280,6 +298,67 @@ export const createOauthService = ({ db, authProvidersService, authService, regi
     return created
   }
 
+  /**
+   * Imports the IdP profile photo as the user's avatar, as the upload endpoint
+   * would: an `user-avatar` original plus generated size variants. Runs only
+   * while the user has no avatar yet, so a photo the user picked or removed
+   * later stays untouched. Best effort: no failure here may break the login —
+   * a 404 means no photo, a 401/403 a registration without `User.Read`.
+   */
+  const syncAvatarFromIdp = async (userId: string, accessToken: string): Promise<void> => {
+    try {
+      const existing = await fileService.getFilesByEntity(AVATAR_ENTITY_TYPE, userId)
+      if (existing.length > 0) {
+        return
+      }
+
+      const response = await fetch(PHOTO_ENDPOINT, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      if (!response.ok) {
+        return
+      }
+
+      const mimeType = response.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg'
+      const buffer = Buffer.from(await response.arrayBuffer())
+      if (buffer.length === 0) {
+        return
+      }
+
+      const extension = MIME_EXTENSIONS[mimeType] ?? '.jpg'
+      const original = await fileService.upload({
+        buffer,
+        originalName: `microsoft-avatar${extension}`,
+        mimeType,
+        size: buffer.length,
+        uploadedBy: userId,
+        entityType: AVATAR_ENTITY_TYPE,
+        entityId: userId,
+        variant: 'original',
+      })
+
+      const variants = await imageProcessingService.generateVariants(buffer, mimeType, AVATAR_VARIANT_SPECS)
+      await Promise.all(
+        variants.map(variant =>
+          fileService.upload({
+            buffer: variant.buffer,
+            originalName: `${variant.variant}-microsoft-avatar${MIME_EXTENSIONS[variant.mimeType] ?? '.webp'}`,
+            mimeType: variant.mimeType,
+            size: variant.buffer.length,
+            uploadedBy: userId,
+            entityType: AVATAR_ENTITY_TYPE,
+            entityId: userId,
+            parentId: original.id,
+            variant: variant.variant,
+          }),
+        ),
+      )
+    }
+    catch (error) {
+      console.warn('[OAuth] Avatar import failed:', error)
+    }
+  }
+
   const handleCallback = async (provider: string, input: OAuthCallbackInput): Promise<AuthServiceResult> => {
     const providerConfig = await getMicrosoftConfig(provider)
 
@@ -292,6 +371,8 @@ export const createOauthService = ({ db, authProvidersService, authService, regi
     const { sub, email, name } = await fetchUserinfo(accessToken)
 
     const user = await resolveUser(sub, email, name, anonymousUser)
+
+    await syncAvatarFromIdp(user.id, accessToken)
 
     const { session, token } = await authService.createSessionForUser(user.id)
 
