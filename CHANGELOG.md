@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v1.3.0
+
+[compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.2.0...v1.3.0)
+
+### 🚀 Enhancements
+
+- **auth:** Add Microsoft Entra ID OAuth login and registration policy ([9d67c91](https://github.com/domsen123/nuxt-drizzle/commit/9d67c91))
+- **auth:** Import Microsoft profile photo as avatar on first OAuth login ([5bb867c](https://github.com/domsen123/nuxt-drizzle/commit/5bb867c))
+
+### 🩹 Fixes
+
+- **ui:** Show the user avatar in the user dropdown trigger ([ad82cda](https://github.com/domsen123/nuxt-drizzle/commit/ad82cda))
+
+### 💅 Refactors
+
+- **files:** Share the avatar upload pipeline and entity-type constant ([f64cdbf](https://github.com/domsen123/nuxt-drizzle/commit/f64cdbf))
+
+### 📖 Documentation
+
+- Record i18n conventions in CLAUDE.md and architecture cookbook ([0832f8f](https://github.com/domsen123/nuxt-drizzle/commit/0832f8f))
+
+### ❤️ Contributors
+
+- Domsen123 <dmarx@marxulm.de>
+
 ## v1.2.0
 
 [compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.1.0...v1.2.0)
