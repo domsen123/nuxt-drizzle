@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.1.0
+
+[compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.0.0...v1.1.0)
+
+### 🚀 Enhancements
+
+- **profile:** Persist appearance preferences per user ([a418464](https://github.com/domsen123/nuxt-drizzle/commit/a418464))
+
+### ❤️ Contributors
+
+- Domsen123 <dmarx@marxulm.de>
+
 ## v1.0.0
 
 
