@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -10,9 +11,9 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Tag ID is required' })
+    throw createError({ status: 400, statusText: 'Tag ID is required' })
   }
 
   const body = await readBody(event)
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const existing = await container.items.blogTags.findOne({ id: { _eq: id } })
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: 'Tag not found' })
+    throw createError({ status: 404, statusText: 'Tag not found' })
   }
 
   const nameExists = await container.items.blogTags.findOne({
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
     id: { _neq: id },
   })
   if (nameExists) {
-    throw createError({ statusCode: 409, statusMessage: 'A tag with this name already exists' })
+    throw createError({ status: 409, statusText: 'A tag with this name already exists' })
   }
 
   const slugExists = await container.items.blogTags.findOne({
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
     id: { _neq: id },
   })
   if (slugExists) {
-    throw createError({ statusCode: 409, statusMessage: 'A tag with this slug already exists' })
+    throw createError({ status: 409, statusText: 'A tag with this slug already exists' })
   }
 
   const tag = await container.items.blogTags.update(id, data)

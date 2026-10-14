@@ -1,17 +1,18 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Pillar ID is required' })
+    throw createError({ status: 400, statusText: 'Pillar ID is required' })
   }
 
   const existing = await container.items.contentCreatorPillars.findOne({ id: { _eq: id } })
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: 'Pillar not found' })
+    throw createError({ status: 404, statusText: 'Pillar not found' })
   }
 
   await container.items.contentCreatorPillars.delete(id)

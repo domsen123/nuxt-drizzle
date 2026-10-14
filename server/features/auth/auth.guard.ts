@@ -1,13 +1,14 @@
-import type { H3Event } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
 import type { User } from '../../database/schema'
+import { createError } from 'nuxt/server'
 
-export const requireAuth = (event: H3Event): Omit<User, 'passwordHash'> => {
+export const requireAuth = (event: RequestEvent): Omit<User, 'passwordHash'> => {
   const user = event.context.user
 
   if (!user) {
     throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
+      status: 401,
+      statusText: 'Unauthorized',
     })
   }
 

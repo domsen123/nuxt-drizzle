@@ -2,6 +2,7 @@ import type { blogCategories, blogPosts, contentCreatorClusters, contentCreatorP
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
 import type { AiProviderType } from './ai-provider.factory'
 import { generateObject, generateText } from 'ai'
+import { createError } from 'nuxt/server'
 import * as z from 'zod'
 import { getModel } from './ai-provider.factory'
 import { decryptApiKey, encryptApiKey } from './crypto.utils'
@@ -63,7 +64,7 @@ export const createContentCreatorService = (deps: CreateContentCreatorServiceDep
     }
 
     if (!data.apiKey) {
-      throw createError({ statusCode: 400, statusMessage: 'API key is required for initial setup' })
+      throw createError({ status: 400, statusText: 'API key is required for initial setup' })
     }
 
     const { encrypted, iv, tag } = encryptApiKey(data.apiKey)
@@ -103,7 +104,7 @@ export const createContentCreatorService = (deps: CreateContentCreatorServiceDep
   const getDecryptedApiKey = async (): Promise<{ provider: AiProviderType, apiKey: string, model: string | null, brandVoice: string | null, language: string }> => {
     const settings = await getSettings()
     if (!settings) {
-      throw createError({ statusCode: 404, statusMessage: 'Content creator settings not configured' })
+      throw createError({ status: 404, statusText: 'Content creator settings not configured' })
     }
     const apiKey = decryptApiKey(settings.apiKeyEncrypted, settings.apiKeyIv, settings.apiKeyTag)
     return { provider: settings.provider as AiProviderType, apiKey, model: settings.model, brandVoice: settings.brandVoice, language: settings.language }
@@ -164,7 +165,7 @@ Return pillar names and short descriptions.`,
   const confirmPillar = async (pillarId: string) => {
     const pillar = await pillarsItemService.readOne(pillarId)
     if (!pillar) {
-      throw createError({ statusCode: 404, statusMessage: 'Pillar not found' })
+      throw createError({ status: 404, statusText: 'Pillar not found' })
     }
 
     // Create blog category if not already linked
@@ -195,7 +196,7 @@ Return pillar names and short descriptions.`,
   const rejectPillar = async (pillarId: string) => {
     const pillar = await pillarsItemService.readOne(pillarId)
     if (!pillar) {
-      throw createError({ statusCode: 404, statusMessage: 'Pillar not found' })
+      throw createError({ status: 404, statusText: 'Pillar not found' })
     }
     return pillarsItemService.update(pillarId, {
       status: 'rejected',
@@ -208,10 +209,10 @@ Return pillar names and short descriptions.`,
   const generateClusters = async (pillarId: string) => {
     const pillar = await pillarsItemService.readOne(pillarId)
     if (!pillar) {
-      throw createError({ statusCode: 404, statusMessage: 'Pillar not found' })
+      throw createError({ status: 404, statusText: 'Pillar not found' })
     }
     if (pillar.status !== 'confirmed') {
-      throw createError({ statusCode: 400, statusMessage: 'Pillar must be confirmed before generating clusters' })
+      throw createError({ status: 400, statusText: 'Pillar must be confirmed before generating clusters' })
     }
 
     const { provider, apiKey, model: modelId, brandVoice, language } = await getDecryptedApiKey()
@@ -266,7 +267,7 @@ For each post:
   const generatePostContent = async (clusterId: string) => {
     const cluster = await clustersItemService.readOne(clusterId)
     if (!cluster) {
-      throw createError({ statusCode: 404, statusMessage: 'Cluster not found' })
+      throw createError({ status: 404, statusText: 'Cluster not found' })
     }
 
     await clustersItemService.update(clusterId, { status: 'generating', updatedAt: new Date() })
@@ -274,7 +275,7 @@ For each post:
     try {
       const pillar = await pillarsItemService.readOne(cluster.pillarId)
       if (!pillar) {
-        throw createError({ statusCode: 404, statusMessage: 'Pillar not found' })
+        throw createError({ status: 404, statusText: 'Pillar not found' })
       }
 
       const { provider, apiKey, model: modelId, brandVoice, language } = await getDecryptedApiKey()
@@ -358,7 +359,7 @@ Requirements:
         errorMessage: message,
         updatedAt: new Date(),
       })
-      throw createError({ statusCode: 500, statusMessage: `Content generation failed: ${message}` })
+      throw createError({ status: 500, statusText: `Content generation failed: ${message}` })
     }
   }
 

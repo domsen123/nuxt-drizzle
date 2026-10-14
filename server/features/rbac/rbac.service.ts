@@ -9,6 +9,7 @@ import type {
   UpdateRoleInput,
   UserPermissionContext,
 } from './rbac.types'
+import { createError } from 'nuxt/server'
 import { isValidPermission, PERMISSIONS } from './permissions'
 
 export interface CreateRbacServiceDeps {
@@ -144,7 +145,7 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
     // Validate permissions
     for (const p of input.permissions) {
       if (!isValidPermission(p)) {
-        throw createError({ statusCode: 400, statusMessage: `Invalid permission: ${p}` })
+        throw createError({ status: 400, statusText: `Invalid permission: ${p}` })
       }
     }
 
@@ -175,10 +176,10 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
   const updateRole = async (roleId: string, input: UpdateRoleInput): Promise<RoleWithPermissions> => {
     const role = await rolesItemService.readOne(roleId)
     if (!role) {
-      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+      throw createError({ status: 404, statusText: 'Role not found' })
     }
     if (role.isSystem) {
-      throw createError({ statusCode: 403, statusMessage: 'Cannot modify system roles' })
+      throw createError({ status: 403, statusText: 'Cannot modify system roles' })
     }
 
     // Update role metadata
@@ -192,7 +193,7 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
       // Validate permissions
       for (const p of input.permissions) {
         if (!isValidPermission(p)) {
-          throw createError({ statusCode: 400, statusMessage: `Invalid permission: ${p}` })
+          throw createError({ status: 400, statusText: `Invalid permission: ${p}` })
         }
       }
 
@@ -227,10 +228,10 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
   const deleteRole = async (roleId: string): Promise<void> => {
     const role = await rolesItemService.readOne(roleId)
     if (!role) {
-      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+      throw createError({ status: 404, statusText: 'Role not found' })
     }
     if (role.isSystem) {
-      throw createError({ statusCode: 403, statusMessage: 'Cannot delete system roles' })
+      throw createError({ status: 403, statusText: 'Cannot delete system roles' })
     }
 
     await rolesItemService.delete(roleId)
@@ -302,12 +303,12 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
     // Verify role exists and matches scope
     const role = await rolesItemService.readOne(input.roleId)
     if (!role) {
-      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+      throw createError({ status: 404, statusText: 'Role not found' })
     }
     if (role.scope !== input.scope) {
       throw createError({
-        statusCode: 400,
-        statusMessage: `Role scope mismatch: role is ${role.scope}, assignment is ${input.scope}`,
+        status: 400,
+        statusText: `Role scope mismatch: role is ${role.scope}, assignment is ${input.scope}`,
       })
     }
 
@@ -349,7 +350,7 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
     })
 
     if (!assignment) {
-      throw createError({ statusCode: 404, statusMessage: 'Role assignment not found' })
+      throw createError({ status: 404, statusText: 'Role assignment not found' })
     }
 
     await userRolesItemService.delete(assignment.id)
@@ -379,7 +380,7 @@ export const createRbacService = (deps: CreateRbacServiceDeps) => {
       roleIds.map(async (roleId) => {
         const role = await rolesItemService.readOne(roleId)
         if (!role)
-          throw createError({ statusCode: 500, statusMessage: `Role ${roleId} not found` })
+          throw createError({ status: 500, statusText: `Role ${roleId} not found` })
         const permissions = await rolePermissionsItemService.findMany({
           filter: { roleId },
         })

@@ -1,3 +1,4 @@
+import { createError, defineEventHandler } from 'nuxt/server'
 import { setSessionCookie } from '~~/server/features/auth/session.utils'
 import { container } from '~~/server/utils/container'
 
@@ -7,8 +8,8 @@ export default defineEventHandler(async (event) => {
 
   if (!session || !impersonation) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Not currently impersonating',
+      status: 400,
+      statusText: 'Not currently impersonating',
     })
   }
 
@@ -17,8 +18,8 @@ export default defineEventHandler(async (event) => {
 
   if (!result) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Failed to stop impersonation',
+      status: 400,
+      statusText: 'Failed to stop impersonation',
     })
   }
 
@@ -27,8 +28,8 @@ export default defineEventHandler(async (event) => {
 
   if (!originalSession) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Original session expired. Please log in again.',
+      status: 400,
+      statusText: 'Original session expired. Please log in again.',
     })
   }
 

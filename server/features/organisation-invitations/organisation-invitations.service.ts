@@ -4,6 +4,7 @@ import type { OrganisationMembersService } from '~~/server/features/organisation
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
+import { createError } from 'nuxt/server'
 import { config } from '~~/server/utils/config'
 
 const INVITATION_EXPIRY_DAYS = 7
@@ -59,21 +60,21 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     // Verify organisation exists
     const org = await organisationsItemService.readOne(organisationId)
     if (!org) {
-      throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+      throw createError({ status: 404, statusText: 'Organisation not found' })
     }
 
     // Verify role exists and is org-scoped
     const role = await rolesItemService.readOne(roleId)
     if (!role || role.scope !== 'organisation') {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid role' })
+      throw createError({ status: 400, statusText: 'Invalid role' })
     }
 
     // Check if user already exists
     const existingUser = await usersItemService.findOne({ email: normalizedEmail })
     if (existingUser) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'User already exists. Use the add member feature instead.',
+        status: 400,
+        statusText: 'User already exists. Use the add member feature instead.',
       })
     }
 
@@ -86,8 +87,8 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     if (existingInvitation) {
       if (new Date(existingInvitation.expiresAt) > new Date()) {
         throw createError({
-          statusCode: 409,
-          statusMessage: 'An invitation has already been sent to this email',
+          status: 409,
+          statusText: 'An invitation has already been sent to this email',
         })
       }
       // Delete expired invitation
@@ -128,7 +129,7 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
       const inv = await organisationInvitationsItemService.findOne({ token })
       if (inv)
         await organisationInvitationsItemService.delete(inv.id)
-      throw createError({ statusCode: 500, statusMessage: 'Failed to send invitation email' })
+      throw createError({ status: 500, statusText: 'Failed to send invitation email' })
     }
 
     console.log(`[Organisation Invitation] Invitation sent to ${normalizedEmail} for org ${org.name}`)
@@ -168,16 +169,16 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     const invitation = await organisationInvitationsItemService.findOne({ token })
 
     if (!invitation) {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid invitation token' })
+      throw createError({ status: 400, statusText: 'Invalid invitation token' })
     }
 
     if (new Date(invitation.expiresAt) < new Date()) {
-      throw createError({ statusCode: 400, statusMessage: 'Invitation has expired' })
+      throw createError({ status: 400, statusText: 'Invitation has expired' })
     }
 
     const org = await organisationsItemService.readOne(invitation.organisationId)
     if (!org) {
-      throw createError({ statusCode: 400, statusMessage: 'Organisation no longer exists' })
+      throw createError({ status: 400, statusText: 'Organisation no longer exists' })
     }
 
     // Check if user was created between invitation and acceptance
@@ -185,8 +186,8 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     if (existingUser) {
       await organisationInvitationsItemService.delete(invitation.id)
       throw createError({
-        statusCode: 409,
-        statusMessage: 'An account with this email already exists. Please sign in.',
+        status: 409,
+        statusText: 'An account with this email already exists. Please sign in.',
       })
     }
 
@@ -285,7 +286,7 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
   const revokeInvitation = async (invitationId: string): Promise<{ success: boolean }> => {
     const invitation = await organisationInvitationsItemService.readOne(invitationId)
     if (!invitation) {
-      throw createError({ statusCode: 404, statusMessage: 'Invitation not found' })
+      throw createError({ status: 404, statusText: 'Invitation not found' })
     }
 
     await organisationInvitationsItemService.delete(invitationId)
@@ -300,16 +301,16 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
   const resendInvitation = async (invitationId: string): Promise<{ success: boolean }> => {
     const invitation = await organisationInvitationsItemService.readOne(invitationId)
     if (!invitation) {
-      throw createError({ statusCode: 404, statusMessage: 'Invitation not found' })
+      throw createError({ status: 404, statusText: 'Invitation not found' })
     }
 
     if (new Date(invitation.expiresAt) < new Date()) {
-      throw createError({ statusCode: 400, statusMessage: 'Cannot resend expired invitation' })
+      throw createError({ status: 400, statusText: 'Cannot resend expired invitation' })
     }
 
     const org = await organisationsItemService.readOne(invitation.organisationId)
     if (!org) {
-      throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+      throw createError({ status: 404, statusText: 'Organisation not found' })
     }
 
     const inviter = await usersItemService.readOne(invitation.invitedByUserId)
@@ -323,7 +324,7 @@ export const createOrganisationInvitationsService = (deps: CreateOrganisationInv
     })
 
     if (!result.success) {
-      throw createError({ statusCode: 500, statusMessage: 'Failed to send invitation email' })
+      throw createError({ status: 500, statusText: 'Failed to send invitation email' })
     }
 
     console.log(`[Organisation Invitation] Invitation resent to ${invitation.email}`)

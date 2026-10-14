@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -10,12 +11,12 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
 
   if (!id) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Organisation ID is required',
+      status: 400,
+      statusText: 'Organisation ID is required',
     })
   }
 
@@ -29,8 +30,8 @@ export default defineEventHandler(async (event) => {
 
   if (!existing) {
     throw createError({
-      statusCode: 404,
-      statusMessage: 'Organisation not found',
+      status: 404,
+      statusText: 'Organisation not found',
     })
   }
 
@@ -42,8 +43,8 @@ export default defineEventHandler(async (event) => {
 
   if (slugExists) {
     throw createError({
-      statusCode: 409,
-      statusMessage: 'An organisation with this slug already exists',
+      status: 409,
+      statusText: 'An organisation with this slug already exists',
     })
   }
 

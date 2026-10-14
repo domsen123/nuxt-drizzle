@@ -1,6 +1,7 @@
 import type { organisationMembers, organisations, roles, users } from '~~/server/database/schema'
 import type { RbacService } from '~~/server/features/rbac/rbac.service'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
+import { createError } from 'nuxt/server'
 
 export interface OrganisationMemberWithUser {
   id: string
@@ -151,22 +152,22 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
     // Verify organisation exists
     const org = await organisationsItemService.readOne(organisationId)
     if (!org) {
-      throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+      throw createError({ status: 404, statusText: 'Organisation not found' })
     }
 
     // Verify user exists
     const user = await usersItemService.readOne(userId)
     if (!user) {
-      throw createError({ statusCode: 404, statusMessage: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found' })
     }
 
     // Verify role exists and is org-scoped
     const role = await rolesItemService.readOne(roleId)
     if (!role) {
-      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+      throw createError({ status: 404, statusText: 'Role not found' })
     }
     if (role.scope !== 'organisation') {
-      throw createError({ statusCode: 400, statusMessage: 'Role must be organisation-scoped' })
+      throw createError({ status: 400, statusText: 'Role must be organisation-scoped' })
     }
 
     // Check if already a member
@@ -175,7 +176,7 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
       userId,
     })
     if (existing) {
-      throw createError({ statusCode: 409, statusMessage: 'User is already a member of this organisation' })
+      throw createError({ status: 409, statusText: 'User is already a member of this organisation' })
     }
 
     // Create membership record
@@ -219,16 +220,16 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
       userId,
     })
     if (!member) {
-      throw createError({ statusCode: 404, statusMessage: 'Member not found' })
+      throw createError({ status: 404, statusText: 'Member not found' })
     }
 
     // Verify new role exists and is org-scoped
     const newRole = await rolesItemService.readOne(newRoleId)
     if (!newRole) {
-      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+      throw createError({ status: 404, statusText: 'Role not found' })
     }
     if (newRole.scope !== 'organisation') {
-      throw createError({ statusCode: 400, statusMessage: 'Role must be organisation-scoped' })
+      throw createError({ status: 400, statusText: 'Role must be organisation-scoped' })
     }
 
     // Check if this would demote the last owner
@@ -242,8 +243,8 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
 
       if (owners.length === 1) {
         throw createError({
-          statusCode: 400,
-          statusMessage: 'Cannot demote the last owner. Assign another owner first.',
+          status: 400,
+          statusText: 'Cannot demote the last owner. Assign another owner first.',
         })
       }
     }
@@ -287,7 +288,7 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
       userId,
     })
     if (!member) {
-      throw createError({ statusCode: 404, statusMessage: 'Member not found' })
+      throw createError({ status: 404, statusText: 'Member not found' })
     }
 
     // Check if this is the last owner
@@ -297,8 +298,8 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
 
     if (isOwner && owners.length === 1) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'Cannot remove the last owner. Transfer ownership first.',
+        status: 400,
+        statusText: 'Cannot remove the last owner. Transfer ownership first.',
       })
     }
 
@@ -326,13 +327,13 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
     // Verify organisation exists
     const org = await organisationsItemService.readOne(organisationId)
     if (!org) {
-      throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+      throw createError({ status: 404, statusText: 'Organisation not found' })
     }
 
     // Verify role exists
     const role = await rolesItemService.readOne(roleId)
     if (!role || role.scope !== 'organisation') {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid role' })
+      throw createError({ status: 400, statusText: 'Invalid role' })
     }
 
     // Check if user with this email exists
@@ -345,7 +346,7 @@ export const createOrganisationMembersService = (deps: CreateOrganisationMembers
         userId: existingUser.id,
       })
       if (existingMember) {
-        throw createError({ statusCode: 409, statusMessage: 'User is already a member of this organisation' })
+        throw createError({ status: 409, statusText: 'User is already a member of this organisation' })
       }
 
       // Add existing user directly

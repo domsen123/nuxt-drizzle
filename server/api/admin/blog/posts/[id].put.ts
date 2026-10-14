@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -16,9 +17,9 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Post ID is required' })
+    throw createError({ status: 400, statusText: 'Post ID is required' })
   }
 
   const body = await readBody(event)
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const existing = await container.items.blogPosts.findOne({ id: { _eq: id } })
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+    throw createError({ status: 404, statusText: 'Post not found' })
   }
 
   const slugExists = await container.items.blogPosts.findOne({
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
     id: { _neq: id },
   })
   if (slugExists) {
-    throw createError({ statusCode: 409, statusMessage: 'A post with this slug already exists' })
+    throw createError({ status: 409, statusText: 'A post with this slug already exists' })
   }
 
   // Determine publishedAt based on publish state and explicit value

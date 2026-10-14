@@ -4,6 +4,7 @@ import type { ItemService } from '~~/server/infrastructure/database/item-service
 import type { Config } from '~~/server/utils/config'
 import type { FileStoreProvider } from './file-store-provider.interface'
 import path from 'node:path'
+import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
 
 export interface UploadFileInput {
@@ -79,16 +80,16 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
     // Validate file size
     if (input.size > config.storage.maxFileSize) {
       throw createError({
-        statusCode: 400,
-        statusMessage: `File too large. Maximum size is ${Math.round(config.storage.maxFileSize / 1024 / 1024)}MB`,
+        status: 400,
+        statusText: `File too large. Maximum size is ${Math.round(config.storage.maxFileSize / 1024 / 1024)}MB`,
       })
     }
 
     // Validate mime type
     if (!config.storage.allowedMimeTypes.includes(input.mimeType)) {
       throw createError({
-        statusCode: 400,
-        statusMessage: `File type not allowed. Allowed types: ${config.storage.allowedMimeTypes.join(', ')}`,
+        status: 400,
+        statusText: `File type not allowed. Allowed types: ${config.storage.allowedMimeTypes.join(', ')}`,
       })
     }
 
@@ -140,7 +141,7 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
   const deleteFile = async (id: string): Promise<void> => {
     const record = await filesItemService.readOne(id)
     if (!record) {
-      throw createError({ statusCode: 404, statusMessage: 'File not found' })
+      throw createError({ status: 404, statusText: 'File not found' })
     }
 
     // If this is a parent file, delete variant storage files first (DB cascade handles records)

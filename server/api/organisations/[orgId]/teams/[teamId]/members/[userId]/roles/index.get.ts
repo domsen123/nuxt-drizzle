@@ -1,16 +1,17 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { PERMISSIONS } from '~~/server/features/rbac/permissions'
 import { getTeamIdFromParams, requirePermission } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   const teamId = getTeamIdFromParams(event)
-  const userId = getRouterParam(event, 'userId')
+  const userId = getRouterParam(event, 'userId', { decode: true })
 
   if (!teamId) {
-    throw createError({ statusCode: 400, statusMessage: 'Team ID required' })
+    throw createError({ status: 400, statusText: 'Team ID required' })
   }
   if (!userId) {
-    throw createError({ statusCode: 400, statusMessage: 'User ID required' })
+    throw createError({ status: 400, statusText: 'User ID required' })
   }
 
   await requirePermission(event, {

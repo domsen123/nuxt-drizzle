@@ -1,30 +1,41 @@
+import { Buffer } from 'node:buffer'
+import { createError, defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { AVATAR_VARIANT_SPECS } from '~~/server/features/files/image-processing.service'
 import { container } from '~~/server/utils/container'
 
+/** Reads one text field of the form, or `undefined` when it was not sent. */
+const readTextField = (formData: FormData, name: string): string | undefined => {
+  const value = formData.get(name)
+  return typeof value === 'string' ? value : undefined
+}
+
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event)
 
-  const formData = await readMultipartFormData(event)
-  if (!formData || formData.length === 0) {
-    throw createError({ statusCode: 400, statusMessage: 'No file uploaded' })
+  // `nuxt/server` carries no `readMultipartFormData`; the request parses itself.
+  const formData = await event.req.formData().catch(() => null)
+  if (!formData) {
+    throw createError({ status: 400, statusText: 'No file uploaded' })
   }
 
-  const filePart = formData.find(part => part.name === 'file')
-  if (!filePart || !filePart.data || !filePart.filename) {
-    throw createError({ statusCode: 400, statusMessage: 'Missing file in upload' })
+  const file = formData.get('file')
+  if (!(file instanceof File) || !file.name) {
+    throw createError({ status: 400, statusText: 'Missing file in upload' })
   }
 
-  const entityType = formData.find(part => part.name === 'entityType')?.data.toString('utf-8')
-  const entityId = formData.find(part => part.name === 'entityId')?.data.toString('utf-8')
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const mimeType = file.type || 'application/octet-stream'
+  const entityType = readTextField(formData, 'entityType')
+  const entityId = readTextField(formData, 'entityId')
 
   const isAvatar = entityType === 'user-avatar'
 
   const result = await container.fileService.upload({
-    buffer: filePart.data,
-    originalName: filePart.filename,
-    mimeType: filePart.type || 'application/octet-stream',
-    size: filePart.data.length,
+    buffer,
+    originalName: file.name,
+    mimeType,
+    size: buffer.length,
     uploadedBy: user.id,
     entityType,
     entityId,
@@ -34,8 +45,8 @@ export default defineEventHandler(async (event) => {
   // Generate avatar variants
   if (isAvatar) {
     const variants = await container.imageProcessingService.generateVariants(
-      filePart.data,
-      filePart.type || 'application/octet-stream',
+      buffer,
+      mimeType,
       AVATAR_VARIANT_SPECS,
     )
 
@@ -43,7 +54,7 @@ export default defineEventHandler(async (event) => {
       variants.map(v =>
         container.fileService.upload({
           buffer: v.buffer,
-          originalName: `${v.variant}-${filePart.filename}`,
+          originalName: `${v.variant}-${file.name}`,
           mimeType: v.mimeType,
           size: v.buffer.length,
           uploadedBy: user.id,

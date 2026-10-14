@@ -1,15 +1,16 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
 
   if (!id) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Organisation ID is required',
+      status: 400,
+      statusText: 'Organisation ID is required',
     })
   }
 
@@ -19,8 +20,8 @@ export default defineEventHandler(async (event) => {
 
   if (!organisation) {
     throw createError({
-      statusCode: 404,
-      statusMessage: 'Organisation not found',
+      status: 404,
+      statusText: 'Organisation not found',
     })
   }
 

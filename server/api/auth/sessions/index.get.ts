@@ -1,3 +1,4 @@
+import { createError, defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { container } from '~~/server/utils/container'
 
@@ -7,8 +8,8 @@ export default defineEventHandler(async (event) => {
 
   if (!session) {
     throw createError({
-      statusCode: 401,
-      statusMessage: 'Session not found',
+      status: 401,
+      statusText: 'Session not found',
     })
   }
 

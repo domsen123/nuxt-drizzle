@@ -1,5 +1,5 @@
-import type { H3Event } from 'h3'
-import { getRequestHeader } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
+import { defineEventHandler, getRequestHeader, getRequestURL } from 'nuxt/server'
 import { setRequestSessionCookie, setSessionCookie } from '../features/auth/session.utils'
 import { container } from '../utils/container'
 
@@ -12,14 +12,11 @@ const ASSET_PATH_PATTERN = /\.[a-z0-9]+$/i
  * Every miss here would cost a user row plus a session row, so bots, prefetches,
  * API calls and asset requests must not qualify.
  */
-const isDocumentRequest = (event: H3Event): boolean => {
-  if (event.method !== 'GET')
+const isDocumentRequest = (event: RequestEvent): boolean => {
+  if (event.req.method !== 'GET')
     return false
 
-  const path = (event.path ?? '').split('?')[0] ?? ''
-
-  if (!path.startsWith('/'))
-    return false
+  const path = getRequestURL(event).pathname
 
   if (path === '/api' || path.startsWith('/api/') || path.startsWith('/_'))
     return false

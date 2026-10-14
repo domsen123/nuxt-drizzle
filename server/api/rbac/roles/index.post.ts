@@ -1,4 +1,5 @@
 import type { Permission } from '~~/server/features/rbac/permissions'
+import { defineEventHandler, readValidatedBody } from 'nuxt/server'
 import { z } from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'

@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { container } from '~~/server/utils/container'
@@ -14,8 +15,8 @@ export default defineEventHandler(async (event) => {
 
   if (!parsed.success) {
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? 'Invalid input',
+      status: 400,
+      statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
     })
   }
 

@@ -1,3 +1,4 @@
+import { defineEventHandler } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 
 export default defineEventHandler(async (event) => {

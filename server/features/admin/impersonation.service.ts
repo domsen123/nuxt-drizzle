@@ -2,6 +2,7 @@ import type { Session } from '../../database/schema'
 import type { DatabaseClient } from '../../infrastructure/database/client'
 import crypto from 'node:crypto'
 import { eq } from 'drizzle-orm'
+import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
 import { sessions, users } from '../../database/schema'
 
@@ -30,16 +31,16 @@ export const createImpersonationService = ({ db }: CreateImpersonationServiceDep
 
     if (!targetUser) {
       throw createError({
-        statusCode: 404,
-        statusMessage: 'User not found',
+        status: 404,
+        statusText: 'User not found',
       })
     }
 
     // Prevent impersonating yourself
     if (targetUserId === adminUserId) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'Cannot impersonate yourself',
+        status: 400,
+        statusText: 'Cannot impersonate yourself',
       })
     }
 
@@ -62,8 +63,8 @@ export const createImpersonationService = ({ db }: CreateImpersonationServiceDep
 
     if (!session) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to create impersonation session',
+        status: 500,
+        statusText: 'Failed to create impersonation session',
       })
     }
 

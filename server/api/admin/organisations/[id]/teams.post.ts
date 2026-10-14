@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -9,15 +10,15 @@ const createTeamSchema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID is required' })
+    throw createError({ status: 400, statusText: 'Organisation ID is required' })
   }
 
   // Verify organisation exists
   const org = await container.items.organisations.readOne(id)
   if (!org) {
-    throw createError({ statusCode: 404, statusMessage: 'Organisation not found' })
+    throw createError({ status: 404, statusText: 'Organisation not found' })
   }
 
   const body = await readBody(event)
@@ -25,8 +26,8 @@ export default defineEventHandler(async (event) => {
 
   if (!parsed.success) {
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? 'Invalid input',
+      status: 400,
+      statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
     })
   }
 

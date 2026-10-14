@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -11,12 +12,12 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
 
   if (!id) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'User ID is required',
+      status: 400,
+      statusText: 'User ID is required',
     })
   }
 
@@ -30,8 +31,8 @@ export default defineEventHandler(async (event) => {
 
   if (!existing) {
     throw createError({
-      statusCode: 404,
-      statusMessage: 'User not found',
+      status: 404,
+      statusText: 'User not found',
     })
   }
 
@@ -43,8 +44,8 @@ export default defineEventHandler(async (event) => {
 
   if (emailExists) {
     throw createError({
-      statusCode: 409,
-      statusMessage: 'A user with this email already exists',
+      status: 409,
+      statusText: 'A user with this email already exists',
     })
   }
 

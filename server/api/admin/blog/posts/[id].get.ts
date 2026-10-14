@@ -1,17 +1,18 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Post ID is required' })
+    throw createError({ status: 400, statusText: 'Post ID is required' })
   }
 
   const post = await container.items.blogPosts.findOne({ id: { _eq: id } })
   if (!post) {
-    throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+    throw createError({ status: 404, statusText: 'Post not found' })
   }
 
   // Fetch author, category, and tags

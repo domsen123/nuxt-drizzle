@@ -1,8 +1,5 @@
-import type { H3Event } from 'h3'
-import { IncomingMessage, ServerResponse } from 'node:http'
-import { Socket } from 'node:net'
-
-import { createEvent, getRequestHeader } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
+import { getRequestHeader } from 'nuxt/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import sessionRoute from '../server/api/auth/session.get'
@@ -21,28 +18,53 @@ interface TestEventOptions {
   headers?: Record<string, string>
 }
 
+/**
+ * The event shape a `nuxt/server` handler is given, as the Nitro v2 adapter
+ * builds it: the web view over a node request, with `event.req` resolved once
+ * and cached, and the node request still reachable for the one caller that
+ * rewrites the incoming cookie header.
+ */
+interface TestEvent extends RequestEvent {
+  node: { req: { headers: Record<string, string> } }
+}
+
 const DOCUMENT_ACCEPT = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+const ORIGIN = 'http://localhost:3000'
 
-const createTestEvent = ({ path = '/', method = 'GET', headers = {} }: TestEventOptions = {}): H3Event => {
-  const request = new IncomingMessage(new Socket())
-  request.url = path
-  request.method = method
-  request.headers = { accept: DOCUMENT_ACCEPT, ...headers }
+const createTestEvent = ({ path = '/', method = 'GET', headers = {} }: TestEventOptions = {}): TestEvent => {
+  const nodeHeaders: Record<string, string> = { accept: DOCUMENT_ACCEPT, ...headers }
+  const url = new URL(path, ORIGIN)
+  const responseHeaders = new Headers()
+  let request: Request | undefined
 
-  return createEvent(request, new ServerResponse(request))
+  return {
+    node: { req: { headers: nodeHeaders } },
+    url,
+    get req() {
+      // Built on first access and cached, as the adapter does, so a header
+      // rewritten afterwards does not change what this event already resolved.
+      return request ??= new Request(url, { method, headers: nodeHeaders })
+    },
+    res: { headers: responseHeaders },
+    context: {},
+  } as TestEvent
 }
 
-const getSetCookieHeaders = (event: H3Event): string[] => {
-  const header = event.node.res.getHeader('set-cookie')
+/**
+ * A second web view over the same node request, as the renderer takes one after
+ * the middleware chain has run. This is what `useRequestHeader('cookie')` in
+ * `app/plugins/api.ts` reads, and the only reader that sees a cookie header
+ * rewritten mid-request.
+ */
+const renderView = (event: TestEvent): RequestEvent => ({
+  ...event,
+  req: new Request(event.url, { method: 'GET', headers: event.node.req.headers }),
+})
 
-  if (!header)
-    return []
-
-  return Array.isArray(header) ? header : [String(header)]
-}
+const getSetCookieHeaders = (event: TestEvent): string[] => event.res.headers.getSetCookie()
 
 /** Runs the server middleware chain in the order Nitro applies it. */
-const runMiddleware = async (event: H3Event) => {
+const runMiddleware = async (event: TestEvent) => {
   await authMiddleware(event)
   await anonAuthMiddleware(event)
 }
@@ -218,9 +240,10 @@ describe('anonymous auth middleware', () => {
       await runMiddleware(documentEvent)
 
       // What `useRequestHeader('cookie')` in app/plugins/api.ts forwards.
-      const forwardedCookie = getRequestHeader(documentEvent, 'cookie') ?? ''
+      const rendered = renderView(documentEvent)
+      const forwardedCookie = getRequestHeader(rendered, 'cookie') ?? ''
 
-      expect(getSessionToken(documentEvent)).toBe(documentEvent.context.session?.token)
+      expect(getSessionToken(rendered)).toBe(documentEvent.context.session?.token)
       expect(forwardedCookie).toContain('theme=dark')
       expect(forwardedCookie).toContain(`auth_session=${documentEvent.context.session?.token}`)
 
@@ -249,11 +272,12 @@ describe('anonymous auth middleware', () => {
       })
       await runMiddleware(event)
 
-      const forwardedCookie = getRequestHeader(event, 'cookie') ?? ''
+      const rendered = renderView(event)
+      const forwardedCookie = getRequestHeader(rendered, 'cookie') ?? ''
 
       expect(forwardedCookie).not.toContain('expired-token')
       expect(forwardedCookie).toContain('theme=dark')
-      expect(getSessionToken(event)).toBe(event.context.session?.token)
+      expect(getSessionToken(rendered)).toBe(event.context.session?.token)
     })
   })
 })

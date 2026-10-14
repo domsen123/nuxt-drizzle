@@ -35,11 +35,14 @@ export default defineConfig({
           include: ['test/nuxt/*.{test,spec}.ts'],
           environment: 'nuxt',
           environmentOptions: {
-            // The Nuxt test environment runs without SSR, which nuxt-og-image
-            // warns about on every run. It renders nothing here, so turn it off.
+            // The Nuxt test environment runs without SSR. nuxt-og-image warns
+            // about that on every run and renders nothing here, so turn it off,
+            // and nuxt-seo-utils reports client-only rendering of indexable
+            // pages, which no test serves to a crawler.
             nuxt: {
               overrides: {
                 ogImage: { enabled: false },
+                site: { indexable: false },
               },
             },
           },

@@ -1,3 +1,4 @@
+import { defineEventHandler } from 'nuxt/server'
 import { clearSessionCookie, getSessionToken } from '../../features/auth/session.utils'
 import { container } from '../../utils/container'
 

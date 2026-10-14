@@ -1,6 +1,7 @@
 import type { fileMetadata, files } from '~~/server/database/schema'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
 import type { Config } from '~~/server/utils/config'
+import { createError } from 'nuxt/server'
 
 export interface MediaFileResult {
   id: string
@@ -131,7 +132,7 @@ export const createMediaLibraryService = (deps: CreateMediaLibraryServiceDeps) =
   const upsertMetadata = async (fileId: string, input: UpsertMetadataInput): Promise<MediaFileResult> => {
     const file = await filesItemService.readOne(fileId)
     if (!file) {
-      throw createError({ statusCode: 404, statusMessage: 'File not found' })
+      throw createError({ status: 404, statusText: 'File not found' })
     }
 
     const existing = await fileMetadataItemService.findMany({

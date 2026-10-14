@@ -1,24 +1,25 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const teamId = getRouterParam(event, 'teamId')
-  const userId = getRouterParam(event, 'userId')
+  const teamId = getRouterParam(event, 'teamId', { decode: true })
+  const userId = getRouterParam(event, 'userId', { decode: true })
 
   if (!teamId) {
-    throw createError({ statusCode: 400, statusMessage: 'Team ID is required' })
+    throw createError({ status: 400, statusText: 'Team ID is required' })
   }
   if (!userId) {
-    throw createError({ statusCode: 400, statusMessage: 'User ID is required' })
+    throw createError({ status: 400, statusText: 'User ID is required' })
   }
 
   // Verify team exists
   const team = await container.items.teams.readOne(teamId)
 
   if (!team) {
-    throw createError({ statusCode: 404, statusMessage: 'Team not found' })
+    throw createError({ status: 404, statusText: 'Team not found' })
   }
 
   // Find team member
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!member) {
-    throw createError({ statusCode: 404, statusMessage: 'Team member not found' })
+    throw createError({ status: 404, statusText: 'Team member not found' })
   }
 
   // Delete team member

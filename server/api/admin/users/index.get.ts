@@ -1,3 +1,4 @@
+import { defineEventHandler, getQuery } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 

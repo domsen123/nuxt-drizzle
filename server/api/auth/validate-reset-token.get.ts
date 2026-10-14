@@ -1,3 +1,4 @@
+import { defineEventHandler, getQuery } from 'nuxt/server'
 import { z } from 'zod'
 import { container } from '../../utils/container'
 

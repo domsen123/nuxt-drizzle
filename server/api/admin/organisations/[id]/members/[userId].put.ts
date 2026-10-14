@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -9,14 +10,14 @@ const updateRoleSchema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
-  const userId = getRouterParam(event, 'userId')
+  const id = getRouterParam(event, 'id', { decode: true })
+  const userId = getRouterParam(event, 'userId', { decode: true })
 
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID is required' })
+    throw createError({ status: 400, statusText: 'Organisation ID is required' })
   }
   if (!userId) {
-    throw createError({ statusCode: 400, statusMessage: 'User ID is required' })
+    throw createError({ status: 400, statusText: 'User ID is required' })
   }
 
   const body = await readBody(event)
@@ -24,8 +25,8 @@ export default defineEventHandler(async (event) => {
 
   if (!parsed.success) {
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? 'Invalid input',
+      status: 400,
+      statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
     })
   }
 

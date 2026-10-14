@@ -64,13 +64,13 @@ This project follows **vertical slice architecture** - features are organized as
 
 ## Tech Stack
 
-- **Framework**: Nuxt 4.2.2 (Vue 3)
+- **Framework**: Nuxt 4.6.1 (Vue 3)
 - **UI**: Nuxt UI with Tailwind CSS
 - **Database**: PostgreSQL + Drizzle ORM
 - **State**: Pinia + Pinia Colada
 - **Validation**: Zod
 - **Package Manager**: pnpm 10.23.0
-- **Node**: 22
+- **Node**: 22.22.3+, 24.15+ or 26+
 
 ## Database Workflow
 
@@ -95,6 +95,34 @@ const { data, isLoading } = useQuery(queryOptions, () => ({ param: value.value }
 ## Reference
 
 See `_ARCHITECTURE.md` for comprehensive vertical slice architecture documentation, including feature checklists and anti-patterns.
+
+## Server Code
+
+Import `defineEventHandler` and every request helper explicitly from
+`nuxt/server`, never from the h3 auto-imports:
+
+```typescript
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
+
+export default defineEventHandler(async (event) => {
+  const id = getRouterParam(event, 'id', { decode: true })
+  if (!id)
+    throw createError({ status: 400, statusText: 'Missing id' })
+
+  return container.items.users.readOne(id)
+})
+```
+
+- A handler receives a `RequestEvent`: read the request through `event.req`,
+  write response headers through `event.res.headers`.
+- `getRouterParam` returns percent-encoded values, so pass `{ decode: true }`.
+- `createError` takes `status` and `statusText`; `statusCode`/`statusMessage`
+  are deprecated aliases.
+- Mixing a `nuxt/server` helper with an auto-imported h3 one in the same file
+  fails the request with `NUXT_E8012`.
+- Nitro's own helpers (`defineTask`, `defineNitroPlugin`, `useStorage`) have no
+  `nuxt/server` equivalent and stay auto-imported, in files that use no
+  `nuxt/server` helper.
 
 ## Styles
 - use arrow functions if possible

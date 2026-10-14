@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -15,14 +16,14 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Cluster ID is required' })
+    throw createError({ status: 400, statusText: 'Cluster ID is required' })
   }
 
   const existing = await container.items.contentCreatorClusters.findOne({ id: { _eq: id } })
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: 'Cluster not found' })
+    throw createError({ status: 404, statusText: 'Cluster not found' })
   }
 
   const body = await readBody(event)

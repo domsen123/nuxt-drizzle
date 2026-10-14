@@ -6,7 +6,6 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     // '@nuxt/content',
     '@vueuse/nuxt',
-    'nuxt-og-image',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
     'nuxt-mcp-dev',
@@ -16,6 +15,14 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
+
+  // @nuxtjs/seo 6 bundles nuxt-ai-ready and nuxt-skew-protection and installs
+  // both by default. AI Ready would publish /llms.txt plus a Markdown copy of
+  // every page, and Skew Protection would keep assets from earlier builds and
+  // poll the app manifest. Neither is wanted here, so keep them off. Set either
+  // key to an options object to turn that module on.
+  aiReady: false,
+  skewProtection: false,
 
   css: ['~/assets/css/main.css'],
 
@@ -54,14 +61,33 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2024-07-11',
 
+  // Nuxt 4.6 types the auto-imported `$fetch` through its own TypedFetch. With
+  // this flag off, nitropack's global `$fetch` declaration wins in type
+  // position, and resolving a path against 89 routes blows the instantiation
+  // limit (TS2321) in .ts composables. See nuxt/nuxt#36474. Turning the flag on
+  // routes everything through fetchdts, which type-checks cleanly and matches
+  // the Nuxt 5 default. It also drops the `params` option from `useFetch` at
+  // runtime, which this app does not use.
+  experimental: {
+    routeTypedFetch: true,
+  },
+
+  // Prerendering is off. Every route is server rendered, so no page ships with
+  // a statically baked auth payload.
+  prerender: {
+    routes: [],
+    crawlLinks: false,
+    ignore: ['/'],
+  },
+
   nitro: {
-    // Rollup warns about code we do not own on every build: @vueuse/shared
-    // 14.4.0 puts `@__NO_SIDE_EFFECTS__` in a position Rollup cannot read
-    // (INVALID_ANNOTATION), @nuxt/nitro-server 4.5.2 imports the unused type
-    // `H3Event` as a value (UNUSED_EXTERNAL_IMPORT), and Nitro plus its modules
-    // pull in dozens of import cycles. Drop those for third-party files, keep
-    // Nitro's remaining defaults, and let cycles inside server/ through so our
-    // own code stays visible.
+    // Rollup warns about code we do not own on every run: @vueuse/shared 14.4.0
+    // puts `@__NO_SIDE_EFFECTS__` inside a JSDoc block, where Rollup cannot read
+    // it (INVALID_ANNOTATION), @nuxt/nitro-server 4.6.1 imports h3's unused
+    // `parseCookies` (UNUSED_EXTERNAL_IMPORT, dev server only), and Nitro plus
+    // its modules pull in dozens of import cycles. Drop those for third-party
+    // files, keep Nitro's remaining defaults, and let cycles inside server/
+    // through so our own code stays visible.
     rollupConfig: {
       onwarn(warning, rollupWarn) {
         const source = `${warning.id ?? ''}${warning.exporter ?? ''}${warning.message}`
@@ -84,13 +110,6 @@ export default defineNuxtConfig({
       '0 3 * * *': ['cleanup:tokens'],
       // Run content creator queue processing daily at 9:00 AM
       '0 9 * * *': ['content-creator:generate'],
-    },
-    prerender: {
-      // Prerendering is off. Every route is server rendered, so no page ships
-      // with a statically baked auth payload.
-      routes: [],
-      crawlLinks: false,
-      ignore: ['/'],
     },
   },
 })

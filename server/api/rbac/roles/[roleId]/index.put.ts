@@ -1,4 +1,5 @@
 import type { Permission } from '~~/server/features/rbac/permissions'
+import { createError, defineEventHandler, getRouterParam, readValidatedBody } from 'nuxt/server'
 import { z } from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -12,9 +13,9 @@ const updateRoleSchema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const roleId = getRouterParam(event, 'roleId')
+  const roleId = getRouterParam(event, 'roleId', { decode: true })
   if (!roleId) {
-    throw createError({ statusCode: 400, statusMessage: 'Role ID required' })
+    throw createError({ status: 400, statusText: 'Role ID required' })
   }
 
   const body = await readValidatedBody(event, b => updateRoleSchema.parse(b))

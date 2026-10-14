@@ -1,4 +1,5 @@
 import { count, eq, gt } from 'drizzle-orm'
+import { defineEventHandler } from 'nuxt/server'
 import { organisations, sessions, teams, users } from '~~/server/database/schema'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { getDatabase } from '~~/server/infrastructure/database/client'

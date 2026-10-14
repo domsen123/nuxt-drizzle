@@ -2,6 +2,7 @@ import type { organisations, roles, users } from '~~/server/database/schema'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
 import type { OrganisationMembersService } from '../organisation-members/organisation-members.service'
 import type { CreateOrganisationInput, OrganisationWithOwner } from './organisations.types'
+import { createError } from 'nuxt/server'
 import { getSystemRoleId } from '../rbac/rbac.seed'
 
 export interface CreateOrganisationsServiceDeps {
@@ -28,7 +29,7 @@ export const createOrganisationsService = (deps: CreateOrganisationsServiceDeps)
     // Verify creator user exists
     const creator = await usersItemService.readOne(creatorUserId)
     if (!creator) {
-      throw createError({ statusCode: 404, statusMessage: 'Creator user not found' })
+      throw createError({ status: 404, statusText: 'Creator user not found' })
     }
 
     // Check slug uniqueness
@@ -36,7 +37,7 @@ export const createOrganisationsService = (deps: CreateOrganisationsServiceDeps)
       slug: { _eq: slug },
     })
     if (existing) {
-      throw createError({ statusCode: 409, statusMessage: 'An organisation with this slug already exists' })
+      throw createError({ status: 409, statusText: 'An organisation with this slug already exists' })
     }
 
     // Create the organisation
@@ -46,8 +47,8 @@ export const createOrganisationsService = (deps: CreateOrganisationsServiceDeps)
     const ownerRoleId = await getSystemRoleId(rolesItemService, 'Owner', 'organisation')
     if (!ownerRoleId) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Owner role not found. Please ensure RBAC has been seeded.',
+        status: 500,
+        statusText: 'Owner role not found. Please ensure RBAC has been seeded.',
       })
     }
 

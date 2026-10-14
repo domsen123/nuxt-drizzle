@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -15,12 +16,12 @@ export default defineEventHandler(async (event) => {
 
   const existingName = await container.items.blogTags.findOne({ name: { _eq: data.name } })
   if (existingName) {
-    throw createError({ statusCode: 409, statusMessage: 'A tag with this name already exists' })
+    throw createError({ status: 409, statusText: 'A tag with this name already exists' })
   }
 
   const existingSlug = await container.items.blogTags.findOne({ slug: { _eq: data.slug } })
   if (existingSlug) {
-    throw createError({ statusCode: 409, statusMessage: 'A tag with this slug already exists' })
+    throw createError({ status: 409, statusText: 'A tag with this slug already exists' })
   }
 
   const tag = await container.items.blogTags.create(data)

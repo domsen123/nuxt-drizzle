@@ -1,3 +1,4 @@
+import { createError, defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { container } from '~~/server/utils/container'
 
@@ -7,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const profile = await container.profileService.getProfile(user.id)
 
   if (!profile) {
-    throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
+    throw createError({ status: 404, statusText: 'Profile not found' })
   }
 
   return { profile }

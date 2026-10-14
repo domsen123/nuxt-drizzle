@@ -1,16 +1,17 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { PERMISSIONS } from '~~/server/features/rbac/permissions'
 import { getOrgIdFromParams, requirePermission } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   const orgId = getOrgIdFromParams(event)
-  const roleId = getRouterParam(event, 'roleId')
+  const roleId = getRouterParam(event, 'roleId', { decode: true })
 
   if (!orgId) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID required' })
+    throw createError({ status: 400, statusText: 'Organisation ID required' })
   }
   if (!roleId) {
-    throw createError({ statusCode: 400, statusMessage: 'Role ID required' })
+    throw createError({ status: 400, statusText: 'Role ID required' })
   }
 
   await requirePermission(event, {
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
   const role = await container.rbacService.getRoleWithPermissions(roleId)
 
   if (!role) {
-    throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+    throw createError({ status: 404, statusText: 'Role not found' })
   }
 
   return { role }

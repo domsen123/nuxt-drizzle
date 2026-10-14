@@ -1,64 +1,64 @@
 catalog:
-  '@ai-sdk/anthropic': ^4.0.45
-  '@ai-sdk/google': ^4.0.57
-  '@ai-sdk/vue': ^4.0.84
-  '@antfu/eslint-config': ^9.3.0
+  '@ai-sdk/anthropic': ^4.0.79
+  '@ai-sdk/google': ^4.0.95
+  '@ai-sdk/vue': ^4.0.140
+  '@antfu/eslint-config': ^9.5.1
   '@faker-js/faker': ^10.6.0
-  '@iconify-json/lucide': ^1.2.126
-  '@iconify-json/simple-icons': ^1.2.93
-  '@nuxt/content': ^3.16.0
+  '@iconify-json/lucide': ^1.2.144
+  '@iconify-json/simple-icons': ^1.2.100
+  '@nuxt/content': ^3.16.2
   '@nuxt/image': ^2.1.0
-  '@nuxt/test-utils': ^4.2.0
-  '@nuxt/ui': ^4.11.0
-  '@nuxtjs/seo': ^5.3.14
-  '@pinia/colada': ^1.4.2
-  '@pinia/colada-nuxt': ^1.0.2
-  '@pinia/nuxt': ^1.0.2
+  '@nuxt/test-utils': ^4.3.3
+  '@nuxt/ui': ^4.11.3
+  '@nuxtjs/seo': ^6.0.1
+  '@pinia/colada': ^1.4.8
+  '@pinia/colada-nuxt': ^1.2.0
+  '@pinia/nuxt': ^1.0.3
   '@standard-schema/spec': ^1.1.0
   '@types/bcrypt': ^6.0.0
-  '@types/nodemailer': ^8.0.1
-  '@vue/test-utils': ^2.5.0
+  '@types/nodemailer': ^8.0.2
+  '@vue/test-utils': ^2.5.1
   '@vueuse/nuxt': ^14.4.0
   '@vueuse/router': ^14.4.0
-  ai: ^7.0.84
+  ai: ^7.0.140
   bcrypt: ^6.0.0
-  better-sqlite3: ^13.0.3
   changelogen: ^0.6.2
   date-fns: ^4.4.0
   dotenv: ^17.4.2
   dotenv-cli: ^11.0.0
-  drizzle-kit: ^0.31.10
-  drizzle-orm: ^0.45.2
-  eslint: ^10.9.1
+  drizzle-kit: ^0.31.11
+  drizzle-orm: ^0.45.4
+  eslint: ^10.12.0
   happy-dom: ^20.11.13
-  hookable: ^6.1.1
-  liquidjs: ^10.29.0
+  hookable: ^6.1.2
+  liquidjs: ^10.30.0
   mitt: ^3.0.1
   nodemailer: ^9.0.6
-  nuxt: ^4.5.2
+  nuxt: ^4.6.1
   nuxt-mcp-dev: ^0.3.2
-  nuxt-og-image: ^6.7.8
-  pinia: ^4.0.3
-  playwright-core: ^1.62.1
+  pinia: ^4.1.0
+  playwright-core: ^1.64.0
   postgres: ^3.4.9
-  sharp: ^0.35.4
-  tsx: ^4.23.12
-  # TypeScript 7 is out, but vue-tsc 3.3.11 still requires typescript/lib/tsc,
+  sharp: ^0.35.5
+  tsx: ^4.23.15
+  # TypeScript 7 is out, but vue-tsc 3.3.13 still requires typescript/lib/tsc,
   # which 7.0 no longer exports, and typescript-eslint 8.68 caps at <6.1.0.
   # Move to 7 once both support it.
   typescript: ~6.0.3
   ulid: ^3.0.2
-  undici: ^8.10.0
+  undici: ^8.12.1
   vitest: ^4.1.11
   vue-advanced-cropper: ^2.8.9
-  vue-tsc: ^3.3.11
-  zod: ^4.5.1
+  vue-tsc: ^3.3.13
+  zod: ^4.6.7
 
 catalogMode: prefer
 
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - bcrypt
+  # Not a direct dependency: @nuxt/content, db0 and unstorage pull it in as a
+  # peer, and it needs its build step wherever it lands.
   - better-sqlite3
   - esbuild
   - sharp
@@ -66,9 +66,11 @@ onlyBuiltDependencies:
 
 shellEmulator: true
 
-# nuxt-og-image 6.7.8 still declares sharp ^0.34.0. It only calls
-# sharp(buffer, options).jpeg(options).toBuffer(), which is unchanged in 0.35.
-# Drop the rule once nuxt-og-image widens its peer range.
+# nuxt-ai-ready 3.4.0 ships with @nuxtjs/seo 6 and declares drizzle-orm
+# ^1.0.0-rc.4 as an optional peer, for reading its catalog from a database.
+# `aiReady: false` keeps the module off, and drizzle-orm 1.0 is still a release
+# candidate, so the app stays on 0.45. Drop the rule once drizzle-orm 1.0 is
+# stable and the app moves to it.
 peerDependencyRules:
   allowedVersions:
-    nuxt-og-image>sharp: '0.35'
+    nuxt-ai-ready>drizzle-orm: '0.45'

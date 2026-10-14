@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
@@ -10,12 +11,12 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const provider = getRouterParam(event, 'provider')
+  const provider = getRouterParam(event, 'provider', { decode: true })
 
   if (!provider) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Provider name is required',
+      status: 400,
+      statusText: 'Provider name is required',
     })
   }
 

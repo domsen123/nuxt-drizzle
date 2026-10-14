@@ -1,3 +1,4 @@
+import { defineEventHandler, getValidatedQuery } from 'nuxt/server'
 import * as z from 'zod'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { container } from '~~/server/utils/container'

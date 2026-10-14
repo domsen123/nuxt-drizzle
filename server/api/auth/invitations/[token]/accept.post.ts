@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readBody } from 'nuxt/server'
 import { z } from 'zod'
 import { setSessionCookie } from '~~/server/features/auth/session.utils'
 import { container } from '~~/server/utils/container'
@@ -8,10 +9,10 @@ const acceptSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const token = getRouterParam(event, 'token')
+  const token = getRouterParam(event, 'token', { decode: true })
 
   if (!token) {
-    throw createError({ statusCode: 400, statusMessage: 'Token is required' })
+    throw createError({ status: 400, statusText: 'Token is required' })
   }
 
   const body = await readBody(event)
@@ -19,8 +20,8 @@ export default defineEventHandler(async (event) => {
 
   if (!parsed.success) {
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? 'Invalid input',
+      status: 400,
+      statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
     })
   }
 

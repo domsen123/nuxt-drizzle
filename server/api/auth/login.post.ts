@@ -1,3 +1,4 @@
+import { defineEventHandler, readValidatedBody } from 'nuxt/server'
 import { z } from 'zod'
 import { setSessionCookie } from '../../features/auth/session.utils'
 import { container } from '../../utils/container'

@@ -1,3 +1,4 @@
+import { defineEventHandler, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { PERMISSIONS } from '~~/server/features/rbac/permissions'
 import { requireAuth, requirePermission } from '~~/server/features/rbac/rbac.guard'

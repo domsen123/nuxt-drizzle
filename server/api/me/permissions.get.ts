@@ -1,3 +1,4 @@
+import { createError, defineEventHandler } from 'nuxt/server'
 import { getPermissionContext, requireAuth } from '~~/server/features/rbac/rbac.guard'
 
 export default defineEventHandler(async (event) => {
@@ -6,8 +7,8 @@ export default defineEventHandler(async (event) => {
 
   if (!context) {
     throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to load permissions',
+      status: 500,
+      statusText: 'Failed to load permissions',
     })
   }
 

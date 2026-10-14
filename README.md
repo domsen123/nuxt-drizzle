@@ -27,23 +27,23 @@ A production-ready, full-stack SaaS starter template built with Nuxt 4, featurin
 
 | Category | Technology |
 |----------|------------|
-| **Framework** | Nuxt 4.3.0 (Vue 3) |
+| **Framework** | Nuxt 4.6.1 (Vue 3) |
 | **UI** | Nuxt UI 4 + Tailwind CSS |
 | **Database** | PostgreSQL + Drizzle ORM |
 | **State** | Pinia + Pinia Colada (server-state caching) |
 | **Validation** | Zod v4 |
 | **Image Processing** | Sharp + vue-advanced-cropper |
 | **Email** | Nodemailer + LiquidJS templates |
-| **SEO** | @nuxtjs/seo + nuxt-og-image |
+| **SEO** | @nuxtjs/seo 6 (bundles robots, sitemap, og-image, schema.org) |
 | **Testing** | Vitest |
 | **Package Manager** | pnpm 10.23.0 |
-| **Node** | 22+ |
+| **Node** | 22.22.3+, 24.15+ or 26+ |
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 22+
+- Node.js 22.22.3+, 24.15+ or 26+
 - pnpm 10.23.0+
 - Docker (for PostgreSQL)
 
@@ -625,7 +625,7 @@ const user = requireAuth(event)
 await requirePermission(event, {
   permission: PERMISSIONS.ORGANISATION_UPDATE,
   scope: 'organisation',
-  getScopeId: (event) => getRouterParam(event, 'orgId')
+  getScopeId: (event) => getRouterParam(event, 'orgId', { decode: true })
 })
 
 // Require super admin

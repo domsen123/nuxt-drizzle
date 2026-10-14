@@ -5,6 +5,7 @@ import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
 import { and, desc, eq, gt, isNull, lt, ne } from 'drizzle-orm'
+import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from '../../database/schema'
 import { config } from '../../utils/config'
@@ -72,8 +73,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!session) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to create session',
+        status: 500,
+        statusText: 'Failed to create session',
       })
     }
 
@@ -145,8 +146,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!user) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to create anonymous user',
+        status: 500,
+        statusText: 'Failed to create anonymous user',
       })
     }
 
@@ -180,8 +181,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (existingUser.length > 0) {
       throw createError({
-        statusCode: 409,
-        statusMessage: 'Email already exists',
+        status: 409,
+        statusText: 'Email already exists',
       })
     }
 
@@ -199,8 +200,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
       if (!existingAnon || existingAnon.authProvider !== 'anonymous') {
         throw createError({
-          statusCode: 400,
-          statusMessage: 'Invalid user for upgrade',
+          status: 400,
+          statusText: 'Invalid user for upgrade',
         })
       }
 
@@ -219,8 +220,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
       if (!updated) {
         throw createError({
-          statusCode: 500,
-          statusMessage: 'Failed to upgrade user',
+          status: 500,
+          statusText: 'Failed to upgrade user',
         })
       }
 
@@ -240,8 +241,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
       if (!created) {
         throw createError({
-          statusCode: 500,
-          statusMessage: 'Failed to create user',
+          status: 500,
+          statusText: 'Failed to create user',
         })
       }
 
@@ -303,8 +304,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!user || !user.passwordHash) {
       throw createError({
-        statusCode: 401,
-        statusMessage: 'Invalid credentials',
+        status: 401,
+        statusText: 'Invalid credentials',
       })
     }
 
@@ -312,8 +313,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!isValid) {
       throw createError({
-        statusCode: 401,
-        statusMessage: 'Invalid credentials',
+        status: 401,
+        statusText: 'Invalid credentials',
       })
     }
 
@@ -361,8 +362,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!session) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to refresh session',
+        status: 500,
+        statusText: 'Failed to refresh session',
       })
     }
 
@@ -450,8 +451,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!validation.valid || !validation.userId) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid or expired reset token',
+        status: 400,
+        statusText: 'Invalid or expired reset token',
       })
     }
 
@@ -504,8 +505,8 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
 
     if (!verificationToken) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid or expired verification token',
+        status: 400,
+        statusText: 'Invalid or expired verification token',
       })
     }
 

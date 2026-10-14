@@ -136,6 +136,24 @@ Use **factory functions** returning objects. No classes needed. No DI library ne
 - Actions: Parse request, validate input shape, call service, return response
 - Contains: No business logic, no direct database access
 - Pattern: One handler per HTTP method per resource
+- Imports: `defineEventHandler` and every request helper come from `nuxt/server`,
+  explicitly, never from the h3 auto-imports. The handler receives a
+  `RequestEvent`: read the request through `event.req`, write the response
+  through `event.res`, and read router params with `{ decode: true }`. Mixing a
+  `nuxt/server` helper with an auto-imported h3 one in the same file fails the
+  request with `NUXT_E8012`.
+
+**Server runtime scope**
+
+`nuxt/server` is the portable surface, and the only one Nuxt 5 keeps. Nothing
+imports from `h3`, which is not a direct dependency. Three places reach past
+`nuxt/server` on purpose, each with the reason in a comment:
+
+| Code | Why it reaches past `nuxt/server` |
+|---|---|
+| server/features/auth/session.utils.ts | `setRequestSessionCookie` rewrites the incoming cookie header, which the web-standard request cannot express. It reads the node request through a local type and throws on a runtime that exposes none |
+| server/tasks/, server/plugins/ | `defineTask` and `defineNitroPlugin` are Nitro's, with no `nuxt/server` equivalent |
+| server/features/email/templates/index.ts | `useStorage` is Nitro's |
 
 **Feature Service**
 - Located: server/features/{feature}/

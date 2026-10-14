@@ -1,18 +1,19 @@
+import { createError, defineEventHandler, getRouterParam } from 'nuxt/server'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
 import { container } from '~~/server/utils/container'
 
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const roleId = getRouterParam(event, 'roleId')
+  const roleId = getRouterParam(event, 'roleId', { decode: true })
   if (!roleId) {
-    throw createError({ statusCode: 400, statusMessage: 'Role ID required' })
+    throw createError({ status: 400, statusText: 'Role ID required' })
   }
 
   const role = await container.rbacService.getRoleWithPermissions(roleId)
 
   if (!role) {
-    throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+    throw createError({ status: 404, statusText: 'Role not found' })
   }
 
   return { role }

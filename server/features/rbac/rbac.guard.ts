@@ -1,6 +1,7 @@
-import type { H3Event } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
 import type { Permission, PermissionScope } from './permissions'
 import type { UserPermissionContext } from './rbac.types'
+import { createError, getRouterParam } from 'nuxt/server'
 import { container } from '~~/server/utils/container'
 import { PERMISSIONS } from './permissions'
 
@@ -8,21 +9,21 @@ export interface RequirePermissionOptions {
   permission: Permission
   scope: PermissionScope
   /** Function to extract scope ID from event (for organisation/team scope) */
-  getScopeId?: (event: H3Event) => string | undefined
+  getScopeId?: (event: RequestEvent) => string | undefined
 }
 
 /**
  * Get or load the user's permission context.
  * Caches the context in event.context for the duration of the request.
  */
-export const getPermissionContext = async (event: H3Event): Promise<UserPermissionContext | null> => {
+export const getPermissionContext = async (event: RequestEvent): Promise<UserPermissionContext | null> => {
   const user = event.context.user
   if (!user)
     return null
 
   // Check cache first
   if (event.context.permissions) {
-    return event.context.permissions as UserPermissionContext
+    return event.context.permissions
   }
 
   // Load and cache
@@ -35,12 +36,12 @@ export const getPermissionContext = async (event: H3Event): Promise<UserPermissi
  * Guard that requires authentication.
  * Throws 401 if not authenticated.
  */
-export const requireAuth = (event: H3Event) => {
+export const requireAuth = (event: RequestEvent) => {
   const user = event.context.user
   if (!user) {
     throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
+      status: 401,
+      statusText: 'Unauthorized',
     })
   }
   return user
@@ -51,7 +52,7 @@ export const requireAuth = (event: H3Event) => {
  * Throws 401 if not authenticated, 403 if missing permission.
  */
 export const requirePermission = async (
-  event: H3Event,
+  event: RequestEvent,
   options: RequirePermissionOptions,
 ): Promise<void> => {
   requireAuth(event)
@@ -59,8 +60,8 @@ export const requirePermission = async (
 
   if (!context) {
     throw createError({
-      statusCode: 403,
-      statusMessage: 'Forbidden - no permissions loaded',
+      status: 403,
+      statusText: 'Forbidden - no permissions loaded',
     })
   }
 
@@ -79,8 +80,8 @@ export const requirePermission = async (
     case 'organisation':
       if (!scopeId) {
         throw createError({
-          statusCode: 400,
-          statusMessage: 'Organisation ID required for this operation',
+          status: 400,
+          statusText: 'Organisation ID required for this operation',
         })
       }
       hasPermission = context.organisationPermissions.get(scopeId)?.has(options.permission) ?? false
@@ -88,8 +89,8 @@ export const requirePermission = async (
     case 'team':
       if (!scopeId) {
         throw createError({
-          statusCode: 400,
-          statusMessage: 'Team ID required for this operation',
+          status: 400,
+          statusText: 'Team ID required for this operation',
         })
       }
       hasPermission = context.teamPermissions.get(scopeId)?.has(options.permission) ?? false
@@ -98,8 +99,8 @@ export const requirePermission = async (
 
   if (!hasPermission) {
     throw createError({
-      statusCode: 403,
-      statusMessage: `Forbidden - missing permission: ${options.permission}`,
+      status: 403,
+      statusText: `Forbidden - missing permission: ${options.permission}`,
     })
   }
 }
@@ -109,7 +110,7 @@ export const requirePermission = async (
  * Throws 401 if not authenticated, 403 if missing all permissions.
  */
 export const requireAnyPermission = async (
-  event: H3Event,
+  event: RequestEvent,
   options: RequirePermissionOptions[],
 ): Promise<void> => {
   requireAuth(event)
@@ -117,8 +118,8 @@ export const requireAnyPermission = async (
 
   if (!context) {
     throw createError({
-      statusCode: 403,
-      statusMessage: 'Forbidden - no permissions loaded',
+      status: 403,
+      statusText: 'Forbidden - no permissions loaded',
     })
   }
 
@@ -152,8 +153,8 @@ export const requireAnyPermission = async (
   }
 
   throw createError({
-    statusCode: 403,
-    statusMessage: 'Forbidden - missing required permissions',
+    status: 403,
+    statusText: 'Forbidden - missing required permissions',
   })
 }
 
@@ -162,7 +163,7 @@ export const requireAnyPermission = async (
  * Throws 401 if not authenticated, 403 if missing any permission.
  */
 export const requireAllPermissions = async (
-  event: H3Event,
+  event: RequestEvent,
   options: RequirePermissionOptions[],
 ): Promise<void> => {
   for (const opt of options) {
@@ -174,14 +175,14 @@ export const requireAllPermissions = async (
  * Guard for super-admin only actions.
  * Throws 401 if not authenticated, 403 if not super admin.
  */
-export const requireSuperAdmin = async (event: H3Event): Promise<void> => {
+export const requireSuperAdmin = async (event: RequestEvent): Promise<void> => {
   requireAuth(event)
   const context = await getPermissionContext(event)
 
   if (!context || !context.globalPermissions.has(PERMISSIONS.PLATFORM_ADMIN)) {
     throw createError({
-      statusCode: 403,
-      statusMessage: 'Forbidden - super admin access required',
+      status: 403,
+      statusText: 'Forbidden - super admin access required',
     })
   }
 }
@@ -191,7 +192,7 @@ export const requireSuperAdmin = async (event: H3Event): Promise<void> => {
  * Useful for conditional UI logic in API responses.
  */
 export const canAccess = async (
-  event: H3Event,
+  event: RequestEvent,
   options: RequirePermissionOptions,
 ): Promise<boolean> => {
   const user = event.context.user
@@ -228,13 +229,13 @@ export const canAccess = async (
 /**
  * Helper to get organisation ID from route params
  */
-export const getOrgIdFromParams = (event: H3Event): string | undefined => {
-  return getRouterParam(event, 'orgId') || getRouterParam(event, 'organisationId')
+export const getOrgIdFromParams = (event: RequestEvent): string | undefined => {
+  return getRouterParam(event, 'orgId', { decode: true }) || getRouterParam(event, 'organisationId', { decode: true })
 }
 
 /**
  * Helper to get team ID from route params
  */
-export const getTeamIdFromParams = (event: H3Event): string | undefined => {
-  return getRouterParam(event, 'teamId')
+export const getTeamIdFromParams = (event: RequestEvent): string | undefined => {
+  return getRouterParam(event, 'teamId', { decode: true })
 }

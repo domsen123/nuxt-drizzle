@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getQuery } from 'nuxt/server'
 import * as z from 'zod'
 import { container } from '~~/server/utils/container'
 
@@ -11,8 +12,8 @@ export default defineEventHandler(async (event) => {
 
   if (!parsed.success) {
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? 'Invalid token',
+      status: 400,
+      statusText: parsed.error.issues[0]?.message ?? 'Invalid token',
     })
   }
 

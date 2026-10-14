@@ -1,3 +1,4 @@
+import { defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
 import { container } from '~~/server/utils/container'
 

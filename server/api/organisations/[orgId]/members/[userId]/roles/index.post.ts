@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, getRouterParam, readValidatedBody } from 'nuxt/server'
 import { z } from 'zod'
 import { PERMISSIONS } from '~~/server/features/rbac/permissions'
 import { getOrgIdFromParams, requirePermission } from '~~/server/features/rbac/rbac.guard'
@@ -9,13 +10,13 @@ const assignRoleSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const orgId = getOrgIdFromParams(event)
-  const userId = getRouterParam(event, 'userId')
+  const userId = getRouterParam(event, 'userId', { decode: true })
 
   if (!orgId) {
-    throw createError({ statusCode: 400, statusMessage: 'Organisation ID required' })
+    throw createError({ status: 400, statusText: 'Organisation ID required' })
   }
   if (!userId) {
-    throw createError({ statusCode: 400, statusMessage: 'User ID required' })
+    throw createError({ status: 400, statusText: 'User ID required' })
   }
 
   await requirePermission(event, {

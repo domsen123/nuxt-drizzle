@@ -5,6 +5,7 @@ import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
 import { eq, lt } from 'drizzle-orm'
+import { createError } from 'nuxt/server'
 import { pendingEmailChanges as pendingEmailChangesTable } from '~~/server/database/schema'
 import { config } from '~~/server/utils/config'
 
@@ -76,7 +77,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user) {
-      throw createError({ statusCode: 404, statusMessage: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found' })
     }
 
     const updateData: Partial<{ name: string | null }> = {}
@@ -106,20 +107,20 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user) {
-      throw createError({ statusCode: 404, statusMessage: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found' })
     }
 
     const newEmail = input.newEmail.toLowerCase().trim()
 
     // Check if new email is same as current
     if (newEmail === user.email) {
-      throw createError({ statusCode: 400, statusMessage: 'New email must be different from current email' })
+      throw createError({ status: 400, statusText: 'New email must be different from current email' })
     }
 
     // Check if new email is already in use
     const existingUser = await usersItemService.findOne({ email: newEmail })
     if (existingUser) {
-      throw createError({ statusCode: 409, statusMessage: 'Email already in use' })
+      throw createError({ status: 409, statusText: 'Email already in use' })
     }
 
     // Delete any existing pending email changes for this user
@@ -162,21 +163,21 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const pendingChange = await pendingEmailChangesItemService.findOne({ token })
 
     if (!pendingChange) {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid or expired token' })
+      throw createError({ status: 400, statusText: 'Invalid or expired token' })
     }
 
     // Check if token has expired
     if (new Date() > pendingChange.expiresAt) {
       // Clean up expired token
       await pendingEmailChangesItemService.delete(pendingChange.id)
-      throw createError({ statusCode: 400, statusMessage: 'Token has expired' })
+      throw createError({ status: 400, statusText: 'Token has expired' })
     }
 
     // Check if new email is still available (could have been taken since request)
     const existingUser = await usersItemService.findOne({ email: pendingChange.newEmail })
     if (existingUser && existingUser.id !== pendingChange.userId) {
       await pendingEmailChangesItemService.delete(pendingChange.id)
-      throw createError({ statusCode: 409, statusMessage: 'Email is no longer available' })
+      throw createError({ status: 409, statusText: 'Email is no longer available' })
     }
 
     // Update user email and mark as verified
@@ -247,14 +248,14 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user || !user.passwordHash) {
-      throw createError({ statusCode: 404, statusMessage: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found' })
     }
 
     // Verify current password
     const isValid = await bcrypt.compare(input.currentPassword, user.passwordHash)
 
     if (!isValid) {
-      throw createError({ statusCode: 401, statusMessage: 'Current password is incorrect' })
+      throw createError({ status: 401, statusText: 'Current password is incorrect' })
     }
 
     // Hash new password

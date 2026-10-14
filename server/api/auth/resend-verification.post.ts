@@ -1,3 +1,4 @@
+import { createError, defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '../../features/auth/auth.guard'
 import { container } from '../../utils/container'
 
@@ -15,8 +16,8 @@ export default defineEventHandler(async (event) => {
 
   if (!result.success) {
     throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to send verification email. Please try again later.',
+      status: 500,
+      statusText: 'Failed to send verification email. Please try again later.',
     })
   }
 

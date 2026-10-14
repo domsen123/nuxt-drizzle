@@ -22,6 +22,7 @@ import {
   notInArray,
   or,
 } from 'drizzle-orm'
+import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
 import { buildEventKey } from '../events'
 
@@ -353,8 +354,8 @@ export const createItemService = <T extends PgTable<TableConfig>>({
 
       if (!queryBuilder) {
         throw createError({
-          statusCode: 500,
-          statusMessage: `Table "${tableName}" not found in db.query. Ensure schema is passed to drizzle().`,
+          status: 500,
+          statusText: `Table "${tableName}" not found in db.query. Ensure schema is passed to drizzle().`,
         })
       }
 
@@ -442,7 +443,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
       .where(eq(idColumn, id))
       .returning()
     if (!result)
-      throw createError({ statusCode: 404, statusMessage: 'Record not found' })
+      throw createError({ status: 404, statusText: 'Record not found' })
     emitEvent('updated', result as Select)
     return result as Select
   }
@@ -461,7 +462,7 @@ export const createItemService = <T extends PgTable<TableConfig>>({
   const remove = async (id: string): Promise<Select> => {
     const [result] = await db.delete(table).where(eq(idColumn, id)).returning()
     if (!result)
-      throw createError({ statusCode: 404, statusMessage: 'Record not found' })
+      throw createError({ status: 404, statusText: 'Record not found' })
     emitEvent('deleted', result as Select)
     return result as Select
   }

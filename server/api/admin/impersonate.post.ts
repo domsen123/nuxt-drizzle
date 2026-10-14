@@ -1,3 +1,4 @@
+import { createError, defineEventHandler, readBody } from 'nuxt/server'
 import * as z from 'zod'
 import { setSessionCookie } from '~~/server/features/auth/session.utils'
 import { requireSuperAdmin } from '~~/server/features/rbac/rbac.guard'
@@ -19,8 +20,8 @@ export default defineEventHandler(async (event) => {
   // Prevent nested impersonation
   if (event.context.impersonation) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Cannot start impersonation while already impersonating',
+      status: 400,
+      statusText: 'Cannot start impersonation while already impersonating',
     })
   }
 
