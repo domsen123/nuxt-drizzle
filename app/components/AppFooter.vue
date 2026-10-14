@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { FooterColumn } from '@nuxt/ui'
 
+const REPO_URL = 'https://github.com/domsen123/nuxt-drizzle'
+
 const columns: FooterColumn[] = []
 </script>
 
@@ -26,28 +28,27 @@ const columns: FooterColumn[] = []
       </p>
     </template>
 
+    <div class="flex items-center gap-4 text-sm">
+      <ULink
+        :to="ROUTES.legal.privacyPolicy"
+        class="text-muted hover:text-default"
+      >
+        {{ $t('common.footer.privacy') }}
+      </ULink>
+      <ULink
+        :to="ROUTES.legal.imprint"
+        class="text-muted hover:text-default"
+      >
+        {{ $t('common.footer.imprint') }}
+      </ULink>
+    </div>
+
     <template #right>
       <UButton
-        to="#"
-        target="_blank"
-        icon="i-simple-icons-discord"
-        aria-label="Nuxt on Discord"
-        color="neutral"
-        variant="ghost"
-      />
-      <UButton
-        to="#"
-        target="_blank"
-        icon="i-simple-icons-x"
-        aria-label="Nuxt on X"
-        color="neutral"
-        variant="ghost"
-      />
-      <UButton
-        to="#"
+        :to="REPO_URL"
         target="_blank"
         icon="i-simple-icons-github"
-        aria-label="Nuxt UI on GitHub"
+        aria-label="GitHub"
         color="neutral"
         variant="ghost"
       />

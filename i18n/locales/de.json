@@ -32,7 +32,9 @@
       "nextPage": "Nächste Seite"
     },
     "footer": {
-      "builtWith": "Erstellt mit Nuxt UI • © {year}"
+      "builtWith": "Erstellt mit Nuxt UI • © {year}",
+      "privacy": "Datenschutz",
+      "imprint": "Impressum"
     }
   },
   "nav": {
@@ -263,6 +265,10 @@
     "privacy": {
       "title": "Datenschutzerklärung",
       "description": "Wie wir deine personenbezogenen Daten erheben, nutzen und schützen."
+    },
+    "imprint": {
+      "title": "Impressum",
+      "description": "Anbieterkennzeichnung und rechtliche Hinweise."
     }
   },
   "errors": {

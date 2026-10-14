@@ -12,6 +12,7 @@ export const ROUTES = {
   legal: {
     termsOfService: '/terms-of-service',
     privacyPolicy: '/privacy-policy',
+    imprint: '/imprint',
   },
   admin: {
     home: '/admin',
