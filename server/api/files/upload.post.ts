@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer'
 import { createError, defineEventHandler } from 'nuxt/server'
 import { requireAuth } from '~~/server/features/auth/auth.guard'
-import { AVATAR_VARIANT_SPECS } from '~~/server/features/files/image-processing.service'
 import { container } from '~~/server/utils/container'
+import { USER_AVATAR_ENTITY_TYPE } from '~~/shared/files.constants'
 
 /** Reads one text field of the form, or `undefined` when it was not sent. */
 const readTextField = (formData: FormData, name: string): string | undefined => {
@@ -29,7 +29,19 @@ export default defineEventHandler(async (event) => {
   const entityType = readTextField(formData, 'entityType')
   const entityId = readTextField(formData, 'entityId')
 
-  const isAvatar = entityType === 'user-avatar'
+  // Avatars get generated size variants alongside the original.
+  if (entityType === USER_AVATAR_ENTITY_TYPE) {
+    const result = await container.fileService.uploadAvatar({
+      buffer,
+      originalName: file.name,
+      mimeType,
+      size: buffer.length,
+      uploadedBy: user.id,
+      entityId,
+    })
+
+    return { file: result }
+  }
 
   const result = await container.fileService.upload({
     buffer,
@@ -39,33 +51,7 @@ export default defineEventHandler(async (event) => {
     uploadedBy: user.id,
     entityType,
     entityId,
-    variant: isAvatar ? 'original' : undefined,
   })
-
-  // Generate avatar variants
-  if (isAvatar) {
-    const variants = await container.imageProcessingService.generateVariants(
-      buffer,
-      mimeType,
-      AVATAR_VARIANT_SPECS,
-    )
-
-    await Promise.all(
-      variants.map(v =>
-        container.fileService.upload({
-          buffer: v.buffer,
-          originalName: `${v.variant}-${file.name}`,
-          mimeType: v.mimeType,
-          size: v.buffer.length,
-          uploadedBy: user.id,
-          entityType,
-          entityId,
-          parentId: result.id,
-          variant: v.variant,
-        }),
-      ),
-    )
-  }
 
   return { file: result }
 })

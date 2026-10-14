@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { USER_AVATAR_ENTITY_TYPE } from '~~/shared/files.constants'
+
 const props = defineProps<{
   userId: string
   userName: string | null
@@ -15,7 +17,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const userIdRef = computed(() => props.userId)
-const { files, refresh } = useFilesByEntity('user-avatar', userIdRef)
+const { files, refresh } = useFilesByEntity(USER_AVATAR_ENTITY_TYPE, userIdRef)
 const { mutateAsync: uploadFile, asyncStatus: uploadStatus } = useUploadFile()
 const { mutateAsync: deleteFile, asyncStatus: deleteStatus } = useFileDelete()
 
@@ -81,7 +83,7 @@ const onCropConfirm = async (blob: Blob, mimeType: string) => {
 
     await uploadFile({
       file,
-      entityType: 'user-avatar',
+      entityType: USER_AVATAR_ENTITY_TYPE,
       entityId: props.userId,
     })
 
@@ -89,7 +91,7 @@ const onCropConfirm = async (blob: Blob, mimeType: string) => {
     if (previousAvatar) {
       await deleteFile({
         id: previousAvatar.id,
-        entityType: 'user-avatar',
+        entityType: USER_AVATAR_ENTITY_TYPE,
         entityId: props.userId,
       })
     }
@@ -116,7 +118,7 @@ const removeAvatar = async () => {
   try {
     await deleteFile({
       id: currentAvatar.value.id,
-      entityType: 'user-avatar',
+      entityType: USER_AVATAR_ENTITY_TYPE,
       entityId: props.userId,
     })
     toast.add({ title: 'Avatar removed.', color: 'success' })

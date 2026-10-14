@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { USER_AVATAR_ENTITY_TYPE } from '~~/shared/files.constants'
+
 const props = withDefaults(defineProps<{
   userId: string
   name: string | null
@@ -9,7 +11,7 @@ const props = withDefaults(defineProps<{
 })
 
 const userIdRef = computed(() => props.userId)
-const { files } = useFilesByEntity('user-avatar', userIdRef, { includeVariants: true })
+const { files } = useFilesByEntity(USER_AVATAR_ENTITY_TYPE, userIdRef, { includeVariants: true })
 
 const SIZE_TO_VARIANT: Record<string, string> = {
   '3xs': 'sm',

@@ -250,11 +250,12 @@ const getFileService = lazy(() =>
   createFileService({
     fileStoreProvider: getFileStoreProvider(),
     filesItemService: getFilesItemService(),
+    imageProcessingService: getImageProcessingService(),
     config,
   }),
 )
 
-// OAuth Service (depends on FileService and ImageProcessingService above)
+// OAuth Service (depends on FileService above)
 const getOauthService = lazy(() =>
   createOauthService({
     db: getDatabase('app'),
@@ -262,7 +263,6 @@ const getOauthService = lazy(() =>
     authService: getAuthService(),
     registrationPolicyService: getRegistrationPolicyService(),
     fileService: getFileService(),
-    imageProcessingService: getImageProcessingService(),
     eventBus: getEventBus(),
   }),
 )

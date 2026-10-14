@@ -3,9 +3,12 @@ import type { files } from '~~/server/database/schema'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
 import type { Config } from '~~/server/utils/config'
 import type { FileStoreProvider } from './file-store-provider.interface'
+import type { ImageProcessingService } from './image-processing.service'
 import path from 'node:path'
 import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
+import { USER_AVATAR_ENTITY_TYPE } from '~~/shared/files.constants'
+import { AVATAR_VARIANT_SPECS } from './image-processing.service'
 
 export interface UploadFileInput {
   buffer: Buffer
@@ -37,14 +40,24 @@ export interface FileMetadata {
   updatedAt: Date
 }
 
+export interface UploadAvatarInput {
+  buffer: Buffer
+  originalName: string
+  mimeType: string
+  size: number
+  uploadedBy: string
+  entityId?: string
+}
+
 export interface CreateFileServiceDeps {
   fileStoreProvider: FileStoreProvider
   filesItemService: ItemService<typeof files>
+  imageProcessingService: ImageProcessingService
   config: Config
 }
 
 export const createFileService = (deps: CreateFileServiceDeps) => {
-  const { fileStoreProvider, filesItemService, config } = deps
+  const { fileStoreProvider, filesItemService, imageProcessingService, config } = deps
 
   const buildStorageKey = (input: UploadFileInput): string => {
     const ext = path.extname(input.originalName).toLowerCase()
@@ -121,6 +134,37 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
     return toMetadata(record)
   }
 
+  /**
+   * Stores a user avatar the way every avatar is stored: the original plus
+   * the generated size variants, all tagged with the avatar entity type.
+   */
+  const uploadAvatar = async (input: UploadAvatarInput): Promise<FileMetadata> => {
+    const original = await upload({
+      ...input,
+      entityType: USER_AVATAR_ENTITY_TYPE,
+      variant: 'original',
+    })
+
+    const variants = await imageProcessingService.generateVariants(input.buffer, input.mimeType, AVATAR_VARIANT_SPECS)
+    await Promise.all(
+      variants.map(variant =>
+        upload({
+          buffer: variant.buffer,
+          originalName: `${variant.variant}-${input.originalName}`,
+          mimeType: variant.mimeType,
+          size: variant.buffer.length,
+          uploadedBy: input.uploadedBy,
+          entityType: USER_AVATAR_ENTITY_TYPE,
+          entityId: input.entityId,
+          parentId: original.id,
+          variant: variant.variant,
+        }),
+      ),
+    )
+
+    return original
+  }
+
   const getFile = async (id: string): Promise<FileMetadata | null> => {
     const record = await filesItemService.readOne(id)
     if (!record)
@@ -173,6 +217,7 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
 
   return {
     upload,
+    uploadAvatar,
     getFile,
     getFilesByEntity,
     deleteFile,
