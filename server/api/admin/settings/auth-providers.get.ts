@@ -5,7 +5,7 @@ import { container } from '~~/server/utils/container'
 export default defineEventHandler(async (event) => {
   await requireSuperAdmin(event)
 
-  const providers = await container.authProvidersService.listProviders()
+  const providers = await container.authProvidersService.listProvidersMasked()
 
   return { providers }
 })

@@ -74,6 +74,14 @@ export default defineNuxtConfig({
     },
   },
 
+  // NUXT_PUBLIC_SITE_URL overrides this at runtime. The admin UI reads it to
+  // display the OAuth redirect URI.
+  runtimeConfig: {
+    public: {
+      siteUrl: '',
+    },
+  },
+
   compatibilityDate: '2024-07-11',
 
   // Nuxt 4.6 types the auto-imported `$fetch` through its own TypedFetch. With

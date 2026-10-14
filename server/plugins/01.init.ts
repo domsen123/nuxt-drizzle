@@ -2,7 +2,8 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { ulid } from 'ulid'
-import { authProviders } from '../database/schema'
+import { appSettings, authProviders } from '../database/schema'
+import { REGISTRATION_SETTING_KEY } from '../features/auth/registration-policy.service'
 import { getSystemRoleId, seedRbac } from '../features/rbac/rbac.seed'
 import { getDatabase } from '../infrastructure/database/client'
 import { container } from '../utils/container'
@@ -106,34 +107,43 @@ const seedAdmin = async () => {
 }
 
 // ─── Auth Providers Seed ────────────────────────────────────────────────────
+const DEFAULT_AUTH_PROVIDERS = [
+  { provider: 'credentials', enabled: true, config: {}, displayOrder: 0 },
+  { provider: 'anonymous', enabled: false, config: { sessionDurationDays: 30 }, displayOrder: 1 },
+  { provider: 'microsoft', enabled: false, config: {}, displayOrder: 2 },
+]
+
+// Per-provider upsert: existing databases pick up newly added providers
+// without their stored rows being touched.
 const seedAuthProviders = async () => {
   console.log('[Init] Seeding auth providers...')
   const db = getDatabase('app')
 
-  const existing = await db.select().from(authProviders).limit(1)
-  if (existing.length > 0) {
-    console.log('[Init] Auth providers already seeded')
-    return
+  for (const row of DEFAULT_AUTH_PROVIDERS) {
+    await db
+      .insert(authProviders)
+      .values({ id: ulid(), ...row })
+      .onConflictDoNothing({ target: authProviders.provider })
   }
 
-  await db.insert(authProviders).values([
-    {
-      id: ulid(),
-      provider: 'credentials',
-      enabled: true,
-      config: {},
-      displayOrder: 0,
-    },
-    {
-      id: ulid(),
-      provider: 'anonymous',
-      enabled: false,
-      config: { sessionDurationDays: 30 },
-      displayOrder: 1,
-    },
-  ])
-
   console.log('[Init] Auth providers seeded')
+}
+
+// ─── App Settings Seed ──────────────────────────────────────────────────────
+const seedAppSettings = async () => {
+  console.log('[Init] Seeding app settings...')
+  const db = getDatabase('app')
+
+  await db
+    .insert(appSettings)
+    .values({
+      id: ulid(),
+      key: REGISTRATION_SETTING_KEY,
+      value: { mode: 'open' },
+    })
+    .onConflictDoNothing({ target: appSettings.key })
+
+  console.log('[Init] App settings seeded')
 }
 
 // ─── Main Plugin ─────────────────────────────────────────────────────────────
@@ -147,6 +157,7 @@ export default defineNitroPlugin(async () => {
   await runMigration()
   await runRbacSeed()
   await seedAuthProviders()
+  await seedAppSettings()
   registerRbacListeners()
   registerEventBusLogging()
   await seedAdmin()

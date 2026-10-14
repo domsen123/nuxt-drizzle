@@ -80,8 +80,7 @@
       "noAccount": "Du hast noch kein Konto? {signUp}.",
       "forgotPassword": "Passwort vergessen?",
       "agree": "Mit der Anmeldung akzeptierst du unsere {terms}.",
-      "successTitle": "Willkommen zurück!",
-      "providerSoon": "Anmeldung mit {provider} (bald verfügbar)"
+      "successTitle": "Willkommen zurück!"
     },
     "signUp": {
       "seoTitle": "Registrieren",
@@ -91,7 +90,7 @@
       "agree": "Mit der Registrierung akzeptierst du unsere {terms}.",
       "successTitle": "Konto erstellt!",
       "successDescription": "Willkommen an Bord.",
-      "providerSoon": "Registrierung mit {provider} (bald verfügbar)"
+      "inviteOnly": "Die Registrierung ist derzeit nur mit Einladung möglich."
     },
     "forgotPassword": {
       "seoTitle": "Passwort vergessen",
@@ -296,7 +295,11 @@
       "verification_send_failed": "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Versuche es später erneut.",
       "session_not_found": "Sitzung nicht gefunden.",
       "session_id_required": "Sitzungs-ID ist erforderlich.",
-      "cannot_delete_current_session": "Die aktuelle Sitzung kannst du hier nicht abmelden. Verwende stattdessen die Abmeldung."
+      "cannot_delete_current_session": "Die aktuelle Sitzung kannst du hier nicht abmelden. Verwende stattdessen die Abmeldung.",
+      "registration_disabled": "Die Registrierung ist derzeit nur mit Einladung möglich.",
+      "oauth_failed": "Die Anmeldung über den Anbieter ist fehlgeschlagen. Bitte versuche es erneut.",
+      "oauth_no_email": "Der Anbieter hat keine E-Mail-Adresse für dein Konto übermittelt.",
+      "provider_disabled": "Dieser Anmelde-Anbieter ist nicht verfügbar."
     },
     "profile": {
       "not_found": "Profil nicht gefunden.",

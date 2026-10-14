@@ -1,4 +1,4 @@
-import { defineEventHandler, readValidatedBody } from 'nuxt/server'
+import { createError, defineEventHandler, readValidatedBody } from 'nuxt/server'
 import { z } from 'zod'
 import { setSessionCookie } from '../../features/auth/session.utils'
 import { container } from '../../utils/container'
@@ -13,6 +13,17 @@ export default defineEventHandler(async (event) => {
   const result = await readValidatedBody(event, body => registerSchema.parse(body))
 
   const { email, password, name } = result
+
+  // Registration policy applies to every sign-up, including the anonymous
+  // upgrade below: that path registers a new account as well.
+  const canRegister = await container.registrationPolicyService.canRegister(email)
+  if (!canRegister) {
+    throw createError({
+      status: 403,
+      statusText: 'Registration is invite-only',
+      data: { code: 'auth.registration_disabled' },
+    })
+  }
 
   // If current user is anonymous, upgrade their account instead of creating a new one
   const currentUser = event.context.user

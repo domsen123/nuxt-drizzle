@@ -18,6 +18,7 @@ import type {
   AdminOrganisationResponse,
   AdminOrganisationsQueryParams,
   AdminOrganisationsResponse,
+  AdminRegistrationSettings,
   AdminStatsResponse,
   AdminTeam,
   AdminTeamMember,
@@ -254,6 +255,16 @@ export const useAdminApi = () => {
 
     updateAuthProvider: (provider: string, data: UpdateAuthProviderInput): Promise<{ provider: AdminAuthProvidersResponse['providers'][number] }> =>
       $api(`/api/admin/settings/auth-providers/${provider}`, {
+        method: 'PUT',
+        body: data,
+      }),
+
+    // Registration Settings
+    getRegistrationSettings: (): Promise<AdminRegistrationSettings> =>
+      $api('/api/admin/settings/registration'),
+
+    updateRegistrationSettings: (data: AdminRegistrationSettings): Promise<AdminRegistrationSettings> =>
+      $api('/api/admin/settings/registration', {
         method: 'PUT',
         body: data,
       }),

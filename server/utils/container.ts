@@ -1,6 +1,9 @@
+import type { AppSettingsService } from '../features/admin/app-settings.service'
 import type { ImpersonationService } from '../features/admin/impersonation.service'
 import type { AuthProvidersService } from '../features/auth/auth-providers.service'
 import type { AuthService } from '../features/auth/auth.service'
+import type { OauthService } from '../features/auth/oauth.service'
+import type { RegistrationPolicyService } from '../features/auth/registration-policy.service'
 import type { ContentCreatorService } from '../features/content-creator/content-creator.service'
 import type { EmailProvider } from '../features/email/email-provider.interface'
 import type { EmailService } from '../features/email/email.service'
@@ -15,9 +18,12 @@ import type { ProfileService } from '../features/profile/profile.service'
 import type { RbacService } from '../features/rbac/rbac.service'
 import type { EventBus } from '../infrastructure/events'
 import * as schema from '../database/schema'
+import { createAppSettingsService } from '../features/admin/app-settings.service'
 import { createImpersonationService } from '../features/admin/impersonation.service'
 import { createAuthProvidersService } from '../features/auth/auth-providers.service'
 import { createAuthService } from '../features/auth/auth.service'
+import { createOauthService } from '../features/auth/oauth.service'
+import { createRegistrationPolicyService } from '../features/auth/registration-policy.service'
 import { createContentCreatorService } from '../features/content-creator/content-creator.service'
 import { createEmailService } from '../features/email/email.service'
 import { createConsoleEmailProvider } from '../features/email/providers/console.provider'
@@ -101,6 +107,29 @@ const getAuthProvidersService = lazy(() =>
 const getImpersonationService = lazy(() =>
   createImpersonationService({
     db: getDatabase('app'),
+  }),
+)
+
+const getAppSettingsService = lazy(() =>
+  createAppSettingsService({
+    db: getDatabase('app'),
+  }),
+)
+
+const getRegistrationPolicyService = lazy(() =>
+  createRegistrationPolicyService({
+    db: getDatabase('app'),
+    appSettingsService: getAppSettingsService(),
+  }),
+)
+
+const getOauthService = lazy(() =>
+  createOauthService({
+    db: getDatabase('app'),
+    authProvidersService: getAuthProvidersService(),
+    authService: getAuthService(),
+    registrationPolicyService: getRegistrationPolicyService(),
+    eventBus: getEventBus(),
   }),
 )
 
@@ -262,6 +291,15 @@ export const container = {
   },
   get authProvidersService(): AuthProvidersService {
     return getAuthProvidersService()
+  },
+  get appSettingsService(): AppSettingsService {
+    return getAppSettingsService()
+  },
+  get registrationPolicyService(): RegistrationPolicyService {
+    return getRegistrationPolicyService()
+  },
+  get oauthService(): OauthService {
+    return getOauthService()
   },
   get emailService(): EmailService {
     return getEmailService()

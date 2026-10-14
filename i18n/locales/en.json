@@ -80,8 +80,7 @@
       "noAccount": "Don't have an account? {signUp}.",
       "forgotPassword": "Forgot password?",
       "agree": "By signing in, you agree to our {terms}.",
-      "successTitle": "Welcome back!",
-      "providerSoon": "Login with {provider} (coming soon)"
+      "successTitle": "Welcome back!"
     },
     "signUp": {
       "seoTitle": "Sign up",
@@ -91,7 +90,7 @@
       "agree": "By signing up, you agree to our {terms}.",
       "successTitle": "Account created!",
       "successDescription": "Welcome aboard.",
-      "providerSoon": "Sign up with {provider} (coming soon)"
+      "inviteOnly": "Registration is currently by invitation only."
     },
     "forgotPassword": {
       "seoTitle": "Forgot Password",
@@ -296,7 +295,11 @@
       "verification_send_failed": "Failed to send the verification email. Please try again later.",
       "session_not_found": "Session not found.",
       "session_id_required": "Session ID is required.",
-      "cannot_delete_current_session": "You cannot log out your current session here. Use sign out instead."
+      "cannot_delete_current_session": "You cannot log out your current session here. Use sign out instead.",
+      "registration_disabled": "Registration is currently by invitation only.",
+      "oauth_failed": "Sign-in with the provider failed. Please try again.",
+      "oauth_no_email": "The provider did not return an email address for your account.",
+      "provider_disabled": "This sign-in provider is not available."
     },
     "profile": {
       "not_found": "Profile not found.",

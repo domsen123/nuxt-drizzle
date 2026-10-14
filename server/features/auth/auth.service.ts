@@ -82,6 +82,14 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     return { session, token }
   }
 
+  /**
+   * Creates a session for an already resolved user, such as after an OAuth
+   * callback. Defaults to the long "remember me" expiry.
+   */
+  const createSessionForUser = (userId: string, remember: boolean = true): Promise<{ session: Session, token: string }> => {
+    return createSession(userId, remember)
+  }
+
   const sendVerificationEmail = async (userId: string): Promise<{ success: boolean }> => {
     const [user] = await db
       .select()
@@ -629,6 +637,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
     login,
     createAnonymousUser,
     createSession,
+    createSessionForUser,
     validateSession,
     invalidateSession,
     refreshSession,

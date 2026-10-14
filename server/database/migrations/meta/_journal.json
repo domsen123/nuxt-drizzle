@@ -15,6 +15,13 @@
       "when": 1791990531063,
       "tag": "0001_right_emma_frost",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792001877329,
+      "tag": "0002_exotic_white_tiger",
+      "breakpoints": true
     }
   ]
 }

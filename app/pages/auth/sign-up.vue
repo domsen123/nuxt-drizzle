@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
+import { OAUTH_PROVIDER_BUTTONS, oauthAuthorizeUrl } from '~/features/auth'
 
 definePageMeta({
   layout: 'auth',
@@ -46,19 +47,21 @@ const fields = computed(() => [{
   placeholder: t('auth.fields.passwordPlaceholder'),
 }])
 
-const providers = computed(() => [{
-  label: 'Google',
-  icon: 'i-simple-icons-google',
-  onClick: () => {
-    toast.add({ title: 'Google', description: t('auth.signUp.providerSoon', { provider: 'Google' }) })
-  },
-}, {
-  label: 'GitHub',
-  icon: 'i-simple-icons-github',
-  onClick: () => {
-    toast.add({ title: 'GitHub', description: t('auth.signUp.providerSoon', { provider: 'GitHub' }) })
-  },
-}])
+const { providers: oauthProviders, registrationMode } = useAuthProviders()
+
+const providers = computed(() => oauthProviders.value.flatMap((entry) => {
+  const button = OAUTH_PROVIDER_BUTTONS[entry.provider]
+  if (!button)
+    return []
+  return [{
+    ...button,
+    onClick: () => {
+      navigateTo(oauthAuthorizeUrl(entry.provider, route.query.redirect as string | undefined), { external: true })
+    },
+  }]
+}))
+
+const isInviteOnly = computed(() => registrationMode.value === 'invite_only')
 
 const schema = computed(() => z.object({
   name: z.string().min(1, t('auth.validation.nameRequired')),
@@ -95,7 +98,28 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
 </script>
 
 <template>
+  <div v-if="isInviteOnly" class="space-y-6">
+    <UAlert
+      color="info"
+      :title="$t('auth.signUp.inviteOnly')"
+      icon="i-lucide-info"
+    />
+    <div class="text-center text-sm text-muted">
+      <i18n-t keypath="auth.haveAccount" scope="global">
+        <template #signIn>
+          <ULink
+            :to="ROUTES.auth.signIn"
+            class="text-primary font-medium"
+          >
+            {{ $t('common.actions.signIn') }}
+          </ULink>
+        </template>
+      </i18n-t>
+    </div>
+  </div>
+
   <UAuthForm
+    v-else
     :fields="fields"
     :schema="schema"
     :providers="providers"

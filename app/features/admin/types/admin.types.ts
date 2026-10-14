@@ -1,3 +1,5 @@
+import type { RegistrationMode } from '~~/shared/registration.constants'
+
 // Stats types
 export interface AdminStatsResponse {
   totalUsers: number
@@ -427,11 +429,19 @@ export interface ProcessQueueResponse {
 }
 
 // Auth Provider types
+export interface AdminAuthProviderConfig extends Record<string, unknown> {
+  sessionDurationDays?: number
+  clientId?: string
+  tenant?: string
+  /** Write-only secret: the server only reports whether one is stored. */
+  clientSecretSet?: boolean
+}
+
 export interface AdminAuthProvider {
   id: string
   provider: string
   enabled: boolean
-  config: Record<string, unknown>
+  config: AdminAuthProviderConfig
   displayOrder: number
   createdAt: string
   updatedAt: string
@@ -444,6 +454,11 @@ export interface AdminAuthProvidersResponse {
 export interface UpdateAuthProviderInput {
   enabled: boolean
   config: Record<string, unknown>
+}
+
+// Registration settings types
+export interface AdminRegistrationSettings {
+  mode: RegistrationMode
 }
 
 // Media Library types

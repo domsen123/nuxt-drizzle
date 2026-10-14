@@ -4,6 +4,7 @@ import type {
   ForgotPasswordResponse,
   LoginCredentials,
   LogoutOtherSessionsResponse,
+  PublicAuthProvidersResponse,
   RegisterCredentials,
   ResendVerificationResponse,
   ResetPasswordCredentials,
@@ -13,6 +14,15 @@ import type {
   SessionsResponse,
   ValidateResetTokenResponse,
 } from '../types/auth.types'
+
+/**
+ * Target for the full-page navigation that starts the OAuth flow. Only the
+ * server talks to the identity provider.
+ */
+export const oauthAuthorizeUrl = (provider: string, redirect?: string): string => {
+  const base = `/api/auth/oauth/${provider}/authorize`
+  return redirect ? `${base}?redirect=${encodeURIComponent(redirect)}` : base
+}
 
 export const useAuthApi = () => {
   const { $api } = useNuxtApp()
@@ -37,6 +47,9 @@ export const useAuthApi = () => {
 
     getSession: (): Promise<SessionResponse> =>
       $api('/api/auth/session'),
+
+    getPublicProviders: (): Promise<PublicAuthProvidersResponse> =>
+      $api('/api/auth/providers'),
 
     forgotPassword: (credentials: ForgotPasswordCredentials): Promise<ForgotPasswordResponse> =>
       $api('/api/auth/forgot-password', {

@@ -17,6 +17,7 @@ import { roles } from './roles'
 import { sessions } from './sessions'
 import { teamMembers } from './team-members'
 import { teams } from './teams'
+import { userIdentities } from './user-identities'
 import { userRoles } from './user-roles'
 import { users } from './users'
 
@@ -29,6 +30,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   userRoles: many(userRoles),
   files: many(files),
   blogPosts: many(blogPosts),
+  identities: many(userIdentities),
+}))
+
+export const userIdentitiesRelations = relations(userIdentities, ({ one }) => ({
+  user: one(users, {
+    fields: [userIdentities.userId],
+    references: [users.id],
+  }),
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({

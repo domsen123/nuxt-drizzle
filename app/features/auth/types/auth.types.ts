@@ -1,3 +1,4 @@
+import type { RegistrationMode } from '~~/shared/registration.constants'
 import type { UserPreferences } from '~~/shared/user-preferences.constants'
 
 export interface AuthUser {
@@ -9,6 +10,17 @@ export interface AuthUser {
   preferences: UserPreferences
   createdAt: string
   updatedAt: string
+}
+
+export type { RegistrationMode } from '~~/shared/registration.constants'
+
+export interface PublicAuthProvider {
+  provider: string
+}
+
+export interface PublicAuthProvidersResponse {
+  providers: PublicAuthProvider[]
+  registration: { mode: RegistrationMode }
 }
 
 export interface LoginCredentials {
