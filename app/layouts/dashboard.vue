@@ -109,10 +109,14 @@ const navItemsWithActive = computed(() =>
             class="w-full justify-start"
             :loading="isLoggingOut"
           >
-            <UAvatar
-              :alt="user?.name ?? user?.email ?? undefined"
+            <AppUserAvatar
+              v-if="user"
+              :user-id="user.id"
+              :name="user.name"
+              :email="user.email"
               size="2xs"
             />
+            <UAvatar v-else size="2xs" />
             <span class="truncate">{{ user?.name || user?.email || $t('common.guest') }}</span>
             <UIcon name="i-lucide-chevron-down" class="ml-auto" />
           </UButton>

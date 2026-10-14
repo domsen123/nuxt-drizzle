@@ -123,8 +123,10 @@ const userMenuItems = computed(() => {
             variant="ghost"
             :loading="isLoggingOut"
           >
-            <UAvatar
-              :alt="user.name ?? user.email ?? undefined"
+            <AppUserAvatar
+              :user-id="user.id"
+              :name="user.name"
+              :email="user.email"
               size="2xs"
             />
             <span class="hidden lg:inline truncate max-w-32">
