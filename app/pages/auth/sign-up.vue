@@ -6,14 +6,17 @@ definePageMeta({
   layout: 'auth',
 })
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Sign up',
-  description: 'Create an account to get started',
+  title: () => t('auth.signUp.seoTitle'),
+  description: () => t('auth.signUp.seoDescription'),
 })
 
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const apiErrorMessage = useApiErrorMessage()
 
 // Redirect if already logged in (but allow anonymous users to sign up for upgrade)
 const { isAuthenticated, isAnonymous } = useSession()
@@ -26,55 +29,50 @@ watch([isAuthenticated, isAnonymous], ([authenticated, anonymous]) => {
 
 const { mutateAsync: register, asyncStatus, error: registerError } = useRegister()
 
-const fields = [{
+const fields = computed(() => [{
   name: 'name',
   type: 'text' as const,
-  label: 'Name',
-  placeholder: 'Enter your name',
+  label: t('auth.fields.name'),
+  placeholder: t('auth.fields.namePlaceholder'),
 }, {
   name: 'email',
   type: 'text' as const,
-  label: 'Email',
-  placeholder: 'Enter your email',
+  label: t('auth.fields.email'),
+  placeholder: t('auth.fields.emailPlaceholder'),
 }, {
   name: 'password',
-  label: 'Password',
+  label: t('auth.fields.password'),
   type: 'password' as const,
-  placeholder: 'Enter your password',
-}]
+  placeholder: t('auth.fields.passwordPlaceholder'),
+}])
 
-const providers = [{
+const providers = computed(() => [{
   label: 'Google',
   icon: 'i-simple-icons-google',
   onClick: () => {
-    toast.add({ title: 'Google', description: 'Sign up with Google (coming soon)' })
+    toast.add({ title: 'Google', description: t('auth.signUp.providerSoon', { provider: 'Google' }) })
   },
 }, {
   label: 'GitHub',
   icon: 'i-simple-icons-github',
   onClick: () => {
-    toast.add({ title: 'GitHub', description: 'Sign up with GitHub (coming soon)' })
+    toast.add({ title: 'GitHub', description: t('auth.signUp.providerSoon', { provider: 'GitHub' }) })
   },
-}]
+}])
 
-const schema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.email('Invalid email'),
-  password: z.string().min(8, 'Must be at least 8 characters'),
-})
+const schema = computed(() => z.object({
+  name: z.string().min(1, t('auth.validation.nameRequired')),
+  email: z.email(t('auth.validation.invalidEmail')),
+  password: z.string().min(8, t('auth.validation.passwordMin', { min: 8 })),
+}))
 
-type Schema = z.output<typeof schema>
+type Schema = z.output<typeof schema.value>
 
 // Computed error message from API
 const apiError = computed(() => {
   if (!registerError.value)
     return null
-  const err = registerError.value as { statusCode?: number, data?: { statusMessage?: string }, message?: string }
-  // Handle 409 conflict (email exists)
-  if (err.statusCode === 409) {
-    return 'An account with this email already exists'
-  }
-  return err.data?.statusMessage || err.message || 'Registration failed'
+  return apiErrorMessage(registerError.value)
 })
 
 const onSubmit = (payload: FormSubmitEvent<Schema>) => {
@@ -84,7 +82,7 @@ const onSubmit = (payload: FormSubmitEvent<Schema>) => {
     name: payload.data.name,
   })
     .then(() => {
-      toast.add({ title: 'Account created!', description: 'Welcome aboard.', color: 'success' })
+      toast.add({ title: t('auth.signUp.successTitle'), description: t('auth.signUp.successDescription'), color: 'success' })
       const redirect = route.query.redirect as string | undefined
       router.push(redirect || ROUTES.start)
     })
@@ -101,17 +99,21 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
     :fields="fields"
     :schema="schema"
     :providers="providers"
-    title="Create an account"
-    :submit="{ label: 'Create account', loading: isLoading }"
+    :title="$t('auth.signUp.title')"
+    :submit="{ label: $t('auth.signUp.submit'), loading: isLoading }"
     @submit="onSubmit"
   >
     <template #description>
-      Already have an account? <ULink
-        :to="ROUTES.auth.signIn"
-        class="text-primary font-medium"
-      >
-        Login
-      </ULink>.
+      <i18n-t keypath="auth.haveAccount" scope="global">
+        <template #signIn>
+          <ULink
+            :to="ROUTES.auth.signIn"
+            class="text-primary font-medium"
+          >
+            {{ $t('common.actions.signIn') }}
+          </ULink>
+        </template>
+      </i18n-t>
     </template>
 
     <template v-if="apiError" #validation>
@@ -123,12 +125,16 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
     </template>
 
     <template #footer>
-      By signing up, you agree to our <ULink
-        :to="ROUTES.legal.termsOfService"
-        class="text-primary font-medium"
-      >
-        Terms of Service
-      </ULink>.
+      <i18n-t keypath="auth.signUp.agree" scope="global">
+        <template #terms>
+          <ULink
+            :to="ROUTES.legal.termsOfService"
+            class="text-primary font-medium"
+          >
+            {{ $t('legal.terms.title') }}
+          </ULink>
+        </template>
+      </i18n-t>
     </template>
   </UAuthForm>
 </template>

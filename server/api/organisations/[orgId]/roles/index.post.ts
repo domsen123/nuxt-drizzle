@@ -14,7 +14,7 @@ const createRoleSchema = z.object({
 export default defineEventHandler(async (event) => {
   const orgId = getOrgIdFromParams(event)
   if (!orgId) {
-    throw createError({ status: 400, statusText: 'Organisation ID required' })
+    throw createError({ status: 400, statusText: 'Organisation ID required', data: { code: 'validation.missing_param' } })
   }
 
   await requirePermission(event, {

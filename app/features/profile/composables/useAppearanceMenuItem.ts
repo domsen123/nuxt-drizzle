@@ -3,12 +3,6 @@ import type { ColorMode, NeutralColor } from '~~/shared/user-preferences.constan
 import { COLOR_MODES, NEUTRAL_COLORS, PRIMARY_COLORS } from '~~/shared/user-preferences.constants'
 import { useAppearance } from './useAppearance'
 
-const MODE_LABELS: Record<ColorMode, string> = {
-  light: 'Light',
-  dark: 'Dark',
-  system: 'System',
-}
-
 const MODE_ICONS: Record<ColorMode, string> = {
   light: 'i-lucide-sun',
   dark: 'i-lucide-moon',
@@ -25,11 +19,12 @@ const neutralChip = (color: NeutralColor) => color === 'neutral' ? 'old-neutral'
  * render `AppearanceColorChip` in their `#chip-leading` slot.
  */
 export const useAppearanceMenuItem = () => {
+  const { t } = useI18n()
   const { setAppearance, currentColorMode, currentPrimaryColor, currentNeutralColor } = useAppearance()
 
   const colorModeMenuItems = computed<DropdownMenuItem[]>(() =>
     COLOR_MODES.map(mode => ({
-      label: MODE_LABELS[mode],
+      label: t(`profile.appearance.${mode}`),
       icon: MODE_ICONS[mode],
       type: 'checkbox' as const,
       checked: currentColorMode.value === mode,
@@ -41,11 +36,11 @@ export const useAppearanceMenuItem = () => {
   )
 
   const themeMenuItem = computed<DropdownMenuItem>(() => ({
-    label: 'Theme',
+    label: t('profile.appearance.theme'),
     icon: 'i-lucide-palette',
     children: [
       {
-        label: 'Primary',
+        label: t('profile.appearance.primary'),
         slot: 'chip' as const,
         chip: currentPrimaryColor.value,
         content: {
@@ -65,7 +60,7 @@ export const useAppearanceMenuItem = () => {
         })),
       },
       {
-        label: 'Neutral',
+        label: t('profile.appearance.neutral'),
         slot: 'chip' as const,
         chip: neutralChip(currentNeutralColor.value),
         content: {
@@ -88,7 +83,7 @@ export const useAppearanceMenuItem = () => {
   }))
 
   const appearanceMenuItem = computed<DropdownMenuItem>(() => ({
-    label: 'Appearance',
+    label: t('profile.appearance.appearance'),
     icon: 'i-lucide-sun-moon',
     children: colorModeMenuItems.value,
   }))

@@ -6,13 +6,16 @@ definePageMeta({
   layout: 'auth',
 })
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Forgot Password',
-  description: 'Reset your password',
+  title: () => t('auth.forgotPassword.seoTitle'),
+  description: () => t('auth.forgotPassword.seoDescription'),
 })
 
 const router = useRouter()
 const toast = useToast()
+const apiErrorMessage = useApiErrorMessage()
 
 // Redirect if already logged in
 const { isAuthenticated } = useSession()
@@ -24,19 +27,19 @@ watch(isAuthenticated, (authenticated) => {
 
 const { mutateAsync: forgotPassword, asyncStatus, error: forgotPasswordError } = useForgotPassword()
 
-const fields = [{
+const fields = computed(() => [{
   name: 'email',
   type: 'text' as const,
-  label: 'Email',
-  placeholder: 'Enter your email address',
+  label: t('auth.fields.email'),
+  placeholder: t('auth.forgotPassword.emailPlaceholder'),
   required: true,
-}]
+}])
 
-const schema = z.object({
-  email: z.email('Invalid email'),
-})
+const schema = computed(() => z.object({
+  email: z.email(t('auth.validation.invalidEmail')),
+}))
 
-type Schema = z.output<typeof schema>
+type Schema = z.output<typeof schema.value>
 
 const submitted = ref(false)
 
@@ -44,17 +47,16 @@ const submitted = ref(false)
 const apiError = computed(() => {
   if (!forgotPasswordError.value)
     return null
-  const err = forgotPasswordError.value as { data?: { statusMessage?: string }, message?: string }
-  return err.data?.statusMessage || err.message || 'Request failed'
+  return apiErrorMessage(forgotPasswordError.value)
 })
 
 const onSubmit = (payload: FormSubmitEvent<Schema>) => {
   forgotPassword({ email: payload.data.email })
-    .then((response) => {
+    .then(() => {
       submitted.value = true
       toast.add({
-        title: 'Check your email',
-        description: response.message,
+        title: t('auth.forgotPassword.checkEmailTitle'),
+        description: t('auth.forgotPassword.checkEmailDescription'),
         color: 'success',
       })
     })
@@ -71,13 +73,13 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
     <UAuthForm
       :fields="fields"
       :schema="schema"
-      title="Forgot password?"
+      :title="$t('auth.forgotPassword.title')"
       icon="i-lucide-key-round"
-      :submit="{ label: 'Send reset link', loading: isLoading }"
+      :submit="{ label: $t('auth.forgotPassword.submit'), loading: isLoading }"
       @submit="onSubmit"
     >
       <template #description>
-        Enter your email address and we'll send you a link to reset your password.
+        {{ $t('auth.forgotPassword.description') }}
       </template>
 
       <template v-if="apiError" #validation>
@@ -89,12 +91,16 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
       </template>
 
       <template #footer>
-        Remember your password? <ULink
-          :to="ROUTES.auth.signIn"
-          class="text-primary font-medium"
-        >
-          Sign in
-        </ULink>.
+        <i18n-t keypath="auth.rememberPassword" scope="global">
+          <template #signIn>
+            <ULink
+              :to="ROUTES.auth.signIn"
+              class="text-primary font-medium"
+            >
+              {{ $t('common.actions.signIn') }}
+            </ULink>
+          </template>
+        </i18n-t>
       </template>
     </UAuthForm>
   </div>
@@ -106,19 +112,22 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
       </div>
       <div>
         <h2 class="text-2xl font-bold mb-2">
-          Check your email
+          {{ $t('auth.forgotPassword.checkEmailTitle') }}
         </h2>
         <p class="text-gray-600 dark:text-gray-400">
-          If an account exists with this email, you will receive password reset instructions.
+          {{ $t('auth.forgotPassword.checkEmailDescription') }}
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-500 mt-4">
-          Didn't receive an email? Check your spam folder or
-          <button
-            class="text-primary font-medium hover:underline"
-            @click="submitted = false"
-          >
-            try again
-          </button>.
+          <i18n-t keypath="auth.forgotPassword.noEmailHint" scope="global">
+            <template #tryAgain>
+              <button
+                class="text-primary font-medium hover:underline"
+                @click="submitted = false"
+              >
+                {{ $t('auth.forgotPassword.tryAgain') }}
+              </button>
+            </template>
+          </i18n-t>
         </p>
       </div>
       <UButton
@@ -126,7 +135,7 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
         variant="soft"
         block
       >
-        Back to sign in
+        {{ $t('auth.forgotPassword.backToSignIn') }}
       </UButton>
     </div>
   </UCard>

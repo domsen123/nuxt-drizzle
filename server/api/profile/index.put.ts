@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
+      data: { code: 'validation.invalid_input' },
     })
   }
 

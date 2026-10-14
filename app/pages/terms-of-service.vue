@@ -1,6 +1,14 @@
 <script setup lang="ts">
-const title = 'Terms of Service'
-const description = 'The terms and conditions for using our service.'
+const { t, locale } = useI18n()
+
+// Localized content with English fallback when the localized entry is missing.
+const { data: page } = await useAsyncData('legal-terms', async () => {
+  const localized = await queryCollection('legal').path(`/legal/${locale.value}/terms-of-service`).first()
+  return localized ?? await queryCollection('legal').path('/legal/en/terms-of-service').first()
+}, { watch: [locale] })
+
+const title = computed(() => page.value?.title ?? t('legal.terms.title'))
+const description = computed(() => page.value?.description ?? t('legal.terms.description'))
 
 useSeoMeta({
   title,
@@ -16,10 +24,7 @@ useSeoMeta({
     />
 
     <div class="prose dark:prose-invert mt-8 max-w-none">
-      <p>
-        This page is a placeholder for the Terms of Service. Replace this content
-        with your actual terms before going to production.
-      </p>
+      <ContentRenderer v-if="page" :value="page" />
     </div>
   </UContainer>
 </template>

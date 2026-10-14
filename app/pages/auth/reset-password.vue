@@ -6,14 +6,17 @@ definePageMeta({
   layout: 'auth',
 })
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Reset Password',
-  description: 'Create a new password for your account',
+  title: () => t('auth.resetPassword.seoTitle'),
+  description: () => t('auth.resetPassword.seoDescription'),
 })
 
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const apiErrorMessage = useApiErrorMessage()
 
 // Get token from URL
 const token = computed(() => route.query.token as string | null)
@@ -27,11 +30,11 @@ watch(isAuthenticated, (authenticated) => {
 }, { immediate: true })
 
 // Redirect if no token
-watch(token, (t) => {
-  if (!t) {
+watch(token, (tokenValue) => {
+  if (!tokenValue) {
     toast.add({
-      title: 'Invalid reset link',
-      description: 'Please request a new password reset link.',
+      title: t('auth.resetPassword.invalidLinkTitle'),
+      description: t('auth.resetPassword.invalidLinkDescription'),
       color: 'error',
     })
     router.push(ROUTES.auth.forgotPassword)
@@ -45,8 +48,8 @@ const { data: tokenValidation, status: validationStatus } = useValidateResetToke
 watch(tokenValidation, (validation) => {
   if (validation && !validation.valid) {
     toast.add({
-      title: 'Reset link expired',
-      description: 'This password reset link has expired or been used. Please request a new one.',
+      title: t('auth.resetPassword.expiredLinkTitle'),
+      description: t('auth.resetPassword.expiredLinkDescription'),
       color: 'error',
     })
     router.push(ROUTES.auth.forgotPassword)
@@ -55,36 +58,35 @@ watch(tokenValidation, (validation) => {
 
 const { mutateAsync: resetPassword, asyncStatus, error: resetPasswordError } = useResetPassword()
 
-const fields = [{
+const fields = computed(() => [{
   name: 'password',
   type: 'password' as const,
-  label: 'New Password',
-  placeholder: 'Enter your new password',
+  label: t('auth.resetPassword.newPassword'),
+  placeholder: t('auth.resetPassword.newPasswordPlaceholder'),
   required: true,
 }, {
   name: 'confirmPassword',
   type: 'password' as const,
-  label: 'Confirm Password',
-  placeholder: 'Confirm your new password',
+  label: t('auth.resetPassword.confirmPassword'),
+  placeholder: t('auth.resetPassword.confirmPasswordPlaceholder'),
   required: true,
-}]
+}])
 
-const schema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
+const schema = computed(() => z.object({
+  password: z.string().min(8, t('auth.validation.passwordMin', { min: 8 })),
+  confirmPassword: z.string().min(1, t('auth.validation.confirmPasswordRequired')),
 }).refine(data => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
+  message: t('auth.validation.passwordMismatch'),
   path: ['confirmPassword'],
-})
+}))
 
-type Schema = z.output<typeof schema>
+type Schema = z.output<typeof schema.value>
 
 // Computed error message from API
 const apiError = computed(() => {
   if (!resetPasswordError.value)
     return null
-  const err = resetPasswordError.value as { data?: { statusMessage?: string }, message?: string }
-  return err.data?.statusMessage || err.message || 'Password reset failed'
+  return apiErrorMessage(resetPasswordError.value)
 })
 
 const onSubmit = (payload: FormSubmitEvent<Schema>) => {
@@ -95,10 +97,10 @@ const onSubmit = (payload: FormSubmitEvent<Schema>) => {
     token: token.value,
     password: payload.data.password,
   })
-    .then((response) => {
+    .then(() => {
       toast.add({
-        title: 'Password reset successful',
-        description: response.message,
+        title: t('auth.resetPassword.successTitle'),
+        description: t('auth.resetPassword.successDescription'),
         color: 'success',
       })
       router.push(ROUTES.auth.signIn)
@@ -121,13 +123,13 @@ const isValidating = computed(() => validationStatus.value === 'pending')
     v-else-if="tokenValidation?.valid"
     :fields="fields"
     :schema="schema"
-    title="Reset your password"
+    :title="$t('auth.resetPassword.title')"
     icon="i-lucide-lock-keyhole"
-    :submit="{ label: 'Reset password', loading: isLoading }"
+    :submit="{ label: $t('auth.resetPassword.submit'), loading: isLoading }"
     @submit="onSubmit"
   >
     <template #description>
-      Enter your new password below.
+      {{ $t('auth.resetPassword.description') }}
     </template>
 
     <template v-if="apiError" #validation>
@@ -139,12 +141,16 @@ const isValidating = computed(() => validationStatus.value === 'pending')
     </template>
 
     <template #footer>
-      Remember your password? <ULink
-        :to="ROUTES.auth.signIn"
-        class="text-primary font-medium"
-      >
-        Sign in
-      </ULink>.
+      <i18n-t keypath="auth.rememberPassword" scope="global">
+        <template #signIn>
+          <ULink
+            :to="ROUTES.auth.signIn"
+            class="text-primary font-medium"
+          >
+            {{ $t('common.actions.signIn') }}
+          </ULink>
+        </template>
+      </i18n-t>
     </template>
   </UAuthForm>
 </template>

@@ -82,6 +82,7 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
       throw createError({
         status: 400,
         statusText: `File too large. Maximum size is ${Math.round(config.storage.maxFileSize / 1024 / 1024)}MB`,
+        data: { code: 'files.too_large' },
       })
     }
 
@@ -90,6 +91,7 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
       throw createError({
         status: 400,
         statusText: `File type not allowed. Allowed types: ${config.storage.allowedMimeTypes.join(', ')}`,
+        data: { code: 'files.type_not_allowed' },
       })
     }
 
@@ -141,7 +143,7 @@ export const createFileService = (deps: CreateFileServiceDeps) => {
   const deleteFile = async (id: string): Promise<void> => {
     const record = await filesItemService.readOne(id)
     if (!record) {
-      throw createError({ status: 404, statusText: 'File not found' })
+      throw createError({ status: 404, statusText: 'File not found', data: { code: 'files.not_found' } })
     }
 
     // If this is a parent file, delete variant storage files first (DB cascade handles records)

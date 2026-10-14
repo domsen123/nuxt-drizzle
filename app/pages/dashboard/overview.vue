@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <DashboardPage title="Dashboard"></DashboardPage>
+  <DashboardPage :title="$t('dashboard.title')"></DashboardPage>
 </template>
 
 <style></style>

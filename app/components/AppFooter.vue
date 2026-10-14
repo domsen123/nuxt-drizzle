@@ -22,7 +22,7 @@ const columns: FooterColumn[] = []
 
     <template #left>
       <p class="text-muted text-sm">
-        Built with Nuxt UI • © {{ new Date().getFullYear() }}
+        {{ $t('common.footer.builtWith', { year: new Date().getFullYear() }) }}
       </p>
     </template>
 

@@ -9,6 +9,7 @@ export const requireAuth = (event: RequestEvent): Omit<User, 'passwordHash'> => 
     throw createError({
       status: 401,
       statusText: 'Unauthorized',
+      data: { code: 'auth.unauthorized' },
     })
   }
 

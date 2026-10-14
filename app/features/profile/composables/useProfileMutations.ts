@@ -22,6 +22,7 @@ export const useUpdatePreferences = () => {
   const queryCache = useQueryCache()
   const profileApi = useProfileApi()
   const toast = useToast()
+  const { t } = useI18n()
   const { user } = useSession()
   const applyPreferences = useApplyPreferences()
 
@@ -35,8 +36,8 @@ export const useUpdatePreferences = () => {
       // Roll the optimistic selection back to the last server state
       applyPreferences(user.value?.preferences)
       toast.add({
-        title: 'Failed to save appearance',
-        description: 'Your selection was reverted to the last saved settings.',
+        title: t('profile.preferences.saveFailedTitle'),
+        description: t('profile.preferences.saveFailedDescription'),
         color: 'error',
       })
     },

@@ -1,31 +1,33 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import { useAppearanceMenuItem } from '~/features/profile'
+import { useAppearanceMenuItem, useLanguageMenuItem } from '~/features/profile'
 
 const router = useRouter()
 const toast = useToast()
 const route = useRoute()
 const open = ref(false)
 
+const { t } = useI18n()
 const { user, isImpersonating } = useSession()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 const { appearanceMenuItems } = useAppearanceMenuItem()
+const { languageMenuItem } = useLanguageMenuItem()
 
 // Sidebar navigation items
-const navItems: NavigationMenuItem[][] = [
+const navItems = computed<NavigationMenuItem[][]>(() => [
   [
     {
-      label: 'Dashboard',
+      label: t('nav.dashboard'),
       icon: 'i-lucide-layout-dashboard',
       to: ROUTES.dashboard.home,
     },
   ],
-]
+])
 
 const handleLogout = () => {
   logout()
     .then(() => {
-      toast.add({ title: 'Signed out', description: 'See you soon!' })
+      toast.add({ title: t('nav.signedOutTitle'), description: t('nav.signedOutDescription') })
       router.push(ROUTES.start)
     })
     .catch(() => {
@@ -44,15 +46,15 @@ const userMenuItems = computed(() => {
   }]
 
   const backToAppItem = [{
-    label: 'Back to App',
+    label: t('nav.backToApp'),
     icon: 'i-lucide-arrow-left',
     to: ROUTES.start,
   }]
 
-  const appearanceItem = appearanceMenuItems.value
+  const appearanceItem = [...appearanceMenuItems.value, languageMenuItem.value]
 
   const signOutItem = [{
-    label: 'Sign out',
+    label: t('common.actions.signOut'),
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
   }]
@@ -66,7 +68,7 @@ const userMenuItems = computed(() => {
 
 // Compute active state for nav items
 const navItemsWithActive = computed(() =>
-  navItems.map(group =>
+  navItems.value.map(group =>
     group.map(item => ({
       ...item,
       active: item.to === route.path || (item.to !== ROUTES.admin.home && route.path.startsWith(item.to as string)),
@@ -111,7 +113,7 @@ const navItemsWithActive = computed(() =>
               :alt="user?.name ?? user?.email ?? undefined"
               size="2xs"
             />
-            <span class="truncate">{{ user?.name || user?.email || 'Guest' }}</span>
+            <span class="truncate">{{ user?.name || user?.email || $t('common.guest') }}</span>
             <UIcon name="i-lucide-chevron-down" class="ml-auto" />
           </UButton>
 

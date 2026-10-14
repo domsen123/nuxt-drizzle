@@ -1,0 +1,12 @@
+{% if userName %}Willkommen {{ userName }}{% else %}Willkommen{% endif %}!
+
+Danke für deine Registrierung bei {{ siteName }}. Bestätige deine E-Mail-Adresse, um die Registrierung abzuschließen.
+
+Klicke auf den folgenden Link, um deine E-Mail-Adresse zu bestätigen:
+{{ verificationLink }}
+
+Dieser Link läuft in {{ expiresInHours }} Stunde{% if expiresInHours != 1 %}n{% endif %} ab.
+
+Wenn du kein Konto bei {{ siteName }} erstellt hast, kannst du diese E-Mail ignorieren.
+
+© {{ year }} {{ siteName }}. Alle Rechte vorbehalten.

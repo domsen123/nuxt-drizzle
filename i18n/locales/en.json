@@ -1,0 +1,343 @@
+{
+  "common": {
+    "language": "Language",
+    "loading": "Loading...",
+    "guest": "Guest",
+    "colorMode": "Color mode",
+    "landing": {
+      "title": "Welcome to our application",
+      "description": "Discover the features and benefits of using our app."
+    },
+    "actions": {
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "done": "Done",
+      "change": "Change",
+      "dismiss": "Dismiss",
+      "signIn": "Sign in",
+      "signUp": "Sign up",
+      "signOut": "Sign out",
+      "goToSettings": "Go to Settings",
+      "goToHome": "Go to Home",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "table": {
+      "searchPlaceholder": "Search...",
+      "filter": "Filter",
+      "empty": "No items found",
+      "noResults": "No results for \"{query}\"",
+      "loading": "Loading...",
+      "rangeOf": "{start}-{end} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "footer": {
+      "builtWith": "Built with Nuxt UI • © {year}"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "adminDashboard": "Admin Dashboard",
+    "backToApp": "Back to App",
+    "stopImpersonating": "Stop Impersonating",
+    "stoppingImpersonation": "Stopping...",
+    "signedInAs": "Signed in as {email}",
+    "profile": "Profile",
+    "security": "Security",
+    "signedOutTitle": "Signed out",
+    "signedOutDescription": "See you soon!",
+    "impersonationEndedTitle": "Impersonation ended",
+    "impersonationEndedDescription": "You are now back to your admin account.",
+    "impersonationStopFailedTitle": "Failed to stop impersonation",
+    "impersonationStopFailedDescription": "Please try again."
+  },
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "rememberMe": "Remember me"
+    },
+    "validation": {
+      "invalidEmail": "Invalid email",
+      "passwordMin": "Must be at least {min} characters",
+      "nameRequired": "Name is required",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "haveAccount": "Already have an account? {signIn}.",
+    "rememberPassword": "Remember your password? {signIn}.",
+    "signIn": {
+      "seoTitle": "Login",
+      "seoDescription": "Login to your account to continue",
+      "title": "Welcome back",
+      "noAccount": "Don't have an account? {signUp}.",
+      "forgotPassword": "Forgot password?",
+      "agree": "By signing in, you agree to our {terms}.",
+      "successTitle": "Welcome back!",
+      "providerSoon": "Login with {provider} (coming soon)"
+    },
+    "signUp": {
+      "seoTitle": "Sign up",
+      "seoDescription": "Create an account to get started",
+      "title": "Create an account",
+      "submit": "Create account",
+      "agree": "By signing up, you agree to our {terms}.",
+      "successTitle": "Account created!",
+      "successDescription": "Welcome aboard.",
+      "providerSoon": "Sign up with {provider} (coming soon)"
+    },
+    "forgotPassword": {
+      "seoTitle": "Forgot Password",
+      "seoDescription": "Reset your password",
+      "title": "Forgot password?",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "emailPlaceholder": "Enter your email address",
+      "submit": "Send reset link",
+      "checkEmailTitle": "Check your email",
+      "checkEmailDescription": "If an account exists with this email, you will receive password reset instructions.",
+      "noEmailHint": "Didn't receive an email? Check your spam folder or {tryAgain}.",
+      "tryAgain": "try again",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetPassword": {
+      "seoTitle": "Reset Password",
+      "seoDescription": "Create a new password for your account",
+      "title": "Reset your password",
+      "description": "Enter your new password below.",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter your new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your new password",
+      "submit": "Reset password",
+      "invalidLinkTitle": "Invalid reset link",
+      "invalidLinkDescription": "Please request a new password reset link.",
+      "expiredLinkTitle": "Reset link expired",
+      "expiredLinkDescription": "This password reset link has expired or been used. Please request a new one.",
+      "successTitle": "Password reset successful",
+      "successDescription": "Your password has been reset. You can now log in with your new password."
+    },
+    "verifyEmail": {
+      "seoTitle": "Verify Email",
+      "seoDescription": "Verify your email address",
+      "verifyingTitle": "Verifying your email...",
+      "verifyingDescription": "Please wait while we verify your email address.",
+      "verifiedTitle": "Email Verified!",
+      "verifiedDescription": "Your email address has been successfully verified. You can now enjoy all features of your account.",
+      "verifiedToastTitle": "Email verified!",
+      "verifiedToastDescription": "Your email has been successfully verified.",
+      "alreadyVerifiedTitle": "Already Verified",
+      "alreadyVerifiedDescription": "Your email address was already verified. You can continue using your account.",
+      "alreadyVerifiedToastTitle": "Already verified",
+      "alreadyVerifiedToastDescription": "Your email was already verified.",
+      "failedTitle": "Verification Failed",
+      "failedFallback": "The verification link is invalid or has expired.",
+      "missingToken": "Invalid verification link. Please check your email for the correct link.",
+      "newLinkHint": "If you need a new verification link, sign in and request one from your account settings."
+    },
+    "confirmEmail": {
+      "invalidLinkTitle": "Invalid Link",
+      "invalidLinkDescription": "This email confirmation link is missing a token. Please use the link from your email.",
+      "confirming": "Confirming your email change...",
+      "changedTitle": "Email Changed",
+      "changedDescription": "Your email has been successfully changed to {email}.",
+      "failedTitle": "Unable to Change Email"
+    },
+    "acceptInvitation": {
+      "seoTitle": "Accept Invitation",
+      "seoDescription": "Accept your organisation invitation and create your account",
+      "title": "Accept Invitation",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your name (optional)",
+      "createPasswordPlaceholder": "Create a password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "submit": "Create Account & Join",
+      "invitedTo": "You've been invited to join {organisation}.",
+      "createUsing": "Create your account using {email}",
+      "invalidLinkTitle": "Invalid invitation link",
+      "invalidLinkDescription": "Please check your email for the correct invitation link.",
+      "invalidTitle": "Invalid invitation",
+      "invalidDescription": "This invitation link has expired or is invalid.",
+      "welcomeTitle": "Welcome!",
+      "welcomeDescription": "You've joined {organisation}. Redirecting..."
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "description": "Manage your active sessions across devices. You can log out of other sessions if you notice any suspicious activity.",
+      "logoutOthers": "Log out other devices",
+      "current": "Current",
+      "ip": "IP: {ip}",
+      "created": "Created: {date}",
+      "revoke": "Revoke",
+      "empty": "No active sessions found",
+      "loadFailedTitle": "Failed to load sessions",
+      "browserOnOs": "{browser} on {os}"
+    },
+    "verificationBanner": {
+      "message": "Please verify your email address.",
+      "hint": "Check your inbox for a verification link.",
+      "resend": "Resend email",
+      "sentTitle": "Verification email sent",
+      "sentDescription": "Please check your inbox.",
+      "failedTitle": "Failed to send email"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "settings": {
+    "title": "Settings",
+    "profileSeoTitle": "Profile - Settings",
+    "securitySeoTitle": "Security - Settings",
+    "profileUpdatedTitle": "Profile updated",
+    "profileUpdatedDescription": "Your profile has been updated successfully.",
+    "passwordUpdatedTitle": "Password updated",
+    "passwordUpdatedDescription": "Your password has been changed successfully.",
+    "loadProfileFailed": "Failed to load profile"
+  },
+  "profile": {
+    "form": {
+      "title": "Profile",
+      "description": "Update your personal information.",
+      "nameLabel": "Name",
+      "nameDescription": "Your display name.",
+      "namePlaceholder": "John Doe",
+      "nameMax": "Name must be {max} characters or less",
+      "emailLabel": "Email",
+      "emailDescription": "Your email address for login and notifications.",
+      "pendingTitle": "Email change pending",
+      "pendingDescription": "We sent a verification email to {email}. Please check your inbox and click the link to confirm your new email address.",
+      "expires": "Expires: {date}",
+      "cancelEmailChange": "Cancel email change"
+    },
+    "password": {
+      "title": "Change Password",
+      "description": "Update your password to keep your account secure.",
+      "submit": "Update Password",
+      "currentLabel": "Current Password",
+      "currentDescription": "Enter your current password to verify your identity.",
+      "newLabel": "New Password",
+      "newDescription": "Must be at least {min} characters.",
+      "confirmLabel": "Confirm New Password",
+      "confirmDescription": "Re-enter your new password to confirm.",
+      "currentRequired": "Current password is required",
+      "newMin": "Password must be at least {min} characters",
+      "confirmRequired": "Please confirm your new password",
+      "mismatch": "Passwords do not match"
+    },
+    "emailChange": {
+      "title": "Change Email Address",
+      "checkEmailTitle": "Check your email",
+      "sentDescription": "We've sent a verification link to {email}. Click the link in your email to confirm the change.",
+      "intro": "Enter your new email address. We'll send a verification link to confirm the change.",
+      "newEmailLabel": "New Email Address",
+      "newEmailPlaceholder": "new-email{'@'}example.com",
+      "mustDiffer": "New email must be different from your current email.",
+      "submit": "Send Verification Email",
+      "validEmailRequired": "Valid email is required"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "appearance": "Appearance",
+      "primary": "Primary",
+      "neutral": "Neutral",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "preferences": {
+      "saveFailedTitle": "Failed to save preferences",
+      "saveFailedDescription": "Your selection was reverted to the last saved settings."
+    }
+  },
+  "legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "description": "The terms and conditions for using our service."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "How we collect, use, and protect your personal data."
+    }
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred. Please try again.",
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "We are sorry but this page could not be found."
+    },
+    "accessDenied": {
+      "title": "Access Denied",
+      "description": "You do not have permission to access the admin area."
+    },
+    "validation": {
+      "invalid_input": "Invalid input. Please check your entries.",
+      "missing_param": "A required parameter is missing."
+    },
+    "auth": {
+      "unauthorized": "You need to sign in to continue.",
+      "forbidden": "You do not have permission to perform this action.",
+      "invalid_credentials": "Invalid email or password.",
+      "email_exists": "An account with this email already exists.",
+      "invalid_user_for_upgrade": "This account cannot be upgraded.",
+      "reset_token_invalid": "This password reset link is invalid or has expired.",
+      "verification_token_invalid": "This verification link is invalid or has expired.",
+      "verification_send_failed": "Failed to send the verification email. Please try again later.",
+      "session_not_found": "Session not found.",
+      "session_id_required": "Session ID is required.",
+      "cannot_delete_current_session": "You cannot log out your current session here. Use sign out instead."
+    },
+    "profile": {
+      "not_found": "Profile not found.",
+      "email_same": "The new email must be different from your current email.",
+      "email_taken": "This email is already in use by another account.",
+      "email_change_token_invalid": "This link is invalid or has expired. Please request a new email change.",
+      "email_change_token_expired": "This link has expired. Please request a new email change.",
+      "email_unavailable": "This email is no longer available. Please try a different email address.",
+      "current_password_incorrect": "Current password is incorrect."
+    },
+    "invitations": {
+      "token_required": "The invitation token is missing.",
+      "invalid_token": "This invitation link is invalid.",
+      "expired": "This invitation has expired.",
+      "organisation_not_found": "Organisation not found.",
+      "invalid_role": "The selected role is invalid.",
+      "user_already_exists": "A user with this email already exists. Use the add member feature instead.",
+      "already_invited": "An invitation has already been sent to this email.",
+      "email_send_failed": "Failed to send the invitation email.",
+      "organisation_gone": "This organisation no longer exists.",
+      "account_exists": "An account with this email already exists. Please sign in.",
+      "not_found": "Invitation not found.",
+      "resend_expired": "Expired invitations cannot be resent."
+    },
+    "files": {
+      "missing_id": "The file ID is missing.",
+      "not_found": "File not found.",
+      "not_authorized": "You are not authorized to delete this file.",
+      "variant_delete": "Variants cannot be deleted directly. Delete the parent file instead.",
+      "no_file_uploaded": "No file was uploaded.",
+      "missing_file": "The upload is missing a file.",
+      "too_large": "The file is too large.",
+      "type_not_allowed": "This file type is not allowed."
+    },
+    "organisations": {
+      "creator_not_found": "Creator user not found.",
+      "slug_exists": "An organisation with this slug already exists."
+    },
+    "members": {
+      "organisation_not_found": "Organisation not found.",
+      "user_not_found": "User not found.",
+      "role_not_found": "Role not found.",
+      "role_scope_invalid": "The role must be organisation-scoped.",
+      "already_member": "This user is already a member of the organisation.",
+      "member_not_found": "Member not found.",
+      "last_owner_demote": "The last owner cannot be demoted. Assign another owner first.",
+      "last_owner_remove": "The last owner cannot be removed. Transfer ownership first."
+    }
+  }
+}

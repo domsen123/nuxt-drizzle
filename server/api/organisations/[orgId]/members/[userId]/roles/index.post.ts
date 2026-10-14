@@ -13,10 +13,10 @@ export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'userId', { decode: true })
 
   if (!orgId) {
-    throw createError({ status: 400, statusText: 'Organisation ID required' })
+    throw createError({ status: 400, statusText: 'Organisation ID required', data: { code: 'validation.missing_param' } })
   }
   if (!userId) {
-    throw createError({ status: 400, statusText: 'User ID required' })
+    throw createError({ status: 400, statusText: 'User ID required', data: { code: 'validation.missing_param' } })
   }
 
   await requirePermission(event, {

@@ -7,23 +7,15 @@ const { sessions, isLoading, error } = useSessions()
 const { mutateAsync: logoutOtherSessions, asyncStatus: logoutAllStatus } = useLogoutOtherSessions()
 const { mutateAsync: revokeSession, asyncStatus: revokeStatus, variables: revokingSessionId } = useRevokeSession()
 
+const apiErrorMessage = useApiErrorMessage()
+const { formatDate } = useLocaleFormat()
+
 const isLoggingOutAll = computed(() => logoutAllStatus.value === 'loading')
 const isRevoking = computed(() => revokeStatus.value === 'loading')
 
 const otherSessionsCount = computed(() =>
   sessions.value.filter(s => !s.isCurrent).length,
 )
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
 
 const onLogoutAll = async () => {
   try {
@@ -50,10 +42,10 @@ const onRevokeSession = async (sessionId: string) => {
       <div class="flex justify-between items-center">
         <div>
           <h3 class="text-lg font-medium text-(--ui-text-highlighted)">
-            Active Sessions
+            {{ $t('auth.sessions.title') }}
           </h3>
           <p class="text-sm text-(--ui-text-muted) mt-0.5">
-            Manage your active sessions across devices. You can log out of other sessions if you notice any suspicious activity.
+            {{ $t('auth.sessions.description') }}
           </p>
         </div>
         <UButton
@@ -63,7 +55,7 @@ const onRevokeSession = async (sessionId: string) => {
           :loading="isLoggingOutAll"
           @click="onLogoutAll"
         >
-          Log out other devices
+          {{ $t('auth.sessions.logoutOthers') }}
         </UButton>
       </div>
     </template>
@@ -79,8 +71,8 @@ const onRevokeSession = async (sessionId: string) => {
       color="error"
       variant="subtle"
       icon="i-lucide-alert-triangle"
-      title="Failed to load sessions"
-      :description="(error as any)?.message || 'An error occurred'"
+      :title="$t('auth.sessions.loadFailedTitle')"
+      :description="apiErrorMessage(error)"
     />
 
     <!-- Sessions List -->
@@ -102,7 +94,10 @@ const onRevokeSession = async (sessionId: string) => {
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <span class="font-medium text-(--ui-text-highlighted)">
-              {{ parseUserAgent(session.userAgent).browser }} on {{ parseUserAgent(session.userAgent).os }}
+              {{ $t('auth.sessions.browserOnOs', {
+                browser: parseUserAgent(session.userAgent).browser,
+                os: parseUserAgent(session.userAgent).os,
+              }) }}
             </span>
             <UBadge
               v-if="session.isCurrent"
@@ -110,16 +105,16 @@ const onRevokeSession = async (sessionId: string) => {
               variant="subtle"
               size="xs"
             >
-              Current
+              {{ $t('auth.sessions.current') }}
             </UBadge>
           </div>
 
           <div class="text-sm text-(--ui-text-muted) mt-1 space-y-0.5">
             <p v-if="session.ipAddress">
-              IP: {{ session.ipAddress }}
+              {{ $t('auth.sessions.ip', { ip: session.ipAddress }) }}
             </p>
             <p>
-              Created: {{ formatDate(session.createdAt) }}
+              {{ $t('auth.sessions.created', { date: formatDate(session.createdAt) }) }}
             </p>
           </div>
         </div>
@@ -133,7 +128,7 @@ const onRevokeSession = async (sessionId: string) => {
             :loading="isRevoking && revokingSessionId === session.id"
             @click="onRevokeSession(session.id)"
           >
-            Revoke
+            {{ $t('auth.sessions.revoke') }}
           </UButton>
         </div>
       </div>
@@ -142,7 +137,7 @@ const onRevokeSession = async (sessionId: string) => {
       <div v-if="sessions.length === 0" class="text-center py-8">
         <UIcon name="i-lucide-monitor-check" class="w-12 h-12 mx-auto text-(--ui-text-muted) mb-3" />
         <p class="text-(--ui-text-muted)">
-          No active sessions found
+          {{ $t('auth.sessions.empty') }}
         </p>
       </div>
     </div>

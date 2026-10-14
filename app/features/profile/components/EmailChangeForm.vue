@@ -9,11 +9,14 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const schema = z.object({
-  email: z.string().trim().email('Valid email is required'),
-})
+const { t } = useI18n()
+const apiErrorMessage = useApiErrorMessage()
 
-type Schema = z.output<typeof schema>
+const schema = computed(() => z.object({
+  email: z.string().trim().email(t('profile.emailChange.validEmailRequired')),
+}))
+
+type Schema = z.output<typeof schema.value>
 
 const state = reactive<Schema>({
   email: '',
@@ -25,18 +28,9 @@ const isLoading = computed(() => asyncStatus.value === 'loading')
 const isSuccess = ref(false)
 
 const apiError = computed(() => {
-  const err = error.value as {
-    statusCode?: number
-    data?: { statusMessage?: string }
-    message?: string
-  } | null
-  if (!err)
+  if (!error.value)
     return null
-  if (err.statusCode === 409)
-    return 'This email is already in use by another account.'
-  if (err.statusCode === 400)
-    return err.data?.statusMessage || 'Invalid email address.'
-  return err.data?.statusMessage || err.message || 'An unexpected error occurred. Please try again.'
+  return apiErrorMessage(error.value)
 })
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
@@ -68,7 +62,7 @@ const isDifferentEmail = computed(() => {
 <template>
   <UModal
     v-model:open="open"
-    title="Change Email Address"
+    :title="$t('profile.emailChange.title')"
     :close="{
       onClick: onClose,
     }"
@@ -80,17 +74,20 @@ const isDifferentEmail = computed(() => {
           <UIcon name="i-lucide-mail-check" class="w-6 h-6 text-(--ui-color-success-500)" />
         </div>
         <h3 class="text-lg font-medium text-(--ui-text-highlighted) mb-2">
-          Check your email
+          {{ $t('profile.emailChange.checkEmailTitle') }}
         </h3>
         <p class="text-sm text-(--ui-text-muted)">
-          We've sent a verification link to <strong>{{ state.email }}</strong>.
-          Click the link in your email to confirm the change.
+          <i18n-t keypath="profile.emailChange.sentDescription" scope="global">
+            <template #email>
+              <strong>{{ state.email }}</strong>
+            </template>
+          </i18n-t>
         </p>
         <UButton
           class="mt-6"
           @click="onClose"
         >
-          Done
+          {{ $t('common.actions.done') }}
         </UButton>
       </div>
 
@@ -103,7 +100,7 @@ const isDifferentEmail = computed(() => {
         @submit="onSubmit"
       >
         <p class="text-sm text-(--ui-text-muted)">
-          Enter your new email address. We'll send a verification link to confirm the change.
+          {{ $t('profile.emailChange.intro') }}
         </p>
 
         <!-- Error Alert -->
@@ -117,19 +114,19 @@ const isDifferentEmail = computed(() => {
 
         <UFormField
           name="email"
-          label="New Email Address"
+          :label="$t('profile.emailChange.newEmailLabel')"
           required
         >
           <UInput
             v-model="state.email"
             type="email"
-            placeholder="newemail@example.com"
+            :placeholder="$t('profile.emailChange.newEmailPlaceholder')"
             autocomplete="email"
           />
         </UFormField>
 
         <p v-if="state.email && !isDifferentEmail" class="text-sm text-(--ui-color-warning-500)">
-          New email must be different from your current email.
+          {{ $t('profile.emailChange.mustDiffer') }}
         </p>
 
         <div class="flex justify-end gap-2 pt-2">
@@ -137,14 +134,14 @@ const isDifferentEmail = computed(() => {
             variant="ghost"
             @click="onClose"
           >
-            Cancel
+            {{ $t('common.actions.cancel') }}
           </UButton>
           <UButton
             type="submit"
             :loading="isLoading"
             :disabled="!isDifferentEmail"
           >
-            Send Verification Email
+            {{ $t('profile.emailChange.submit') }}
           </UButton>
         </div>
       </UForm>

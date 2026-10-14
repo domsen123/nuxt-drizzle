@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const token = getRouterParam(event, 'token', { decode: true })
 
   if (!token) {
-    throw createError({ status: 400, statusText: 'Token is required' })
+    throw createError({ status: 400, statusText: 'Token is required', data: { code: 'invitations.token_required' } })
   }
 
   const validation = await container.organisationInvitationsService.validateInvitation(token)

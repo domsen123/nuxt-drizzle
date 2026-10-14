@@ -42,6 +42,7 @@ export const requireAuth = (event: RequestEvent) => {
     throw createError({
       status: 401,
       statusText: 'Unauthorized',
+      data: { code: 'auth.unauthorized' },
     })
   }
   return user
@@ -62,6 +63,7 @@ export const requirePermission = async (
     throw createError({
       status: 403,
       statusText: 'Forbidden - no permissions loaded',
+      data: { code: 'auth.forbidden' },
     })
   }
 
@@ -82,6 +84,7 @@ export const requirePermission = async (
         throw createError({
           status: 400,
           statusText: 'Organisation ID required for this operation',
+          data: { code: 'validation.missing_param' },
         })
       }
       hasPermission = context.organisationPermissions.get(scopeId)?.has(options.permission) ?? false
@@ -91,6 +94,7 @@ export const requirePermission = async (
         throw createError({
           status: 400,
           statusText: 'Team ID required for this operation',
+          data: { code: 'validation.missing_param' },
         })
       }
       hasPermission = context.teamPermissions.get(scopeId)?.has(options.permission) ?? false
@@ -101,6 +105,7 @@ export const requirePermission = async (
     throw createError({
       status: 403,
       statusText: `Forbidden - missing permission: ${options.permission}`,
+      data: { code: 'auth.forbidden' },
     })
   }
 }
@@ -120,6 +125,7 @@ export const requireAnyPermission = async (
     throw createError({
       status: 403,
       statusText: 'Forbidden - no permissions loaded',
+      data: { code: 'auth.forbidden' },
     })
   }
 
@@ -155,6 +161,7 @@ export const requireAnyPermission = async (
   throw createError({
     status: 403,
     statusText: 'Forbidden - missing required permissions',
+    data: { code: 'auth.forbidden' },
   })
 }
 
@@ -183,6 +190,7 @@ export const requireSuperAdmin = async (event: RequestEvent): Promise<void> => {
     throw createError({
       status: 403,
       statusText: 'Forbidden - super admin access required',
+      data: { code: 'auth.forbidden' },
     })
   }
 }

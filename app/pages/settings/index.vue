@@ -3,19 +3,21 @@ import { useProfile } from '~/features/profile'
 import ProfileForm from '~/features/profile/components/ProfileForm.vue'
 
 const toast = useToast()
+const { t } = useI18n()
+const apiErrorMessage = useApiErrorMessage()
 
 const { profile, status, error } = useProfile()
 
 const isLoading = computed(() => status.value === 'pending')
 
 useSeoMeta({
-  title: 'Profile - Settings',
+  title: () => t('settings.profileSeoTitle'),
 })
 
 const onSuccess = () => {
   toast.add({
-    title: 'Profile updated',
-    description: 'Your profile has been updated successfully.',
+    title: t('settings.profileUpdatedTitle'),
+    description: t('settings.profileUpdatedDescription'),
     icon: 'i-lucide-check',
     color: 'success',
   })
@@ -31,8 +33,8 @@ const onSuccess = () => {
     <UAlert
       v-else-if="error"
       color="error"
-      title="Failed to load profile"
-      :description="error.message"
+      :title="$t('settings.loadProfileFailed')"
+      :description="apiErrorMessage(error)"
       icon="i-lucide-alert-circle"
     />
 

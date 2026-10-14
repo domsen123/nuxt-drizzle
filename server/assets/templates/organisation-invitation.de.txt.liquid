@@ -1,0 +1,13 @@
+Du wurdest eingeladen!
+
+Du wurdest eingeladen, {{ organisationName }} auf {{ siteName }} beizutreten.
+{% if inviterName %}{{ inviterName }} hat dich zur Zusammenarbeit eingeladen.{% endif %}
+
+Klicke auf den folgenden Link, um die Einladung anzunehmen und dein Konto zu erstellen:
+{{ acceptLink }}
+
+Diese Einladung läuft in {{ expiresInDays }} Tag{% if expiresInDays != 1 %}en{% endif %} ab.
+
+Wenn du diese Einladung nicht erwartet hast, kannst du diese E-Mail ignorieren.
+
+© {{ year }} {{ siteName }}. Alle Rechte vorbehalten.

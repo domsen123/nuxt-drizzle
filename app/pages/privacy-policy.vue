@@ -1,6 +1,14 @@
 <script setup lang="ts">
-const title = 'Privacy Policy'
-const description = 'How we collect, use, and protect your personal data.'
+const { t, locale } = useI18n()
+
+// Localized content with English fallback when the localized entry is missing.
+const { data: page } = await useAsyncData('legal-privacy', async () => {
+  const localized = await queryCollection('legal').path(`/legal/${locale.value}/privacy-policy`).first()
+  return localized ?? await queryCollection('legal').path('/legal/en/privacy-policy').first()
+}, { watch: [locale] })
+
+const title = computed(() => page.value?.title ?? t('legal.privacy.title'))
+const description = computed(() => page.value?.description ?? t('legal.privacy.description'))
 
 useSeoMeta({
   title,
@@ -16,10 +24,7 @@ useSeoMeta({
     />
 
     <div class="prose dark:prose-invert mt-8 max-w-none">
-      <p>
-        This page is a placeholder for the Privacy Policy. Replace this content
-        with your actual privacy policy before going to production.
-      </p>
+      <ContentRenderer v-if="page" :value="page" />
     </div>
   </UContainer>
 </template>

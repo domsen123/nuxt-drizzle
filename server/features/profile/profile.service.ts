@@ -9,6 +9,7 @@ import { eq, lt } from 'drizzle-orm'
 import { createError } from 'nuxt/server'
 import { pendingEmailChanges as pendingEmailChangesTable } from '~~/server/database/schema'
 import { config } from '~~/server/utils/config'
+import { DEFAULT_LOCALE } from '~~/shared/user-preferences.constants'
 
 const BCRYPT_COST = 12
 const EMAIL_CHANGE_TOKEN_EXPIRY_HOURS = 24
@@ -80,7 +81,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user) {
-      throw createError({ status: 404, statusText: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found', data: { code: 'profile.not_found' } })
     }
 
     const updateData: Partial<{ name: string | null }> = {}
@@ -111,7 +112,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user) {
-      throw createError({ status: 404, statusText: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found', data: { code: 'profile.not_found' } })
     }
 
     const preferences = { ...user.preferences, ...input }
@@ -131,20 +132,20 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user) {
-      throw createError({ status: 404, statusText: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found', data: { code: 'profile.not_found' } })
     }
 
     const newEmail = input.newEmail.toLowerCase().trim()
 
     // Check if new email is same as current
     if (newEmail === user.email) {
-      throw createError({ status: 400, statusText: 'New email must be different from current email' })
+      throw createError({ status: 400, statusText: 'New email must be different from current email', data: { code: 'profile.email_same' } })
     }
 
     // Check if new email is already in use
     const existingUser = await usersItemService.findOne({ email: newEmail })
     if (existingUser) {
-      throw createError({ status: 409, statusText: 'Email already in use' })
+      throw createError({ status: 409, statusText: 'Email already in use', data: { code: 'profile.email_taken' } })
     }
 
     // Delete any existing pending email changes for this user
@@ -169,7 +170,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
       userName: user.name || undefined,
       confirmationLink,
       expiresInHours: EMAIL_CHANGE_TOKEN_EXPIRY_HOURS,
-    })
+    }, user.preferences.locale ?? DEFAULT_LOCALE)
 
     return {
       success: true,
@@ -187,21 +188,21 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const pendingChange = await pendingEmailChangesItemService.findOne({ token })
 
     if (!pendingChange) {
-      throw createError({ status: 400, statusText: 'Invalid or expired token' })
+      throw createError({ status: 400, statusText: 'Invalid or expired token', data: { code: 'profile.email_change_token_invalid' } })
     }
 
     // Check if token has expired
     if (new Date() > pendingChange.expiresAt) {
       // Clean up expired token
       await pendingEmailChangesItemService.delete(pendingChange.id)
-      throw createError({ status: 400, statusText: 'Token has expired' })
+      throw createError({ status: 400, statusText: 'Token has expired', data: { code: 'profile.email_change_token_expired' } })
     }
 
     // Check if new email is still available (could have been taken since request)
     const existingUser = await usersItemService.findOne({ email: pendingChange.newEmail })
     if (existingUser && existingUser.id !== pendingChange.userId) {
       await pendingEmailChangesItemService.delete(pendingChange.id)
-      throw createError({ status: 409, statusText: 'Email is no longer available' })
+      throw createError({ status: 409, statusText: 'Email is no longer available', data: { code: 'profile.email_unavailable' } })
     }
 
     // Update user email and mark as verified
@@ -272,14 +273,14 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
     const user = await usersItemService.readOne(userId)
 
     if (!user || !user.passwordHash) {
-      throw createError({ status: 404, statusText: 'User not found' })
+      throw createError({ status: 404, statusText: 'User not found', data: { code: 'profile.not_found' } })
     }
 
     // Verify current password
     const isValid = await bcrypt.compare(input.currentPassword, user.passwordHash)
 
     if (!isValid) {
-      throw createError({ status: 401, statusText: 'Current password is incorrect' })
+      throw createError({ status: 401, statusText: 'Current password is incorrect', data: { code: 'profile.current_password_incorrect' } })
     }
 
     // Hash new password

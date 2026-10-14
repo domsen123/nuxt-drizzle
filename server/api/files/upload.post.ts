@@ -16,12 +16,12 @@ export default defineEventHandler(async (event) => {
   // `nuxt/server` carries no `readMultipartFormData`; the request parses itself.
   const formData = await event.req.formData().catch(() => null)
   if (!formData) {
-    throw createError({ status: 400, statusText: 'No file uploaded' })
+    throw createError({ status: 400, statusText: 'No file uploaded', data: { code: 'files.no_file_uploaded' } })
   }
 
   const file = formData.get('file')
   if (!(file instanceof File) || !file.name) {
-    throw createError({ status: 400, statusText: 'Missing file in upload' })
+    throw createError({ status: 400, statusText: 'Missing file in upload', data: { code: 'files.missing_file' } })
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())

@@ -4,12 +4,14 @@ catalog:
   '@ai-sdk/vue': ^4.0.140
   '@antfu/eslint-config': ^9.5.1
   '@faker-js/faker': ^10.6.0
+  '@iconify-json/flag': ^1.2.12
   '@iconify-json/lucide': ^1.2.144
   '@iconify-json/simple-icons': ^1.2.100
   '@nuxt/content': ^3.16.2
   '@nuxt/image': ^2.1.0
   '@nuxt/test-utils': ^4.3.3
   '@nuxt/ui': ^4.11.3
+  '@nuxtjs/i18n': ^10.6.0
   '@nuxtjs/seo': ^6.0.1
   '@pinia/colada': ^1.4.8
   '@pinia/colada-nuxt': ^1.2.0
@@ -41,9 +43,6 @@ catalog:
   postgres: ^3.4.9
   sharp: ^0.35.5
   tsx: ^4.23.15
-  # TypeScript 7 is out, but vue-tsc 3.3.13 still requires typescript/lib/tsc,
-  # which 7.0 no longer exports, and typescript-eslint 8.68 caps at <6.1.0.
-  # Move to 7 once both support it.
   typescript: ~6.0.3
   ulid: ^3.0.2
   undici: ^8.12.1
@@ -57,20 +56,13 @@ catalogMode: prefer
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - bcrypt
-  # Not a direct dependency: @nuxt/content, db0 and unstorage pull it in as a
-  # peer, and it needs its build step wherever it lands.
   - better-sqlite3
   - esbuild
   - sharp
   - vue-demi
 
-shellEmulator: true
-
-# nuxt-ai-ready 3.4.0 ships with @nuxtjs/seo 6 and declares drizzle-orm
-# ^1.0.0-rc.4 as an optional peer, for reading its catalog from a database.
-# `aiReady: false` keeps the module off, and drizzle-orm 1.0 is still a release
-# candidate, so the app stays on 0.45. Drop the rule once drizzle-orm 1.0 is
-# stable and the app moves to it.
 peerDependencyRules:
   allowedVersions:
     nuxt-ai-ready>drizzle-orm: '0.45'
+
+shellEmulator: true

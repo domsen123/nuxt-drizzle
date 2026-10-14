@@ -1,13 +1,12 @@
 <script setup lang="ts">
-const title = 'Welcome to our application'
-const description = 'Discover the features and benefits of using our app.'
+const { t } = useI18n()
 
 useSeoMeta({
   titleTemplate: '',
-  title,
-  ogTitle: title,
-  description,
-  ogDescription: description,
+  title: () => t('common.landing.title'),
+  ogTitle: () => t('common.landing.title'),
+  description: () => t('common.landing.description'),
+  ogDescription: () => t('common.landing.description'),
 })
 </script>
 

@@ -8,15 +8,17 @@ defineProps({
   },
 })
 
+const { t, localeProperties } = useI18n()
+
 useHead({
   htmlAttrs: {
-    lang: 'en',
+    lang: computed(() => localeProperties.value.language ?? 'en-US'),
   },
 })
 
 useSeoMeta({
-  title: 'Page not found',
-  description: 'We are sorry but this page could not be found.',
+  title: () => t('errors.pageNotFound.title'),
+  description: () => t('errors.pageNotFound.description'),
 })
 </script>
 

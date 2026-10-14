@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import { useStopImpersonation } from '~/features/admin/composables/useImpersonation'
-import { useAppearanceMenuItem } from '~/features/profile'
+import { useAppearanceMenuItem, useLanguageMenuItem } from '~/features/profile'
 
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 const { user, isAuthenticated, isAnonymous, isLoading, isImpersonating } = useSession()
 const { isGlobalAdmin } = usePermissions()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
 const { appearanceMenuItems, colorModeMenuItems } = useAppearanceMenuItem()
+const { languageMenuItem, guestLanguageMenuItems, currentLocaleIcon } = useLanguageMenuItem()
 
 const items = computed(() => [])
 
 const handleLogout = () => {
   logout()
     .then(() => {
-      toast.add({ title: 'Signed out', description: 'See you soon!' })
+      toast.add({ title: t('nav.signedOutTitle'), description: t('nav.signedOutDescription') })
       router.push(ROUTES.start)
     })
     .catch(() => {
@@ -28,16 +30,16 @@ const handleStopImpersonation = () => {
   stopImpersonation()
     .then(() => {
       toast.add({
-        title: 'Impersonation ended',
-        description: 'You are now back to your admin account.',
+        title: t('nav.impersonationEndedTitle'),
+        description: t('nav.impersonationEndedDescription'),
         color: 'success',
       })
       router.push(ROUTES.admin.users)
     })
     .catch(() => {
       toast.add({
-        title: 'Failed to stop impersonation',
-        description: 'Please try again.',
+        title: t('nav.impersonationStopFailedTitle'),
+        description: t('nav.impersonationStopFailedDescription'),
         color: 'error',
       })
     })
@@ -55,28 +57,28 @@ const userMenuItems = computed(() => {
   }]
 
   const stopImpersonationItem = [{
-    label: isStoppingImpersonation.value ? 'Stopping...' : 'Stop Impersonating',
+    label: isStoppingImpersonation.value ? t('nav.stoppingImpersonation') : t('nav.stopImpersonating'),
     icon: 'i-lucide-user-x',
     onSelect: handleStopImpersonation,
     disabled: isStoppingImpersonation.value,
   }]
 
   const settingsItem = [{
-    label: 'Settings',
+    label: t('nav.settings'),
     icon: 'i-lucide-settings',
     to: ROUTES.settings.profile,
   }]
 
   const adminItem = [{
-    label: 'Admin Dashboard',
+    label: t('nav.adminDashboard'),
     icon: 'i-lucide-shield',
     to: ROUTES.admin.home,
   }]
 
-  const appearanceItem = appearanceMenuItems.value
+  const appearanceItem = [...appearanceMenuItems.value, languageMenuItem.value]
 
   const signOutItem = [{
-    label: 'Sign out',
+    label: t('common.actions.signOut'),
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
   }]
@@ -126,7 +128,7 @@ const userMenuItems = computed(() => {
               size="2xs"
             />
             <span class="hidden lg:inline truncate max-w-32">
-              {{ user.name || user.email || 'Guest' }}
+              {{ user.name || user.email || $t('common.guest') }}
             </span>
             <UIcon name="i-lucide-chevron-down" class="hidden lg:inline" />
           </UButton>
@@ -144,7 +146,16 @@ const userMenuItems = computed(() => {
             icon="i-lucide-sun-moon"
             color="neutral"
             variant="ghost"
-            aria-label="Color mode"
+            :aria-label="$t('common.colorMode')"
+          />
+        </UDropdownMenu>
+
+        <UDropdownMenu :items="guestLanguageMenuItems">
+          <UButton
+            :icon="currentLocaleIcon"
+            color="neutral"
+            variant="ghost"
+            :aria-label="$t('common.language')"
           />
         </UDropdownMenu>
 
@@ -153,12 +164,12 @@ const userMenuItems = computed(() => {
           color="neutral"
           variant="ghost"
           :to="ROUTES.auth.signIn"
-          aria-label="Sign in"
+          :aria-label="$t('common.actions.signIn')"
           class="lg:hidden"
         />
 
         <UButton
-          label="Sign in"
+          :label="$t('common.actions.signIn')"
           color="neutral"
           variant="outline"
           :to="ROUTES.auth.signIn"
@@ -166,7 +177,7 @@ const userMenuItems = computed(() => {
         />
 
         <UButton
-          label="Sign up"
+          :label="$t('common.actions.signUp')"
           color="neutral"
           trailing-icon="i-lucide-arrow-right"
           class="hidden lg:inline-flex"
@@ -187,11 +198,11 @@ const userMenuItems = computed(() => {
       <!-- Mobile menu auth section -->
       <template v-if="isAuthenticated && user && !isAnonymous">
         <div class="px-2.5 py-2 text-sm text-muted">
-          Signed in as {{ user.email ?? 'Guest' }}
+          {{ $t('nav.signedInAs', { email: user.email ?? $t('common.guest') }) }}
         </div>
         <UButton
           v-if="isImpersonating"
-          label="Stop Impersonating"
+          :label="$t('nav.stopImpersonating')"
           color="warning"
           variant="subtle"
           icon="i-lucide-user-x"
@@ -201,7 +212,7 @@ const userMenuItems = computed(() => {
           @click="handleStopImpersonation"
         />
         <UButton
-          label="Settings"
+          :label="$t('nav.settings')"
           color="neutral"
           variant="subtle"
           icon="i-lucide-settings"
@@ -211,7 +222,7 @@ const userMenuItems = computed(() => {
         />
         <UButton
           v-if="isGlobalAdmin && !isImpersonating"
-          label="Admin Dashboard"
+          :label="$t('nav.adminDashboard')"
           color="neutral"
           variant="subtle"
           icon="i-lucide-shield"
@@ -220,7 +231,7 @@ const userMenuItems = computed(() => {
           class="mb-3"
         />
         <UButton
-          label="Sign out"
+          :label="$t('common.actions.signOut')"
           color="neutral"
           variant="subtle"
           icon="i-lucide-log-out"
@@ -231,7 +242,7 @@ const userMenuItems = computed(() => {
       </template>
       <template v-else>
         <UButton
-          label="Sign in"
+          :label="$t('common.actions.signIn')"
           color="neutral"
           variant="subtle"
           :to="ROUTES.auth.signIn"
@@ -239,7 +250,7 @@ const userMenuItems = computed(() => {
           class="mb-3"
         />
         <UButton
-          label="Sign up"
+          :label="$t('common.actions.signUp')"
           color="neutral"
           :to="ROUTES.auth.signUp"
           block

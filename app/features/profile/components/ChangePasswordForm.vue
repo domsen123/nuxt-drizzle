@@ -9,16 +9,19 @@ const emit = defineEmits<{
 
 const MIN_PASSWORD_LENGTH = 8
 
-const schema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`),
-  confirmPassword: z.string().min(1, 'Please confirm your new password'),
-}).refine(data => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+const { t } = useI18n()
+const apiErrorMessage = useApiErrorMessage()
 
-type Schema = z.output<typeof schema>
+const schema = computed(() => z.object({
+  currentPassword: z.string().min(1, t('profile.password.currentRequired')),
+  newPassword: z.string().min(MIN_PASSWORD_LENGTH, t('profile.password.newMin', { min: MIN_PASSWORD_LENGTH })),
+  confirmPassword: z.string().min(1, t('profile.password.confirmRequired')),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: t('profile.password.mismatch'),
+  path: ['confirmPassword'],
+}))
+
+type Schema = z.output<typeof schema.value>
 
 const state = reactive<Schema>({
   currentPassword: '',
@@ -31,16 +34,9 @@ const { mutateAsync: changePassword, asyncStatus, error } = useChangePassword()
 const isLoading = computed(() => asyncStatus.value === 'loading')
 
 const apiError = computed(() => {
-  const err = error.value as {
-    statusCode?: number
-    data?: { statusMessage?: string }
-    message?: string
-  } | null
-  if (!err)
+  if (!error.value)
     return null
-  if (err.statusCode === 401)
-    return 'Current password is incorrect.'
-  return err.data?.statusMessage || err.message || 'An unexpected error occurred. Please try again.'
+  return apiErrorMessage(error.value)
 })
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
@@ -71,8 +67,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   >
     <!-- Header Card -->
     <UPageCard
-      title="Change Password"
-      description="Update your password to keep your account secure."
+      :title="$t('profile.password.title')"
+      :description="$t('profile.password.description')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
@@ -83,7 +79,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           type="submit"
           :loading="isLoading"
         >
-          Update Password
+          {{ $t('profile.password.submit') }}
         </UButton>
       </div>
     </UPageCard>
@@ -111,8 +107,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       <!-- Current Password Field -->
       <UFormField
         name="currentPassword"
-        label="Current Password"
-        description="Enter your current password to verify your identity."
+        :label="$t('profile.password.currentLabel')"
+        :description="$t('profile.password.currentDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -131,8 +127,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       <!-- New Password Field -->
       <UFormField
         name="newPassword"
-        label="New Password"
-        :description="`Must be at least ${MIN_PASSWORD_LENGTH} characters.`"
+        :label="$t('profile.password.newLabel')"
+        :description="$t('profile.password.newDescription', { min: MIN_PASSWORD_LENGTH })"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -151,8 +147,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       <!-- Confirm Password Field -->
       <UFormField
         name="confirmPassword"
-        label="Confirm New Password"
-        description="Re-enter your new password to confirm."
+        :label="$t('profile.password.confirmLabel')"
+        :description="$t('profile.password.confirmDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >

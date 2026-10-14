@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+      .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 14px; color: #6b7280; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>{% if userName %}Willkommen {{ userName }}{% else %}Willkommen{% endif %}!</h2>
+      <p>Danke für deine Registrierung bei {{ siteName }}. Bestätige deine E-Mail-Adresse, um die Registrierung abzuschließen.</p>
+      <p>Klicke auf den Button, um deine E-Mail-Adresse zu bestätigen:</p>
+      <a href="{{ verificationLink }}" class="button">E-Mail bestätigen</a>
+      <p>Oder kopiere diesen Link in deinen Browser:</p>
+      <p style="color: #6b7280; word-break: break-all;">{{ verificationLink }}</p>
+      <p><strong>Dieser Link läuft in {{ expiresInHours }} Stunde{% if expiresInHours != 1 %}n{% endif %} ab.</strong></p>
+      <p>Wenn du kein Konto bei {{ siteName }} erstellt hast, kannst du diese E-Mail ignorieren.</p>
+      <div class="footer">
+        <p>&copy; {{ year }} {{ siteName }}. Alle Rechte vorbehalten.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -5,19 +5,21 @@ definePageMeta({
   auth: true,
 })
 
-const links: NavigationMenuItem[][] = [[
+const { t } = useI18n()
+
+const links = computed<NavigationMenuItem[][]>(() => [[
   {
-    label: 'Profile',
+    label: t('nav.profile'),
     icon: 'i-lucide-user',
     to: '/settings',
     exact: true,
   },
   {
-    label: 'Security',
+    label: t('nav.security'),
     icon: 'i-lucide-shield',
     to: '/settings/security',
   },
-]]
+]])
 </script>
 
 <template>
@@ -28,7 +30,7 @@ const links: NavigationMenuItem[][] = [[
           <UNavigationMenu :items="links" orientation="vertical" highlight />
         </UPageAside>
       </template>
-      <UPageHeader title="Settings" />
+      <UPageHeader :title="$t('settings.title')" />
 
       <UPageBody>
         <div class="max-w-3xl">

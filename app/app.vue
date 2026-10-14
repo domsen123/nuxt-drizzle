@@ -5,6 +5,9 @@ const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#020618' : 'white')
 
+const { localeProperties } = useI18n()
+const htmlLang = computed(() => localeProperties.value.language ?? 'en-US')
+
 const { user } = useSession()
 const { applyPreferences } = useAppearance()
 
@@ -26,7 +29,7 @@ useHead({
     { rel: 'icon', href: '/favicon.ico' },
   ],
   htmlAttrs: {
-    lang: 'en',
+    lang: htmlLang,
   },
 })
 

@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 401,
       statusText: 'Session not found',
+      data: { code: 'auth.session_not_found' },
     })
   }
 

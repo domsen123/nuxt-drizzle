@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const token = getRouterParam(event, 'token', { decode: true })
 
   if (!token) {
-    throw createError({ status: 400, statusText: 'Token is required' })
+    throw createError({ status: 400, statusText: 'Token is required', data: { code: 'invitations.token_required' } })
   }
 
   const body = await readBody(event)
@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       statusText: parsed.error.issues[0]?.message ?? 'Invalid input',
+      data: { code: 'validation.invalid_input' },
     })
   }
 

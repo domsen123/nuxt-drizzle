@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 import { useStopImpersonation } from '~/features/admin/composables/useImpersonation'
-import { useAppearanceMenuItem } from '~/features/profile'
+import { useAppearanceMenuItem, useLanguageMenuItem } from '~/features/profile'
 
 const router = useRouter()
 const toast = useToast()
@@ -11,7 +11,9 @@ const open = ref(false)
 const { user, isImpersonating } = useSession()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
+const { t } = useI18n()
 const { appearanceMenuItems } = useAppearanceMenuItem()
+const { languageMenuItem } = useLanguageMenuItem()
 
 // Sidebar navigation items
 const navItems: NavigationMenuItem[][] = [
@@ -81,7 +83,7 @@ const navItems: NavigationMenuItem[][] = [
 const handleLogout = () => {
   logout()
     .then(() => {
-      toast.add({ title: 'Signed out', description: 'See you soon!' })
+      toast.add({ title: t('nav.signedOutTitle'), description: t('nav.signedOutDescription') })
       router.push(ROUTES.start)
     })
     .catch(() => {
@@ -93,16 +95,16 @@ const handleStopImpersonation = () => {
   stopImpersonation()
     .then(() => {
       toast.add({
-        title: 'Impersonation ended',
-        description: 'You are now back to your admin account.',
+        title: t('nav.impersonationEndedTitle'),
+        description: t('nav.impersonationEndedDescription'),
         color: 'success',
       })
       router.push(ROUTES.admin.users)
     })
     .catch(() => {
       toast.add({
-        title: 'Failed to stop impersonation',
-        description: 'Please try again.',
+        title: t('nav.impersonationStopFailedTitle'),
+        description: t('nav.impersonationStopFailedDescription'),
         color: 'error',
       })
     })
@@ -120,22 +122,22 @@ const userMenuItems = computed(() => {
   }]
 
   const stopImpersonationItem = [{
-    label: isStoppingImpersonation.value ? 'Stopping...' : 'Stop Impersonating',
+    label: isStoppingImpersonation.value ? t('nav.stoppingImpersonation') : t('nav.stopImpersonating'),
     icon: 'i-lucide-user-x',
     onSelect: handleStopImpersonation,
     disabled: isStoppingImpersonation.value,
   }]
 
   const backToAppItem = [{
-    label: 'Back to App',
+    label: t('nav.backToApp'),
     icon: 'i-lucide-arrow-left',
     to: ROUTES.start,
   }]
 
-  const appearanceItem = appearanceMenuItems.value
+  const appearanceItem = [...appearanceMenuItems.value, languageMenuItem.value]
 
   const signOutItem = [{
-    label: 'Sign out',
+    label: t('common.actions.signOut'),
     icon: 'i-lucide-log-out',
     onSelect: handleLogout,
   }]
@@ -203,7 +205,7 @@ const navItemsWithActive = computed(() =>
               :alt="user?.name ?? user?.email ?? undefined"
               size="2xs"
             />
-            <span class="truncate">{{ user?.name || user?.email || 'Guest' }}</span>
+            <span class="truncate">{{ user?.name || user?.email || $t('common.guest') }}</span>
             <UIcon name="i-lucide-chevron-down" class="ml-auto" />
           </UButton>
 

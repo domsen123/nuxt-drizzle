@@ -4,13 +4,28 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@nuxt/image',
     '@nuxt/ui',
-    // '@nuxt/content',
+    '@nuxt/content',
+    '@nuxtjs/i18n',
     '@vueuse/nuxt',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
     'nuxt-mcp-dev',
     '@nuxt/test-utils/module',
   ],
+
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'en',
+    locales: [
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
+    ],
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'locale',
+      fallbackLocale: 'en',
+    },
+  },
 
   devtools: {
     enabled: true,

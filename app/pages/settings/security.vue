@@ -3,15 +3,16 @@ import SessionsList from '~/features/auth/components/SessionsList.vue'
 import ChangePasswordForm from '~/features/profile/components/ChangePasswordForm.vue'
 
 const toast = useToast()
+const { t } = useI18n()
 
 useSeoMeta({
-  title: 'Security - Settings',
+  title: () => t('settings.securitySeoTitle'),
 })
 
 const onPasswordSuccess = () => {
   toast.add({
-    title: 'Password updated',
-    description: 'Your password has been changed successfully.',
+    title: t('settings.passwordUpdatedTitle'),
+    description: t('settings.passwordUpdatedDescription'),
     icon: 'i-lucide-check',
     color: 'success',
   })

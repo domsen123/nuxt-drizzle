@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 401,
       statusText: 'Session not found',
+      data: { code: 'auth.session_not_found' },
     })
   }
 
@@ -18,6 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       statusText: 'Session ID is required',
+      data: { code: 'auth.session_id_required' },
     })
   }
 
@@ -26,6 +28,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       statusText: 'Cannot delete current session. Use logout instead.',
+      data: { code: 'auth.cannot_delete_current_session' },
     })
   }
 
@@ -35,6 +38,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 404,
       statusText: 'Session not found',
+      data: { code: 'auth.session_not_found' },
     })
   }
 

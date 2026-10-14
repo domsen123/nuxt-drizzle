@@ -29,7 +29,7 @@ export const createOrganisationsService = (deps: CreateOrganisationsServiceDeps)
     // Verify creator user exists
     const creator = await usersItemService.readOne(creatorUserId)
     if (!creator) {
-      throw createError({ status: 404, statusText: 'Creator user not found' })
+      throw createError({ status: 404, statusText: 'Creator user not found', data: { code: 'organisations.creator_not_found' } })
     }
 
     // Check slug uniqueness
@@ -37,7 +37,7 @@ export const createOrganisationsService = (deps: CreateOrganisationsServiceDeps)
       slug: { _eq: slug },
     })
     if (existing) {
-      throw createError({ status: 409, statusText: 'An organisation with this slug already exists' })
+      throw createError({ status: 409, statusText: 'An organisation with this slug already exists', data: { code: 'organisations.slug_exists' } })
     }
 
     // Create the organisation

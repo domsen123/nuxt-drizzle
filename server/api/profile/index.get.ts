@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const profile = await container.profileService.getProfile(user.id)
 
   if (!profile) {
-    throw createError({ status: 404, statusText: 'Profile not found' })
+    throw createError({ status: 404, statusText: 'Profile not found', data: { code: 'profile.not_found' } })
   }
 
   return { profile }

@@ -1,0 +1,343 @@
+{
+  "common": {
+    "language": "Sprache",
+    "loading": "Lädt...",
+    "guest": "Gast",
+    "colorMode": "Farbmodus",
+    "landing": {
+      "title": "Willkommen in unserer Anwendung",
+      "description": "Entdecke die Funktionen und Vorteile unserer App."
+    },
+    "actions": {
+      "save": "Änderungen speichern",
+      "cancel": "Abbrechen",
+      "done": "Fertig",
+      "change": "Ändern",
+      "dismiss": "Ausblenden",
+      "signIn": "Anmelden",
+      "signUp": "Registrieren",
+      "signOut": "Abmelden",
+      "goToSettings": "Zu den Einstellungen",
+      "goToHome": "Zur Startseite",
+      "goToDashboard": "Zum Dashboard"
+    },
+    "table": {
+      "searchPlaceholder": "Suchen...",
+      "filter": "Filter",
+      "empty": "Keine Einträge gefunden",
+      "noResults": "Keine Ergebnisse für \"{query}\"",
+      "loading": "Lädt...",
+      "rangeOf": "{start}-{end} von {total}",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite"
+    },
+    "footer": {
+      "builtWith": "Erstellt mit Nuxt UI • © {year}"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "adminDashboard": "Admin-Dashboard",
+    "backToApp": "Zurück zur App",
+    "stopImpersonating": "Impersonation beenden",
+    "stoppingImpersonation": "Wird beendet...",
+    "signedInAs": "Angemeldet als {email}",
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "signedOutTitle": "Abgemeldet",
+    "signedOutDescription": "Bis bald!",
+    "impersonationEndedTitle": "Impersonation beendet",
+    "impersonationEndedDescription": "Du bist zurück in deinem Admin-Konto.",
+    "impersonationStopFailedTitle": "Impersonation konnte nicht beendet werden",
+    "impersonationStopFailedDescription": "Versuche es erneut."
+  },
+  "auth": {
+    "fields": {
+      "email": "E-Mail",
+      "emailPlaceholder": "E-Mail-Adresse eingeben",
+      "password": "Passwort",
+      "passwordPlaceholder": "Passwort eingeben",
+      "name": "Name",
+      "namePlaceholder": "Namen eingeben",
+      "rememberMe": "Angemeldet bleiben"
+    },
+    "validation": {
+      "invalidEmail": "Ungültige E-Mail-Adresse",
+      "passwordMin": "Mindestens {min} Zeichen erforderlich",
+      "nameRequired": "Name ist erforderlich",
+      "confirmPasswordRequired": "Bestätige dein Passwort",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein"
+    },
+    "haveAccount": "Du hast bereits ein Konto? {signIn}.",
+    "rememberPassword": "Du kennst dein Passwort wieder? {signIn}.",
+    "signIn": {
+      "seoTitle": "Anmelden",
+      "seoDescription": "Melde dich an, um fortzufahren",
+      "title": "Willkommen zurück",
+      "noAccount": "Du hast noch kein Konto? {signUp}.",
+      "forgotPassword": "Passwort vergessen?",
+      "agree": "Mit der Anmeldung akzeptierst du unsere {terms}.",
+      "successTitle": "Willkommen zurück!",
+      "providerSoon": "Anmeldung mit {provider} (bald verfügbar)"
+    },
+    "signUp": {
+      "seoTitle": "Registrieren",
+      "seoDescription": "Erstelle ein Konto, um loszulegen",
+      "title": "Konto erstellen",
+      "submit": "Konto erstellen",
+      "agree": "Mit der Registrierung akzeptierst du unsere {terms}.",
+      "successTitle": "Konto erstellt!",
+      "successDescription": "Willkommen an Bord.",
+      "providerSoon": "Registrierung mit {provider} (bald verfügbar)"
+    },
+    "forgotPassword": {
+      "seoTitle": "Passwort vergessen",
+      "seoDescription": "Setze dein Passwort zurück",
+      "title": "Passwort vergessen?",
+      "description": "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+      "emailPlaceholder": "E-Mail-Adresse eingeben",
+      "submit": "Link zum Zurücksetzen senden",
+      "checkEmailTitle": "Prüfe dein E-Mail-Postfach",
+      "checkEmailDescription": "Wenn ein Konto mit dieser E-Mail-Adresse existiert, erhältst du eine Anleitung zum Zurücksetzen des Passworts.",
+      "noEmailHint": "Keine E-Mail erhalten? Prüfe deinen Spam-Ordner oder {tryAgain}.",
+      "tryAgain": "versuche es erneut",
+      "backToSignIn": "Zurück zur Anmeldung"
+    },
+    "resetPassword": {
+      "seoTitle": "Passwort zurücksetzen",
+      "seoDescription": "Erstelle ein neues Passwort für dein Konto",
+      "title": "Passwort zurücksetzen",
+      "description": "Gib unten dein neues Passwort ein.",
+      "newPassword": "Neues Passwort",
+      "newPasswordPlaceholder": "Neues Passwort eingeben",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+      "submit": "Passwort zurücksetzen",
+      "invalidLinkTitle": "Ungültiger Link",
+      "invalidLinkDescription": "Fordere einen neuen Link zum Zurücksetzen des Passworts an.",
+      "expiredLinkTitle": "Link abgelaufen",
+      "expiredLinkDescription": "Dieser Link ist abgelaufen oder wurde bereits verwendet. Fordere einen neuen an.",
+      "successTitle": "Passwort zurückgesetzt",
+      "successDescription": "Dein Passwort wurde zurückgesetzt. Du kannst dich jetzt mit dem neuen Passwort anmelden."
+    },
+    "verifyEmail": {
+      "seoTitle": "E-Mail bestätigen",
+      "seoDescription": "Bestätige deine E-Mail-Adresse",
+      "verifyingTitle": "E-Mail wird bestätigt...",
+      "verifyingDescription": "Warte einen Moment, während wir deine E-Mail-Adresse bestätigen.",
+      "verifiedTitle": "E-Mail bestätigt!",
+      "verifiedDescription": "Deine E-Mail-Adresse wurde bestätigt. Du kannst jetzt alle Funktionen deines Kontos nutzen.",
+      "verifiedToastTitle": "E-Mail bestätigt!",
+      "verifiedToastDescription": "Deine E-Mail-Adresse wurde bestätigt.",
+      "alreadyVerifiedTitle": "Bereits bestätigt",
+      "alreadyVerifiedDescription": "Deine E-Mail-Adresse war bereits bestätigt. Du kannst dein Konto weiter nutzen.",
+      "alreadyVerifiedToastTitle": "Bereits bestätigt",
+      "alreadyVerifiedToastDescription": "Deine E-Mail-Adresse war bereits bestätigt.",
+      "failedTitle": "Bestätigung fehlgeschlagen",
+      "failedFallback": "Der Bestätigungslink ist ungültig oder abgelaufen.",
+      "missingToken": "Ungültiger Bestätigungslink. Prüfe deine E-Mail auf den korrekten Link.",
+      "newLinkHint": "Wenn du einen neuen Bestätigungslink brauchst, melde dich an und fordere ihn in den Kontoeinstellungen an."
+    },
+    "confirmEmail": {
+      "invalidLinkTitle": "Ungültiger Link",
+      "invalidLinkDescription": "Diesem Bestätigungslink fehlt ein Token. Verwende den Link aus deiner E-Mail.",
+      "confirming": "E-Mail-Änderung wird bestätigt...",
+      "changedTitle": "E-Mail geändert",
+      "changedDescription": "Deine E-Mail-Adresse wurde zu {email} geändert.",
+      "failedTitle": "E-Mail-Änderung nicht möglich"
+    },
+    "acceptInvitation": {
+      "seoTitle": "Einladung annehmen",
+      "seoDescription": "Nimm die Einladung deiner Organisation an und erstelle dein Konto",
+      "title": "Einladung annehmen",
+      "fullName": "Vollständiger Name",
+      "fullNamePlaceholder": "Namen eingeben (optional)",
+      "createPasswordPlaceholder": "Passwort erstellen",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Passwort bestätigen",
+      "submit": "Konto erstellen & beitreten",
+      "invitedTo": "Du wurdest eingeladen, {organisation} beizutreten.",
+      "createUsing": "Erstelle dein Konto mit {email}",
+      "invalidLinkTitle": "Ungültiger Einladungslink",
+      "invalidLinkDescription": "Prüfe deine E-Mail auf den korrekten Einladungslink.",
+      "invalidTitle": "Ungültige Einladung",
+      "invalidDescription": "Dieser Einladungslink ist abgelaufen oder ungültig.",
+      "welcomeTitle": "Willkommen!",
+      "welcomeDescription": "Du bist {organisation} beigetreten. Du wirst weitergeleitet..."
+    },
+    "sessions": {
+      "title": "Aktive Sitzungen",
+      "description": "Verwalte deine aktiven Sitzungen auf allen Geräten. Bei verdächtigen Aktivitäten kannst du andere Sitzungen abmelden.",
+      "logoutOthers": "Andere Geräte abmelden",
+      "current": "Aktuell",
+      "ip": "IP: {ip}",
+      "created": "Erstellt: {date}",
+      "revoke": "Abmelden",
+      "empty": "Keine aktiven Sitzungen gefunden",
+      "loadFailedTitle": "Sitzungen konnten nicht geladen werden",
+      "browserOnOs": "{browser} auf {os}"
+    },
+    "verificationBanner": {
+      "message": "Bestätige deine E-Mail-Adresse.",
+      "hint": "Prüfe dein Postfach auf den Bestätigungslink.",
+      "resend": "E-Mail erneut senden",
+      "sentTitle": "Bestätigungs-E-Mail gesendet",
+      "sentDescription": "Prüfe dein E-Mail-Postfach.",
+      "failedTitle": "E-Mail konnte nicht gesendet werden"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "profileSeoTitle": "Profil - Einstellungen",
+    "securitySeoTitle": "Sicherheit - Einstellungen",
+    "profileUpdatedTitle": "Profil aktualisiert",
+    "profileUpdatedDescription": "Dein Profil wurde aktualisiert.",
+    "passwordUpdatedTitle": "Passwort aktualisiert",
+    "passwordUpdatedDescription": "Dein Passwort wurde geändert.",
+    "loadProfileFailed": "Profil konnte nicht geladen werden"
+  },
+  "profile": {
+    "form": {
+      "title": "Profil",
+      "description": "Aktualisiere deine persönlichen Daten.",
+      "nameLabel": "Name",
+      "nameDescription": "Dein Anzeigename.",
+      "namePlaceholder": "Max Mustermann",
+      "nameMax": "Der Name darf höchstens {max} Zeichen lang sein",
+      "emailLabel": "E-Mail",
+      "emailDescription": "Deine E-Mail-Adresse für Anmeldung und Benachrichtigungen.",
+      "pendingTitle": "E-Mail-Änderung ausstehend",
+      "pendingDescription": "Wir haben eine Bestätigungs-E-Mail an {email} gesendet. Prüfe dein Postfach und klicke auf den Link, um die neue E-Mail-Adresse zu bestätigen.",
+      "expires": "Gültig bis: {date}",
+      "cancelEmailChange": "E-Mail-Änderung abbrechen"
+    },
+    "password": {
+      "title": "Passwort ändern",
+      "description": "Aktualisiere dein Passwort, um dein Konto zu schützen.",
+      "submit": "Passwort aktualisieren",
+      "currentLabel": "Aktuelles Passwort",
+      "currentDescription": "Gib dein aktuelles Passwort ein, um deine Identität zu bestätigen.",
+      "newLabel": "Neues Passwort",
+      "newDescription": "Mindestens {min} Zeichen erforderlich.",
+      "confirmLabel": "Neues Passwort bestätigen",
+      "confirmDescription": "Gib dein neues Passwort erneut ein.",
+      "currentRequired": "Aktuelles Passwort ist erforderlich",
+      "newMin": "Das Passwort muss mindestens {min} Zeichen lang sein",
+      "confirmRequired": "Bestätige dein neues Passwort",
+      "mismatch": "Die Passwörter stimmen nicht überein"
+    },
+    "emailChange": {
+      "title": "E-Mail-Adresse ändern",
+      "checkEmailTitle": "Prüfe dein E-Mail-Postfach",
+      "sentDescription": "Wir haben einen Bestätigungslink an {email} gesendet. Klicke auf den Link in der E-Mail, um die Änderung zu bestätigen.",
+      "intro": "Gib deine neue E-Mail-Adresse ein. Wir senden dir einen Bestätigungslink.",
+      "newEmailLabel": "Neue E-Mail-Adresse",
+      "newEmailPlaceholder": "neue-email{'@'}example.com",
+      "mustDiffer": "Die neue E-Mail-Adresse muss sich von der aktuellen unterscheiden.",
+      "submit": "Bestätigungs-E-Mail senden",
+      "validEmailRequired": "Gültige E-Mail-Adresse erforderlich"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "appearance": "Darstellung",
+      "primary": "Primärfarbe",
+      "neutral": "Neutralfarbe",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "preferences": {
+      "saveFailedTitle": "Einstellungen konnten nicht gespeichert werden",
+      "saveFailedDescription": "Deine Auswahl wurde auf den letzten gespeicherten Stand zurückgesetzt."
+    }
+  },
+  "legal": {
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "description": "Die Bedingungen für die Nutzung unseres Dienstes."
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "description": "Wie wir deine personenbezogenen Daten erheben, nutzen und schützen."
+    }
+  },
+  "errors": {
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten. Versuche es erneut.",
+    "pageNotFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Diese Seite konnte leider nicht gefunden werden."
+    },
+    "accessDenied": {
+      "title": "Zugriff verweigert",
+      "description": "Du hast keine Berechtigung für den Admin-Bereich."
+    },
+    "validation": {
+      "invalid_input": "Ungültige Eingabe. Prüfe deine Angaben.",
+      "missing_param": "Ein erforderlicher Parameter fehlt."
+    },
+    "auth": {
+      "unauthorized": "Melde dich an, um fortzufahren.",
+      "forbidden": "Du hast keine Berechtigung für diese Aktion.",
+      "invalid_credentials": "E-Mail-Adresse oder Passwort ist falsch.",
+      "email_exists": "Ein Konto mit dieser E-Mail-Adresse existiert bereits.",
+      "invalid_user_for_upgrade": "Dieses Konto kann nicht umgewandelt werden.",
+      "reset_token_invalid": "Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.",
+      "verification_token_invalid": "Dieser Bestätigungslink ist ungültig oder abgelaufen.",
+      "verification_send_failed": "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Versuche es später erneut.",
+      "session_not_found": "Sitzung nicht gefunden.",
+      "session_id_required": "Sitzungs-ID ist erforderlich.",
+      "cannot_delete_current_session": "Die aktuelle Sitzung kannst du hier nicht abmelden. Verwende stattdessen die Abmeldung."
+    },
+    "profile": {
+      "not_found": "Profil nicht gefunden.",
+      "email_same": "Die neue E-Mail-Adresse muss sich von der aktuellen unterscheiden.",
+      "email_taken": "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
+      "email_change_token_invalid": "Dieser Link ist ungültig oder abgelaufen. Fordere eine neue E-Mail-Änderung an.",
+      "email_change_token_expired": "Dieser Link ist abgelaufen. Fordere eine neue E-Mail-Änderung an.",
+      "email_unavailable": "Diese E-Mail-Adresse ist nicht mehr verfügbar. Verwende eine andere Adresse.",
+      "current_password_incorrect": "Das aktuelle Passwort ist falsch."
+    },
+    "invitations": {
+      "token_required": "Das Einladungs-Token fehlt.",
+      "invalid_token": "Dieser Einladungslink ist ungültig.",
+      "expired": "Diese Einladung ist abgelaufen.",
+      "organisation_not_found": "Organisation nicht gefunden.",
+      "invalid_role": "Die ausgewählte Rolle ist ungültig.",
+      "user_already_exists": "Ein Benutzer mit dieser E-Mail-Adresse existiert bereits. Füge ihn stattdessen als Mitglied hinzu.",
+      "already_invited": "An diese E-Mail-Adresse wurde bereits eine Einladung gesendet.",
+      "email_send_failed": "Die Einladungs-E-Mail konnte nicht gesendet werden.",
+      "organisation_gone": "Diese Organisation existiert nicht mehr.",
+      "account_exists": "Ein Konto mit dieser E-Mail-Adresse existiert bereits. Melde dich an.",
+      "not_found": "Einladung nicht gefunden.",
+      "resend_expired": "Abgelaufene Einladungen können nicht erneut gesendet werden."
+    },
+    "files": {
+      "missing_id": "Die Datei-ID fehlt.",
+      "not_found": "Datei nicht gefunden.",
+      "not_authorized": "Du bist nicht berechtigt, diese Datei zu löschen.",
+      "variant_delete": "Varianten können nicht direkt gelöscht werden. Lösche stattdessen die übergeordnete Datei.",
+      "no_file_uploaded": "Es wurde keine Datei hochgeladen.",
+      "missing_file": "Dem Upload fehlt eine Datei.",
+      "too_large": "Die Datei ist zu groß.",
+      "type_not_allowed": "Dieser Dateityp ist nicht erlaubt."
+    },
+    "organisations": {
+      "creator_not_found": "Ersteller-Konto nicht gefunden.",
+      "slug_exists": "Eine Organisation mit diesem Slug existiert bereits."
+    },
+    "members": {
+      "organisation_not_found": "Organisation nicht gefunden.",
+      "user_not_found": "Benutzer nicht gefunden.",
+      "role_not_found": "Rolle nicht gefunden.",
+      "role_scope_invalid": "Die Rolle muss auf Organisationsebene gelten.",
+      "already_member": "Dieser Benutzer ist bereits Mitglied der Organisation.",
+      "member_not_found": "Mitglied nicht gefunden.",
+      "last_owner_demote": "Der letzte Owner kann nicht herabgestuft werden. Weise zuerst einen anderen Owner zu.",
+      "last_owner_remove": "Der letzte Owner kann nicht entfernt werden. Übertrage zuerst die Inhaberschaft."
+    }
+  }
+}

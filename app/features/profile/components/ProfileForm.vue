@@ -16,11 +16,15 @@ const emit = defineEmits<{
 
 const NAME_MAX_LENGTH = 100
 
-const schema = z.object({
-  name: z.string().trim().max(NAME_MAX_LENGTH, `Name must be ${NAME_MAX_LENGTH} characters or less`).optional(),
-})
+const { t } = useI18n()
+const apiErrorMessage = useApiErrorMessage()
+const { formatDate } = useLocaleFormat()
 
-type Schema = z.output<typeof schema>
+const schema = computed(() => z.object({
+  name: z.string().trim().max(NAME_MAX_LENGTH, t('profile.form.nameMax', { max: NAME_MAX_LENGTH })).optional(),
+}))
+
+type Schema = z.output<typeof schema.value>
 
 const state = reactive<Schema>({
   name: props.profile.name ?? '',
@@ -37,14 +41,9 @@ const isCancelling = computed(() => cancelStatus.value === 'loading')
 const isEmailChangeModalOpen = ref(false)
 
 const apiError = computed(() => {
-  const err = error.value as {
-    statusCode?: number
-    data?: { statusMessage?: string }
-    message?: string
-  } | null
-  if (!err)
+  if (!error.value)
     return null
-  return err.data?.statusMessage || err.message || 'An unexpected error occurred. Please try again.'
+  return apiErrorMessage(error.value)
 })
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
@@ -65,11 +64,6 @@ const onCancelEmailChange = async () => {
     // Error handling
   }
 }
-
-const formatExpiryTime = (expiresAt: string) => {
-  const date = new Date(expiresAt)
-  return date.toLocaleString()
-}
 </script>
 
 <template>
@@ -82,8 +76,8 @@ const formatExpiryTime = (expiresAt: string) => {
   >
     <!-- Header Card -->
     <UPageCard
-      title="Profile"
-      description="Update your personal information."
+      :title="$t('profile.form.title')"
+      :description="$t('profile.form.description')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
@@ -94,7 +88,7 @@ const formatExpiryTime = (expiresAt: string) => {
           type="submit"
           :loading="isLoading"
         >
-          Save Changes
+          {{ $t('common.actions.save') }}
         </UButton>
       </div>
     </UPageCard>
@@ -122,14 +116,14 @@ const formatExpiryTime = (expiresAt: string) => {
       <!-- Name Field -->
       <UFormField
         name="name"
-        label="Name"
-        description="Your display name."
+        :label="$t('profile.form.nameLabel')"
+        :description="$t('profile.form.nameDescription')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <div class="w-full max-w-sm">
           <UInput
             v-model="state.name"
-            placeholder="John Doe"
+            :placeholder="$t('profile.form.namePlaceholder')"
             autocomplete="name"
             :maxlength="NAME_MAX_LENGTH"
           />
@@ -142,10 +136,10 @@ const formatExpiryTime = (expiresAt: string) => {
       <div class="flex max-sm:flex-col justify-between items-start gap-4">
         <div class="flex-1">
           <div class="flex items-center gap-2">
-            <label class="text-sm font-medium text-(--ui-text-highlighted)">Email</label>
+            <label class="text-sm font-medium text-(--ui-text-highlighted)">{{ $t('profile.form.emailLabel') }}</label>
           </div>
           <p class="text-sm text-(--ui-text-muted) mt-0.5">
-            Your email address for login and notifications.
+            {{ $t('profile.form.emailDescription') }}
           </p>
         </div>
         <div class="w-full max-w-sm space-y-2">
@@ -160,7 +154,7 @@ const formatExpiryTime = (expiresAt: string) => {
               variant="soft"
               @click="isEmailChangeModalOpen = true"
             >
-              Change
+              {{ $t('common.actions.change') }}
             </UButton>
           </div>
 
@@ -173,15 +167,18 @@ const formatExpiryTime = (expiresAt: string) => {
             class="mt-2"
           >
             <template #title>
-              Email change pending
+              {{ $t('profile.form.pendingTitle') }}
             </template>
             <template #description>
               <p class="text-sm">
-                We sent a verification email to <strong>{{ pendingEmailChange.newEmail }}</strong>.
-                Please check your inbox and click the link to confirm your new email address.
+                <i18n-t keypath="profile.form.pendingDescription" scope="global">
+                  <template #email>
+                    <strong>{{ pendingEmailChange.newEmail }}</strong>
+                  </template>
+                </i18n-t>
               </p>
               <p class="text-xs text-(--ui-text-muted) mt-1">
-                Expires: {{ formatExpiryTime(pendingEmailChange.expiresAt) }}
+                {{ $t('profile.form.expires', { date: formatDate(pendingEmailChange.expiresAt) }) }}
               </p>
               <UButton
                 variant="link"
@@ -191,7 +188,7 @@ const formatExpiryTime = (expiresAt: string) => {
                 class="mt-2 -ml-2"
                 @click="onCancelEmailChange"
               >
-                Cancel email change
+                {{ $t('profile.form.cancelEmailChange') }}
               </UButton>
             </template>
           </UAlert>

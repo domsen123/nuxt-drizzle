@@ -4,12 +4,12 @@ import { container } from '~~/server/utils/container'
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id', { decode: true })
   if (!id) {
-    throw createError({ status: 400, statusText: 'Missing file ID' })
+    throw createError({ status: 400, statusText: 'Missing file ID', data: { code: 'files.missing_id' } })
   }
 
   const content = await container.fileService.getFileContent(id)
   if (!content) {
-    throw createError({ status: 404, statusText: 'File not found' })
+    throw createError({ status: 404, statusText: 'File not found', data: { code: 'files.not_found' } })
   }
 
   // `nuxt/server` carries no `setHeaders`; the response headers are the web ones.

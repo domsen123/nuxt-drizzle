@@ -1,6 +1,8 @@
+import type { Locale } from '~~/shared/user-preferences.constants'
 import type { Config } from '../../utils/config'
 import type { EmailProvider } from './email-provider.interface'
 import type { EmailChangeTemplateData, EmailVerificationTemplateData, OrganisationInvitationTemplateData, PasswordResetTemplateData } from './templates'
+import { DEFAULT_LOCALE } from '~~/shared/user-preferences.constants'
 import { emailChangeTemplate, emailVerificationTemplate, organisationInvitationTemplate, passwordResetTemplate } from './templates'
 
 export interface CreateEmailServiceDeps {
@@ -22,11 +24,12 @@ export const createEmailService = ({ provider, config }: CreateEmailServiceDeps)
   const sendPasswordReset = async (
     to: string,
     data: Omit<PasswordResetTemplateData, 'siteName'>,
+    locale: Locale = DEFAULT_LOCALE,
   ) => {
     const template = await passwordResetTemplate({
       ...data,
       siteName: config.site.name,
-    })
+    }, locale)
 
     return provider.send({
       to,
@@ -40,11 +43,12 @@ export const createEmailService = ({ provider, config }: CreateEmailServiceDeps)
   const sendEmailVerification = async (
     to: string,
     data: Omit<EmailVerificationTemplateData, 'siteName'>,
+    locale: Locale = DEFAULT_LOCALE,
   ) => {
     const template = await emailVerificationTemplate({
       ...data,
       siteName: config.site.name,
-    })
+    }, locale)
 
     return provider.send({
       to,
@@ -58,11 +62,12 @@ export const createEmailService = ({ provider, config }: CreateEmailServiceDeps)
   const sendEmailChangeConfirmation = async (
     to: string,
     data: Omit<EmailChangeTemplateData, 'siteName'>,
+    locale: Locale = DEFAULT_LOCALE,
   ) => {
     const template = await emailChangeTemplate({
       ...data,
       siteName: config.site.name,
-    })
+    }, locale)
 
     return provider.send({
       to,
@@ -76,11 +81,12 @@ export const createEmailService = ({ provider, config }: CreateEmailServiceDeps)
   const sendOrganisationInvitation = async (
     to: string,
     data: Omit<OrganisationInvitationTemplateData, 'siteName'>,
+    locale: Locale = DEFAULT_LOCALE,
   ) => {
     const template = await organisationInvitationTemplate({
       ...data,
       siteName: config.site.name,
-    })
+    }, locale)
 
     return provider.send({
       to,

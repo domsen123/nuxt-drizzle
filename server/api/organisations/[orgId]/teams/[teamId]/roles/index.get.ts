@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const teamId = getTeamIdFromParams(event)
 
   if (!teamId) {
-    throw createError({ status: 400, statusText: 'Team ID required' })
+    throw createError({ status: 400, statusText: 'Team ID required', data: { code: 'validation.missing_param' } })
   }
 
   await requirePermission(event, {

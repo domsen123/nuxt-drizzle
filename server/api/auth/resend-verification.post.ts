@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 500,
       statusText: 'Failed to send verification email. Please try again later.',
+      data: { code: 'auth.verification_send_failed' },
     })
   }
 

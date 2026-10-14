@@ -23,12 +23,9 @@ const props = withDefaults(defineProps<{
   serverSide?: boolean
 }>(), {
   searchable: true,
-  searchPlaceholder: 'Search...',
   emptyIcon: 'i-lucide-inbox',
-  emptyText: 'No items found',
   perPageOptions: () => [10, 25, 50, 100],
   sortableColumns: () => [],
-  filterPlaceholder: 'Filter',
 })
 
 const emit = defineEmits<{
@@ -43,6 +40,12 @@ const emit = defineEmits<{
 // Column slots follow the pattern: {columnKey}-cell, {columnKey}-header
 
 const runtimeSlots = useSlots()
+
+// Defaults resolve against the active locale unless the caller passes a text.
+const { t } = useI18n()
+const effectiveSearchPlaceholder = computed(() => props.searchPlaceholder ?? t('common.table.searchPlaceholder'))
+const effectiveEmptyText = computed(() => props.emptyText ?? t('common.table.empty'))
+const effectiveFilterPlaceholder = computed(() => props.filterPlaceholder ?? t('common.table.filter'))
 
 const search = defineModel<string>('search', { default: '' })
 const filter = defineModel<string>('filter')
@@ -208,7 +211,7 @@ const columnsWithSort = computed(() => {
           v-if="searchable"
           v-model="search"
           icon="i-lucide-search"
-          :placeholder="searchPlaceholder"
+          :placeholder="effectiveSearchPlaceholder"
           class="flex-1"
         />
         <!-- Filter: Desktop USelect, Mobile AppResponsiveMenu -->
@@ -216,12 +219,12 @@ const columnsWithSort = computed(() => {
           <USelect
             v-model="filter"
             :items="filterOptions"
-            :placeholder="filterPlaceholder"
+            :placeholder="effectiveFilterPlaceholder"
             class="hidden sm:block w-32"
           />
           <AppResponsiveMenu
             :items="filterMenuItems"
-            title="Filter"
+            :title="effectiveFilterPlaceholder"
             class="sm:hidden"
           >
             <UButton icon="i-lucide-filter" variant="outline" size="sm" />
@@ -251,10 +254,10 @@ const columnsWithSort = computed(() => {
           <div class="py-12 text-center text-muted">
             <UIcon :name="emptyIcon" class="size-8 mx-auto mb-2 opacity-50" />
             <p v-if="search">
-              No results for "{{ search }}"
+              {{ $t('common.table.noResults', { query: search }) }}
             </p>
             <p v-else>
-              {{ emptyText }}
+              {{ effectiveEmptyText }}
             </p>
           </div>
         </template>
@@ -270,7 +273,7 @@ const columnsWithSort = computed(() => {
             @update:model-value="onPerPageChange"
           />
           <span class="text-sm text-muted">
-            {{ rangeStart }}-{{ rangeEnd }} of {{ pagination.total }}
+            {{ $t('common.table.rangeOf', { start: rangeStart, end: rangeEnd, total: pagination.total }) }}
           </span>
         </div>
         <UPagination
@@ -291,7 +294,7 @@ const columnsWithSort = computed(() => {
       <div v-if="loading" class="py-12 text-center text-muted">
         <UIcon name="i-lucide-loader-2" class="size-6 mx-auto animate-spin" />
         <p class="mt-2">
-          Loading...
+          {{ $t('common.table.loading') }}
         </p>
       </div>
 
@@ -299,10 +302,10 @@ const columnsWithSort = computed(() => {
       <div v-else-if="filteredData.length === 0" class="py-12 text-center text-muted">
         <UIcon :name="emptyIcon" class="size-8 mx-auto mb-2 opacity-50" />
         <p v-if="search">
-          No results for "{{ search }}"
+          {{ $t('common.table.noResults', { query: search }) }}
         </p>
         <p v-else>
-          {{ emptyText }}
+          {{ effectiveEmptyText }}
         </p>
       </div>
 
@@ -327,7 +330,7 @@ const columnsWithSort = computed(() => {
           :disabled="!hasPrevPage"
           variant="outline"
           icon="i-lucide-chevron-left"
-          aria-label="Previous page"
+          :aria-label="$t('common.table.previousPage')"
           @click="goToPage(currentPage - 1)"
         />
         <span class="text-sm text-muted">
@@ -337,7 +340,7 @@ const columnsWithSort = computed(() => {
           :disabled="!hasNextPage"
           variant="outline"
           icon="i-lucide-chevron-right"
-          aria-label="Next page"
+          :aria-label="$t('common.table.nextPage')"
           @click="goToPage(currentPage + 1)"
         />
       </div>

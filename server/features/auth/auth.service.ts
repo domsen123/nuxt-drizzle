@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt'
 import { and, desc, eq, gt, isNull, lt, ne } from 'drizzle-orm'
 import { createError } from 'nuxt/server'
 import { ulid } from 'ulid'
+import { DEFAULT_LOCALE } from '~~/shared/user-preferences.constants'
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from '../../database/schema'
 import { config } from '../../utils/config'
 
@@ -124,7 +125,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       userName: user.name ?? undefined,
       verificationLink,
       expiresInHours: EMAIL_VERIFICATION_TOKEN_EXPIRY_HOURS,
-    })
+    }, user.preferences.locale ?? DEFAULT_LOCALE)
 
     if (!result.success) {
       console.error(`[Email Verification] Failed to send email to ${user.email}:`, result.error)
@@ -183,6 +184,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       throw createError({
         status: 409,
         statusText: 'Email already exists',
+        data: { code: 'auth.email_exists' },
       })
     }
 
@@ -202,6 +204,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
         throw createError({
           status: 400,
           statusText: 'Invalid user for upgrade',
+          data: { code: 'auth.invalid_user_for_upgrade' },
         })
       }
 
@@ -306,6 +309,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       throw createError({
         status: 401,
         statusText: 'Invalid credentials',
+        data: { code: 'auth.invalid_credentials' },
       })
     }
 
@@ -315,6 +319,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       throw createError({
         status: 401,
         statusText: 'Invalid credentials',
+        data: { code: 'auth.invalid_credentials' },
       })
     }
 
@@ -414,7 +419,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       userName: user.name ?? undefined,
       resetLink,
       expiresInHours: PASSWORD_RESET_TOKEN_EXPIRY_HOURS,
-    })
+    }, user.preferences.locale ?? DEFAULT_LOCALE)
 
     if (!result.success) {
       console.error(`[Password Reset] Failed to send email to ${user.email}:`, result.error)
@@ -453,6 +458,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       throw createError({
         status: 400,
         statusText: 'Invalid or expired reset token',
+        data: { code: 'auth.reset_token_invalid' },
       })
     }
 
@@ -507,6 +513,7 @@ export const createAuthService = ({ db, emailService, eventBus }: CreateAuthServ
       throw createError({
         status: 400,
         statusText: 'Invalid or expired verification token',
+        data: { code: 'auth.verification_token_invalid' },
       })
     }
 

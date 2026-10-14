@@ -1,6 +1,8 @@
 import type { Storage } from 'unstorage'
+import type { Locale } from '~~/shared/user-preferences.constants'
 import { Buffer } from 'node:buffer'
 import { Liquid } from 'liquidjs'
+import { DEFAULT_LOCALE } from '~~/shared/user-preferences.constants'
 
 const engine = new Liquid()
 
@@ -13,6 +15,41 @@ const readTemplate = async (storage: Storage, path: string): Promise<string | nu
   if (Buffer.isBuffer(raw))
     return raw.toString('utf-8')
   return new TextDecoder().decode(raw as ArrayBufferLike)
+}
+
+/**
+ * Resolves `templates/<name>.<locale>.<ext>.liquid` for the recipient locale.
+ * Falls back to the English base file `templates/<name>.<ext>.liquid` for
+ * `en` or when the localized variant is missing. A missing base file is
+ * still an error for the caller.
+ */
+const readLocalizedTemplate = async (
+  storage: Storage,
+  name: string,
+  ext: 'html' | 'txt',
+  locale: Locale,
+): Promise<string | null> => {
+  if (locale !== DEFAULT_LOCALE) {
+    const localized = await readTemplate(storage, `templates/${name}.${locale}.${ext}.liquid`)
+    if (localized)
+      return localized
+  }
+  return readTemplate(storage, `templates/${name}.${ext}.liquid`)
+}
+
+const loadTemplatePair = async (name: string, locale: Locale) => {
+  const storage = useStorage('assets:server')
+
+  const [htmlTemplate, txtTemplate] = await Promise.all([
+    readLocalizedTemplate(storage, name, 'html', locale),
+    readLocalizedTemplate(storage, name, 'txt', locale),
+  ])
+
+  if (!htmlTemplate || !txtTemplate) {
+    throw new Error(`Email templates not found: ${name}`)
+  }
+
+  return { htmlTemplate, txtTemplate }
 }
 
 export interface PasswordResetTemplateData {
@@ -44,17 +81,8 @@ export interface OrganisationInvitationTemplateData {
   siteName: string
 }
 
-export const passwordResetTemplate = async (data: PasswordResetTemplateData) => {
-  const storage = useStorage('assets:server')
-
-  const [htmlTemplate, txtTemplate] = await Promise.all([
-    readTemplate(storage, 'templates/password-reset.html.liquid'),
-    readTemplate(storage, 'templates/password-reset.txt.liquid'),
-  ])
-
-  if (!htmlTemplate || !txtTemplate) {
-    throw new Error('Email templates not found')
-  }
+const renderTemplate = async (name: string, locale: Locale, data: object) => {
+  const { htmlTemplate, txtTemplate } = await loadTemplatePair(name, locale)
 
   const templateData = {
     ...data,
@@ -66,96 +94,45 @@ export const passwordResetTemplate = async (data: PasswordResetTemplateData) => 
     engine.parseAndRender(txtTemplate, templateData),
   ])
 
-  return {
-    subject: `Reset your password - ${data.siteName}`,
-    html,
-    text,
-  }
+  return { html, text }
 }
 
-export const emailVerificationTemplate = async (data: EmailVerificationTemplateData) => {
-  const storage = useStorage('assets:server')
+export const passwordResetTemplate = async (data: PasswordResetTemplateData, locale: Locale = DEFAULT_LOCALE) => {
+  const { html, text } = await renderTemplate('password-reset', locale, data)
 
-  const [htmlTemplate, txtTemplate] = await Promise.all([
-    readTemplate(storage, 'templates/email-verification.html.liquid'),
-    readTemplate(storage, 'templates/email-verification.txt.liquid'),
-  ])
+  const subject = locale === 'de'
+    ? `Passwort zurücksetzen - ${data.siteName}`
+    : `Reset your password - ${data.siteName}`
 
-  if (!htmlTemplate || !txtTemplate) {
-    throw new Error('Email verification templates not found')
-  }
-
-  const templateData = {
-    ...data,
-    year: new Date().getFullYear(),
-  }
-
-  const [html, text] = await Promise.all([
-    engine.parseAndRender(htmlTemplate, templateData),
-    engine.parseAndRender(txtTemplate, templateData),
-  ])
-
-  return {
-    subject: `Verify your email - ${data.siteName}`,
-    html,
-    text,
-  }
+  return { subject, html, text }
 }
 
-export const emailChangeTemplate = async (data: EmailChangeTemplateData) => {
-  const storage = useStorage('assets:server')
+export const emailVerificationTemplate = async (data: EmailVerificationTemplateData, locale: Locale = DEFAULT_LOCALE) => {
+  const { html, text } = await renderTemplate('email-verification', locale, data)
 
-  const [htmlTemplate, txtTemplate] = await Promise.all([
-    readTemplate(storage, 'templates/email-change.html.liquid'),
-    readTemplate(storage, 'templates/email-change.txt.liquid'),
-  ])
+  const subject = locale === 'de'
+    ? `Bestätige deine E-Mail-Adresse - ${data.siteName}`
+    : `Verify your email - ${data.siteName}`
 
-  if (!htmlTemplate || !txtTemplate) {
-    throw new Error('Email change templates not found')
-  }
-
-  const templateData = {
-    ...data,
-    year: new Date().getFullYear(),
-  }
-
-  const [html, text] = await Promise.all([
-    engine.parseAndRender(htmlTemplate, templateData),
-    engine.parseAndRender(txtTemplate, templateData),
-  ])
-
-  return {
-    subject: `Confirm your email change - ${data.siteName}`,
-    html,
-    text,
-  }
+  return { subject, html, text }
 }
 
-export const organisationInvitationTemplate = async (data: OrganisationInvitationTemplateData) => {
-  const storage = useStorage('assets:server')
+export const emailChangeTemplate = async (data: EmailChangeTemplateData, locale: Locale = DEFAULT_LOCALE) => {
+  const { html, text } = await renderTemplate('email-change', locale, data)
 
-  const [htmlTemplate, txtTemplate] = await Promise.all([
-    readTemplate(storage, 'templates/organisation-invitation.html.liquid'),
-    readTemplate(storage, 'templates/organisation-invitation.txt.liquid'),
-  ])
+  const subject = locale === 'de'
+    ? `Bestätige deine E-Mail-Änderung - ${data.siteName}`
+    : `Confirm your email change - ${data.siteName}`
 
-  if (!htmlTemplate || !txtTemplate) {
-    throw new Error('Organisation invitation templates not found')
-  }
+  return { subject, html, text }
+}
 
-  const templateData = {
-    ...data,
-    year: new Date().getFullYear(),
-  }
+export const organisationInvitationTemplate = async (data: OrganisationInvitationTemplateData, locale: Locale = DEFAULT_LOCALE) => {
+  const { html, text } = await renderTemplate('organisation-invitation', locale, data)
 
-  const [html, text] = await Promise.all([
-    engine.parseAndRender(htmlTemplate, templateData),
-    engine.parseAndRender(txtTemplate, templateData),
-  ])
+  const subject = locale === 'de'
+    ? `Du wurdest eingeladen, ${data.organisationName} beizutreten - ${data.siteName}`
+    : `You've been invited to join ${data.organisationName} - ${data.siteName}`
 
-  return {
-    subject: `You've been invited to join ${data.organisationName} - ${data.siteName}`,
-    html,
-    text,
-  }
+  return { subject, html, text }
 }

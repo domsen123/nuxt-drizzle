@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { user, isAnonymous } = useSession()
 const toast = useToast()
+const { t } = useI18n()
+const apiErrorMessage = useApiErrorMessage()
 const { mutateAsync: resendVerification, asyncStatus } = useResendVerification()
 
 const dismissed = ref(false)
@@ -13,18 +15,17 @@ const shouldShow = computed(() => {
 
 const handleResend = async () => {
   try {
-    const response = await resendVerification()
+    await resendVerification()
     toast.add({
-      title: 'Verification email sent',
-      description: response.message,
+      title: t('auth.verificationBanner.sentTitle'),
+      description: t('auth.verificationBanner.sentDescription'),
       color: 'success',
     })
   }
   catch (error) {
-    const err = error as { data?: { statusMessage?: string }, message?: string }
     toast.add({
-      title: 'Failed to send email',
-      description: err.data?.statusMessage || err.message || 'Please try again later.',
+      title: t('auth.verificationBanner.failedTitle'),
+      description: apiErrorMessage(error),
       color: 'error',
     })
   }
@@ -48,8 +49,8 @@ const handleDismiss = () => {
             class="w-5 h-5 text-warning shrink-0"
           />
           <p class="text-sm">
-            <span class="font-medium">Please verify your email address.</span>
-            <span class="text-muted hidden sm:inline"> Check your inbox for a verification link.</span>
+            <span class="font-medium">{{ $t('auth.verificationBanner.message') }}</span>
+            <span class="text-muted hidden sm:inline"> {{ $t('auth.verificationBanner.hint') }}</span>
           </p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
@@ -60,14 +61,14 @@ const handleDismiss = () => {
             :loading="isLoading"
             @click="handleResend"
           >
-            Resend email
+            {{ $t('auth.verificationBanner.resend') }}
           </UButton>
           <UButton
             size="xs"
             color="neutral"
             variant="ghost"
             icon="i-lucide-x"
-            aria-label="Dismiss"
+            :aria-label="$t('common.actions.dismiss')"
             @click="handleDismiss"
           />
         </div>

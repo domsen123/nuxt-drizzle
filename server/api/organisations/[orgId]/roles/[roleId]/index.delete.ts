@@ -8,10 +8,10 @@ export default defineEventHandler(async (event) => {
   const roleId = getRouterParam(event, 'roleId', { decode: true })
 
   if (!orgId) {
-    throw createError({ status: 400, statusText: 'Organisation ID required' })
+    throw createError({ status: 400, statusText: 'Organisation ID required', data: { code: 'validation.missing_param' } })
   }
   if (!roleId) {
-    throw createError({ status: 400, statusText: 'Role ID required' })
+    throw createError({ status: 400, statusText: 'Role ID required', data: { code: 'validation.missing_param' } })
   }
 
   await requirePermission(event, {
