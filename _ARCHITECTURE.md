@@ -552,6 +552,7 @@ Strict mode enabled. Drizzle provides full type inference.
 9. **Components**: Build feature-specific UI in app/features/{feature}/components/
 10. **Index**: Export public API from app/features/{feature}/index.ts
 11. **Pages**: Create routes in app/pages/ consuming feature
+12. **Translations**: Add keys for every user-facing string to i18n/locales/en.json and de.json (identical key sets); add `data: { code: '<feature>.<error>' }` to user-facing createError calls and the matching `errors.*` keys
 
 ### Conventions
 
@@ -575,6 +576,8 @@ Strict mode enabled. Drizzle provides full type inference.
 | Code Organization | Vertical slices | Feature cohesion, team scalability |
 | Pages | Thin orchestration | Features own logic, pages compose |
 | API Routes | Thin handlers | Services own logic, handlers do HTTP |
+| i18n | @nuxtjs/i18n, strategy no_prefix, en/de | URLs stay unchanged; cookie for guests, users.preferences.locale for accounts |
+| API errors | Stable codes in data.code | Server stays translation-free; client maps codes to i18n keys |
 
 ---
 
@@ -589,4 +592,62 @@ Strict mode enabled. Drizzle provides full type inference.
 - Hardcoded query keys (use factory)
 - Missing cache invalidation after mutations
 - Session validation in every route (use middleware + guard)
+- Hardcoded user-facing strings outside /admin (use i18n keys)
+- String concatenation for translated sentences (use {placeholder} interpolation or <i18n-t>)
+- Translated strings in shared/ or server code (server sends error codes, emails use locale template files)
+- $t in app/pages/admin/** or admin feature components (admin stays English, except the shared user menu)
 - Mixing client and server types without shared/ layer
+
+---
+
+## 11. Internationalization (i18n)
+
+### Setup
+
+- Module: `@nuxtjs/i18n`, strategy `no_prefix`, default locale `en`, second locale `de`.
+- Messages: one file per locale in `i18n/locales/{en,de}.json`, namespaced per feature
+  (`common`, `nav`, `auth`, `dashboard`, `settings`, `profile`, `legal`, `errors`).
+  `en.json` is the reference; both files keep identical key sets.
+- Constants: `LOCALES`, `Locale`, `DEFAULT_LOCALE`, `LOCALE_NAMES` and
+  `UserPreferences.locale` live in `shared/user-preferences.constants.ts`.
+
+### Locale resolution
+
+- Guests: i18n cookie (`locale`) with browser detection on first visit. No DB writes.
+- Signed-in, non-anonymous users: `users.preferences.locale` wins over the cookie.
+  `app/plugins/locale.server.ts` applies it during SSR; the watch in `app/app.vue`
+  applies it on client-side session changes. During impersonation a language switch
+  stays local (`useLanguage` suppresses the mutation).
+- Switching: `useLanguage().setLanguage(locale)` applies the locale via `setLocale`
+  and persists it through `PUT /api/profile/preferences`. The Language submenu comes
+  from `useLanguageMenuItem()` and sits in all three user menus.
+
+### API errors
+
+- Non-admin endpoints attach `data: { code: '<namespace>.<error>' }` (snake_case) to
+  user-facing `createError` calls; `statusText` stays English. Internal 500s carry no code.
+- The client maps codes exclusively through `useApiErrorMessage()`
+  (`errors.<code>` key, fallback `statusMessage`, then `errors.unexpected`).
+  No component parses `statusText`.
+
+### Emails
+
+- One template set per locale: `server/assets/templates/<name>.liquid` is the `en`
+  base, `<name>.de.{html,txt}.liquid` the German variant. The loader falls back to
+  the base file; a missing base file is an error.
+- `emailService.send*` takes the recipient locale: `user.preferences.locale ?? DEFAULT_LOCALE`.
+  Invitations to addresses without an account use `DEFAULT_LOCALE`.
+
+### Formatting and content
+
+- Dates and numbers outside /admin: `useLocaleFormat()` (date-fns locale map + `Intl.NumberFormat`).
+- Legal pages (`terms-of-service`, `privacy-policy`, `imprint`) render Markdown from the
+  `legal` collection (`content/legal/<locale>/…`) with an English fallback.
+
+### Admin boundary
+
+- `app/pages/admin/**`, the admin nav and admin feature components stay hardcoded
+  English — no `$t` there. The shared user menu (Appearance, Language, Sign out)
+  is translated and follows the active locale, also inside /admin. Components that
+  render only under /admin (organisation-members / organisation-invitations lists
+  and modals) stay English.

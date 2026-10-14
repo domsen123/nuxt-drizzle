@@ -68,6 +68,8 @@ This project follows **vertical slice architecture** - features are organized as
 - **UI**: Nuxt UI with Tailwind CSS
 - **Database**: PostgreSQL + Drizzle ORM
 - **State**: Pinia + Pinia Colada
+- **i18n**: @nuxtjs/i18n (en/de, strategy `no_prefix`)
+- **Content**: @nuxt/content (legal pages)
 - **Validation**: Zod
 - **Package Manager**: pnpm 10.23.0
 - **Node**: 22.22.3+, 24.15+ or 26+
@@ -92,9 +94,30 @@ Use `useQuery` from Pinia-Colada for data fetching with caching. Example:
 const { data, isLoading } = useQuery(queryOptions, () => ({ param: value.value }))
 ```
 
+## Internationalization (i18n)
+
+The app ships in English (`en`, default) and German (`de`). Rules for every change:
+
+- Put every user-facing string of non-admin surfaces behind `$t`/`t()` keys. Add the
+  keys to both `i18n/locales/en.json` and `i18n/locales/de.json` — identical key sets,
+  `en.json` is the reference. Namespaces per feature (`common`, `nav`, `auth`, `settings`,
+  `profile`, `legal`, `errors`).
+- Admin stays English: no `$t` in `app/pages/admin/**` or admin feature components.
+  The shared user menu is the only translated piece inside /admin.
+- Non-admin API errors: add `data: { code: '<feature>.<error>' }` to user-facing
+  `createError` calls, keep `statusText` English, and add the `errors.*` keys to both
+  locale files. Components map errors only through `useApiErrorMessage()`.
+- Interpolation with `{placeholder}` or `<i18n-t>`; never concatenate translated strings.
+  Escape `@` in messages as `{'@'}`.
+- Dates and numbers outside /admin go through `useLocaleFormat()`.
+- Language preference: guests via i18n cookie, users via `users.preferences.locale`
+  (persisted through `useLanguage()` → `PUT /api/profile/preferences`).
+- New emails need a German variant: `server/assets/templates/<name>.de.{html,txt}.liquid`;
+  the loader falls back to the English base file.
+
 ## Reference
 
-See `_ARCHITECTURE.md` for comprehensive vertical slice architecture documentation, including feature checklists and anti-patterns.
+See `_ARCHITECTURE.md` for comprehensive vertical slice architecture documentation, including feature checklists, anti-patterns, and the i18n conventions (section 11).
 
 ## Server Code
 
