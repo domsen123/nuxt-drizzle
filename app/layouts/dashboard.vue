@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { useAppearanceMenuItem } from '~/features/profile'
 
 const router = useRouter()
 const toast = useToast()
@@ -8,6 +9,7 @@ const open = ref(false)
 
 const { user, isImpersonating } = useSession()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
+const { appearanceMenuItems } = useAppearanceMenuItem()
 
 // Sidebar navigation items
 const navItems: NavigationMenuItem[][] = [
@@ -47,6 +49,8 @@ const userMenuItems = computed(() => {
     to: ROUTES.start,
   }]
 
+  const appearanceItem = appearanceMenuItems.value
+
   const signOutItem = [{
     label: 'Sign out',
     icon: 'i-lucide-log-out',
@@ -54,10 +58,10 @@ const userMenuItems = computed(() => {
   }]
 
   if (isImpersonating.value) {
-    return [accountItem, backToAppItem, signOutItem]
+    return [accountItem, backToAppItem, appearanceItem, signOutItem]
   }
 
-  return [accountItem, backToAppItem, signOutItem]
+  return [accountItem, backToAppItem, appearanceItem, signOutItem]
 })
 
 // Compute active state for nav items
@@ -110,6 +114,10 @@ const navItemsWithActive = computed(() =>
             <span class="truncate">{{ user?.name || user?.email || 'Guest' }}</span>
             <UIcon name="i-lucide-chevron-down" class="ml-auto" />
           </UButton>
+
+          <template #chip-leading="{ item }">
+            <AppearanceColorChip :color="item.chip" />
+          </template>
         </UDropdownMenu>
       </template>
     </UDashboardSidebar>

@@ -8,6 +8,13 @@
       "when": 1772716030968,
       "tag": "0000_material_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791990531063,
+      "tag": "0001_right_emma_frost",
+      "breakpoints": true
     }
   ]
 }

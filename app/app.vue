@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { useAppearance } from '~/features/profile'
+
 const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#020618' : 'white')
+
+const { user } = useSession()
+const { applyPreferences } = useAppearance()
+
+// DB wins for signed-in, non-anonymous users: runs on SSR render, login,
+// logout, and impersonation switches.
+watch(user, (value) => {
+  if (value && value.authProvider !== 'anonymous') {
+    applyPreferences(value.preferences)
+  }
+}, { immediate: true })
 
 useHead({
   meta: [

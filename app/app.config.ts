@@ -1,8 +1,10 @@
+import { DEFAULT_NEUTRAL_COLOR, DEFAULT_PRIMARY_COLOR } from '~~/shared/user-preferences.constants'
+
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'fuchsia',
-      neutral: 'slate',
+      primary: DEFAULT_PRIMARY_COLOR,
+      neutral: DEFAULT_NEUTRAL_COLOR,
     },
     input: {
       slots: {

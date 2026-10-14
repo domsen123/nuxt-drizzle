@@ -1,3 +1,4 @@
+import type { UserPreferences } from '~~/shared/user-preferences.constants'
 import type {
   ChangePasswordInput,
   ConfirmEmailChangeResponse,
@@ -5,6 +6,7 @@ import type {
   ProfileResponse,
   RequestEmailChangeInput,
   RequestEmailChangeResponse,
+  UpdatePreferencesResponse,
   UpdateProfileInput,
 } from '../types/profile.types'
 
@@ -17,6 +19,12 @@ export const useProfileApi = () => {
 
     updateProfile: (data: UpdateProfileInput): Promise<ProfileResponse> =>
       $api('/api/profile', {
+        method: 'PUT',
+        body: data,
+      }),
+
+    updatePreferences: (data: UserPreferences): Promise<UpdatePreferencesResponse> =>
+      $api('/api/profile/preferences', {
         method: 'PUT',
         body: data,
       }),

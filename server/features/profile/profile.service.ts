@@ -1,6 +1,7 @@
 import type { pendingEmailChanges, users } from '~~/server/database/schema'
 import type { DatabaseClient } from '~~/server/infrastructure/database/client'
 import type { ItemService } from '~~/server/infrastructure/database/item-service'
+import type { UserPreferences } from '~~/shared/user-preferences.constants'
 import type { EmailService } from '../email/email.service'
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
@@ -16,6 +17,7 @@ export interface UserProfile {
   id: string
   email: string | null
   name: string | null
+  preferences: UserPreferences
   createdAt: Date
   updatedAt: Date
 }
@@ -62,6 +64,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      preferences: user.preferences,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }
@@ -92,9 +95,30 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
       id: updatedUser.id,
       email: updatedUser.email,
       name: updatedUser.name,
+      preferences: updatedUser.preferences,
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
     }
+  }
+
+  /**
+   * Update user preferences - shallow merge keeps unknown future keys
+   */
+  const updatePreferences = async (
+    userId: string,
+    input: UserPreferences,
+  ): Promise<UserPreferences> => {
+    const user = await usersItemService.readOne(userId)
+
+    if (!user) {
+      throw createError({ status: 404, statusText: 'User not found' })
+    }
+
+    const preferences = { ...user.preferences, ...input }
+
+    await usersItemService.update(userId, { preferences })
+
+    return preferences
   }
 
   /**
@@ -272,6 +296,7 @@ export const createProfileService = (deps: CreateProfileServiceDeps) => {
   return {
     getProfile,
     updateProfile,
+    updatePreferences,
     changePassword,
     requestEmailChange,
     confirmEmailChange,

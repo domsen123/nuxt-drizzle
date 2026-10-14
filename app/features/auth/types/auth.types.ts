@@ -1,9 +1,12 @@
+import type { UserPreferences } from '~~/shared/user-preferences.constants'
+
 export interface AuthUser {
   id: string
   email: string | null
   name: string | null
   authProvider: string
   emailVerified: boolean
+  preferences: UserPreferences
   createdAt: string
   updatedAt: string
 }

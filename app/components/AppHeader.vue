@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useStopImpersonation } from '~/features/admin/composables/useImpersonation'
+import { useAppearanceMenuItem } from '~/features/profile'
 
 const router = useRouter()
 const toast = useToast()
@@ -8,6 +9,7 @@ const { user, isAuthenticated, isAnonymous, isLoading, isImpersonating } = useSe
 const { isGlobalAdmin } = usePermissions()
 const { mutateAsync: logout, asyncStatus: logoutStatus } = useLogout()
 const { mutateAsync: stopImpersonation, asyncStatus: stopImpersonationStatus } = useStopImpersonation()
+const { appearanceMenuItems, colorModeMenuItems } = useAppearanceMenuItem()
 
 const items = computed(() => [])
 
@@ -71,6 +73,8 @@ const userMenuItems = computed(() => {
     to: ROUTES.admin.home,
   }]
 
+  const appearanceItem = appearanceMenuItems.value
+
   const signOutItem = [{
     label: 'Sign out',
     icon: 'i-lucide-log-out',
@@ -79,14 +83,14 @@ const userMenuItems = computed(() => {
 
   // When impersonating, show stop impersonation option prominently
   if (isImpersonating.value) {
-    return [accountItem, stopImpersonationItem, settingsItem, signOutItem]
+    return [accountItem, stopImpersonationItem, settingsItem, appearanceItem, signOutItem]
   }
 
   if (isGlobalAdmin.value) {
-    return [accountItem, settingsItem, adminItem, signOutItem]
+    return [accountItem, settingsItem, adminItem, appearanceItem, signOutItem]
   }
 
-  return [accountItem, settingsItem, signOutItem]
+  return [accountItem, settingsItem, appearanceItem, signOutItem]
 })
 </script>
 
@@ -104,8 +108,6 @@ const userMenuItems = computed(() => {
     />
 
     <template #right>
-      <UColorModeButton />
-
       <!-- Loading state -->
       <template v-if="isLoading">
         <USkeleton class="h-8 w-20 rounded-md" />
@@ -128,11 +130,24 @@ const userMenuItems = computed(() => {
             </span>
             <UIcon name="i-lucide-chevron-down" class="hidden lg:inline" />
           </UButton>
+
+          <template #chip-leading="{ item }">
+            <AppearanceColorChip :color="item.chip" />
+          </template>
         </UDropdownMenu>
       </template>
 
       <!-- Unauthenticated state -->
       <template v-else>
+        <UDropdownMenu :items="colorModeMenuItems">
+          <UButton
+            icon="i-lucide-sun-moon"
+            color="neutral"
+            variant="ghost"
+            aria-label="Color mode"
+          />
+        </UDropdownMenu>
+
         <UButton
           icon="i-lucide-log-in"
           color="neutral"

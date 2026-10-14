@@ -1,8 +1,10 @@
+import type { UserPreferences } from '~~/shared/user-preferences.constants'
 import type { ChangePasswordInput, RequestEmailChangeInput, UpdateProfileInput } from '../types/profile.types'
 import { useMutation, useQueryCache } from '@pinia/colada'
-import { authKeys } from '~/features/auth/api/auth.keys'
+import { authKeys, useSession } from '~/features/auth'
 import { useProfileApi } from '../api/profile.api'
 import { profileKeys } from '../api/profile.keys'
+import { useApplyPreferences } from './useApplyPreferences'
 
 export const useUpdateProfile = () => {
   const queryCache = useQueryCache()
@@ -12,6 +14,31 @@ export const useUpdateProfile = () => {
     mutation: (data: UpdateProfileInput) => profileApi.updateProfile(data),
     onSettled: () => {
       queryCache.invalidateQueries({ key: profileKeys.profile() })
+    },
+  })
+}
+
+export const useUpdatePreferences = () => {
+  const queryCache = useQueryCache()
+  const profileApi = useProfileApi()
+  const toast = useToast()
+  const { user } = useSession()
+  const applyPreferences = useApplyPreferences()
+
+  return useMutation({
+    mutation: (data: UserPreferences) => profileApi.updatePreferences(data),
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: profileKeys.profile() })
+      queryCache.invalidateQueries({ key: authKeys.session() })
+    },
+    onError: () => {
+      // Roll the optimistic selection back to the last server state
+      applyPreferences(user.value?.preferences)
+      toast.add({
+        title: 'Failed to save appearance',
+        description: 'Your selection was reverted to the last saved settings.',
+        color: 'error',
+      })
     },
   })
 }

@@ -1,4 +1,5 @@
-import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import type { UserPreferences } from '~~/shared/user-preferences.constants'
+import { boolean, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(), // ULID
@@ -7,6 +8,7 @@ export const users = pgTable('users', {
   name: text('name'),
   authProvider: text('auth_provider').notNull().default('credentials'),
   emailVerified: boolean('email_verified').notNull().default(false),
+  preferences: jsonb('preferences').$type<UserPreferences>().notNull().default({}),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
