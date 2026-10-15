@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.4.2
+
+[compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.4.1...v1.4.2)
+
+### 🩹 Fixes
+
+- **auth:** Refresh session before redirect after email verification ([ad183e4](https://github.com/domsen123/nuxt-drizzle/commit/ad183e4))
+
+### ❤️ Contributors
+
+- Domsen123 <dmarx@marxulm.de>
+
 ## v1.4.1
 
 [compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.4.0...v1.4.1)
