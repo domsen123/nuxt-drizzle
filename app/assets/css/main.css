@@ -19,9 +19,33 @@
   --color-green-950: #052E16;
 }
 
+:root {
+  --ui-radius: 0rem;
+  --ui-container: 72rem;
+  --graph-paper-size: 2rem;
+}
+
 .dark {
   --ui-bg: var(--ui-color-neutral-950);
   --ui-bg-muted: var(--ui-color-neutral-900);
   --ui-bg-elevated: var(--ui-color-neutral-900);
   --ui-bg-accented: var(--ui-color-neutral-800);
+}
+
+@utility graph-paper {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--ui-border) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--ui-border) 55%, transparent) 1px, transparent 1px);
+  background-size: var(--graph-paper-size) var(--graph-paper-size);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--ui-primary) 30%, transparent);
+  }
 }

@@ -116,140 +116,122 @@ const stats = computed(() => [
   { value: t('common.landing.stat03Value'), label: t('common.landing.stat03Label') },
   { value: t('common.landing.stat04Value'), label: t('common.landing.stat04Label') },
 ])
+
+const mockLineClass = (line: string) => {
+  if (line.startsWith('●'))
+    return 'text-green-400'
+  if (line.startsWith('○'))
+    return 'text-dimmed'
+  if (line.startsWith('→'))
+    return 'text-green-400/70'
+  return 'text-muted'
+}
 </script>
 
 <template>
-  <div class="bg-[#0d0d0d] text-white">
-    <!-- Hero -->
-    <section class="px-6 lg:px-12 pt-24 pb-20 max-w-7xl mx-auto">
-      <p class="font-mono text-xs text-[#555] uppercase tracking-[0.2em] mb-6">
-        — The SaaS Starter
-      </p>
-
-      <h1 class="text-[clamp(3rem,10vw,8rem)] font-black leading-none tracking-tight mb-8">
-        {{ $t('common.landing.headlinePart1') }}<br>
-        <span class="text-[#00DC82]">{{ $t('common.landing.headlineAccent') }}</span>
-        {{ ' ' }}{{ $t('common.landing.headlinePart2') }}
-      </h1>
-
-      <p class="text-[#888] text-lg max-w-xl leading-relaxed mb-10">
-        {{ $t('common.landing.subheadline') }}
-      </p>
-
-      <!-- Install command -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-        <div class="flex items-center gap-3 bg-[#141414] border border-[#2a2a2a] rounded-lg px-4 py-3 font-mono text-sm">
-          <span class="text-[#555] select-none">$</span>
-          <span class="text-[#e5e5e5]">{{ installCmd }}</span>
+  <div class="graph-paper">
+    <div class="mx-auto w-full max-w-(--ui-container) border-x border-default bg-default">
+      <section class="border-b border-default px-6 py-16 sm:px-10 sm:py-24">
+        <p class="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+          <span class="h-px w-8 bg-current" />
+          The SaaS Starter
+        </p>
+        <h1 class="mt-6 text-[clamp(2.5rem,8vw,6rem)] font-extrabold tracking-[-0.055em] leading-[0.9] text-highlighted">
+          {{ $t('common.landing.headlinePart1') }}<br>
+          <span class="text-green-400">{{ $t('common.landing.headlineAccent') }}</span>
+          {{ ' ' }}{{ $t('common.landing.headlinePart2') }}
+        </h1>
+        <p class="mt-6 max-w-xl text-muted leading-relaxed">
+          {{ $t('common.landing.subheadline') }}
+        </p>
+        <div class="mt-8 flex w-full flex-col items-stretch ring ring-default font-mono text-sm sm:w-fit sm:flex-row">
+          <code class="overflow-x-auto whitespace-nowrap px-4 py-3 text-highlighted">
+            <span class="text-green-400 select-none">$ </span>{{ installCmd }}
+          </code>
           <button
-            class="ml-2 text-xs text-[#555] hover:text-white transition-colors border border-[#333] hover:border-[#555] rounded px-2 py-0.5"
+            class="shrink-0 border-t border-default px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted transition-colors hover:bg-elevated hover:text-highlighted sm:border-t-0 sm:border-l"
             @click="copy()"
           >
             {{ copied ? $t('common.landing.installCopied') : $t('common.landing.installCopy') }}
           </button>
         </div>
+        <p class="mt-3 font-mono text-[11px] tracking-[0.15em] text-dimmed">
+          {{ $t('common.landing.installMeta') }}
+        </p>
+        <div class="mt-8">
+          <UButton :to="ROUTES.auth.signUp" size="lg" trailing-icon="i-lucide-arrow-right">
+            {{ $t('common.actions.signUp') }}
+          </UButton>
+        </div>
+      </section>
 
-        <UButton
-          :to="ROUTES.auth.signUp"
-          size="lg"
-          trailing-icon="i-lucide-arrow-right"
-          class="shrink-0"
+      <div class="grid grid-cols-2 gap-0 border-b border-default lg:grid-cols-4">
+        <div
+          v-for="stat in stats"
+          :key="stat.label"
+          class="p-6 ring ring-default transition-colors hover:bg-elevated"
         >
-          {{ $t('common.actions.signUp') }}
-        </UButton>
-      </div>
-
-      <p class="font-mono text-xs text-[#444]">
-        {{ $t('common.landing.installMeta') }}
-      </p>
-    </section>
-
-    <!-- Stats -->
-    <section class="border-y border-[#1a1a1a] py-12">
-      <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-8">
-        <div v-for="stat in stats" :key="stat.label">
-          <div class="text-4xl font-black mb-1">
+          <p class="text-4xl font-extrabold tracking-tight tabular-nums text-highlighted">
             {{ stat.value }}
-          </div>
-          <div class="text-sm text-[#555] font-mono">
+          </p>
+          <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
             {{ stat.label }}
-          </div>
+          </p>
         </div>
       </div>
-    </section>
 
-    <!-- Numbered features -->
-    <section>
-      <div
-        v-for="feature in features"
-        :key="feature.num"
-        class="border-b border-[#1a1a1a]"
-      >
-        <div class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[120px_1fr_360px] gap-6 lg:gap-12 items-start">
-          <!-- Number -->
-          <div class="font-black text-[#1c1c1c] text-8xl leading-none select-none hidden lg:block">
-            {{ feature.num }}
+      <section class="border-b border-default">
+        <div
+          v-for="feature in features"
+          :key="feature.num"
+          class="grid grid-cols-1 border-b border-default last:border-b-0 lg:grid-cols-[5rem_1fr_22rem]"
+        >
+          <div class="flex items-start border-b border-default p-5 lg:border-b-0 lg:border-r">
+            <span class="font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted">{{ feature.num }}</span>
           </div>
-          <div class="font-mono text-xs text-[#444] lg:hidden mb-2">
-            {{ feature.num }}
-          </div>
-
-          <!-- Text -->
-          <div>
-            <h3 class="text-2xl font-bold mb-3">
+          <div class="border-b border-default p-6 sm:p-8 lg:border-b-0 lg:border-r">
+            <h3 class="text-xl font-extrabold tracking-tight text-highlighted">
               {{ $t(feature.titleKey) }}
-              <span class="text-[#333]">&nbsp;&rarr;</span>
+              <span class="text-muted">&thinsp;&rarr;</span>
             </h3>
-            <p class="text-[#666] leading-relaxed max-w-sm">
+            <p class="mt-3 max-w-sm text-sm leading-relaxed text-muted">
               {{ $t(feature.descKey) }}
             </p>
           </div>
-
-          <!-- Mock -->
-          <div class="bg-[#111] border border-[#1e1e1e] rounded-xl p-5 font-mono text-xs leading-relaxed overflow-hidden">
-            <div class="flex items-center gap-1.5 mb-4">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2a2a2a]" />
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2a2a2a]" />
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2a2a2a]" />
+          <div class="overflow-hidden bg-elevated p-5 font-mono text-xs leading-relaxed">
+            <div class="mb-4 flex items-center gap-1.5 border-b border-default pb-3">
+              <span class="size-1.5 rounded-full bg-accented" />
+              <span class="size-1.5 rounded-full bg-accented" />
+              <span class="size-1.5 rounded-full bg-accented" />
             </div>
-            <div class="space-y-0.5">
+            <div>
               <div
                 v-for="(line, i) in feature.mock"
                 :key="i"
                 class="whitespace-pre"
-                :class="line.startsWith('●') ? 'text-[#00DC82]' : line.startsWith('○') ? 'text-[#555]' : line.startsWith('→') ? 'text-[#00DC82]/70' : 'text-[#555]'"
+                :class="mockLineClass(line)"
               >
                 {{ line || ' ' }}
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Bottom CTA -->
-    <section class="px-6 lg:px-12 pt-32 pb-40 max-w-7xl mx-auto">
-      <h2 class="text-[clamp(3rem,8vw,6rem)] font-black leading-none tracking-tight mb-10">
-        {{ $t('common.landing.ctaLine1') }}<br>
-        {{ $t('common.landing.ctaLine2') }}
-      </h2>
-      <div class="flex items-center gap-4 flex-wrap">
-        <UButton
-          :to="ROUTES.auth.signUp"
-          size="xl"
-          trailing-icon="i-lucide-arrow-right"
-        >
-          {{ $t('common.actions.signUp') }}
-        </UButton>
-        <UButton
-          :to="ROUTES.auth.signIn"
-          variant="ghost"
-          color="neutral"
-          size="xl"
-        >
-          {{ $t('common.actions.signIn') }}
-        </UButton>
-      </div>
-    </section>
+      <section class="border-b border-default px-6 py-16 sm:px-10 sm:py-24">
+        <h2 class="text-[clamp(2rem,6vw,5rem)] font-extrabold tracking-[-0.055em] leading-[0.9] text-highlighted">
+          {{ $t('common.landing.ctaLine1') }}<br>
+          {{ $t('common.landing.ctaLine2') }}
+        </h2>
+        <div class="mt-10 flex flex-wrap items-center gap-4">
+          <UButton :to="ROUTES.auth.signUp" size="xl" trailing-icon="i-lucide-arrow-right">
+            {{ $t('common.actions.signUp') }}
+          </UButton>
+          <UButton :to="ROUTES.auth.signIn" variant="ghost" color="neutral" size="xl">
+            {{ $t('common.actions.signIn') }}
+          </UButton>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
