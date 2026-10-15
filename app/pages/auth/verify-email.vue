@@ -14,6 +14,7 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const apiErrorMessage = useApiErrorMessage()
+const { refetch: refetchSession } = useSession()
 
 // Get token from URL
 const token = computed(() => route.query.token as string | null)
@@ -64,7 +65,8 @@ const goToSignIn = () => {
   router.push(ROUTES.auth.signIn)
 }
 
-const goToHome = () => {
+const goToHome = async () => {
+  await refetchSession()
   router.push(ROUTES.start)
 }
 </script>
