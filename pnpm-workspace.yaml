@@ -1,3 +1,10 @@
+allowBuilds:
+  '@parcel/watcher': true
+  bcrypt: true
+  better-sqlite3: true
+  esbuild: true
+  vue-demi: true
+
 catalog:
   '@ai-sdk/anthropic': ^4.0.79
   '@ai-sdk/google': ^4.0.95
@@ -53,16 +60,17 @@ catalog:
 
 catalogMode: prefer
 
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - bcrypt
-  - better-sqlite3
-  - esbuild
-  - sharp
-  - vue-demi
-
 peerDependencyRules:
   allowedVersions:
     nuxt-ai-ready>drizzle-orm: '0.45'
+
+permissions:
+  '@nuxtjs/seo':
+    skills: true
+
+  dotenv:
+    skills: true
+
+shamefullyHoist: true
 
 shellEmulator: true
