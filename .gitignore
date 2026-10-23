@@ -32,3 +32,6 @@ storage/
 
 # Playwright MCP artifacts
 .playwright-mcp/
+
+# lazydev
+.lazydev/
