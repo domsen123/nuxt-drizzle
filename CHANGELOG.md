@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.0
+
+[compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.4.3...v1.5.0)
+
+### 🚀 Enhancements
+
+- **claude:** Add bootstrap command for new projects ([51505c3](https://github.com/domsen123/nuxt-drizzle/commit/51505c3))
+
+### ❤️ Contributors
+
+- Dominic Marx <dmarx@marxulm.de>
+
 ## v1.4.3
 
 [compare changes](https://github.com/domsen123/nuxt-drizzle/compare/v1.4.2...v1.4.3)
