@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:*), Bash(gh:*), Bash(pnpm:*), Bash(ss:*), Bash(docker ps:*), Bash(openssl:*), Bash(node:*), Bash(basename:*), Bash(rm -rf .git), Bash(cp:*), Bash(sed:*), Bash(test:*), Bash(ls:*), Read, Edit, Write
+allowed-tools: Bash(git:*), Bash(gh:*), Bash(pnpm:*), Bash(ss:*), Bash(docker ps:*), Bash(openssl:*), Bash(node:*), Bash(basename:*), Bash(rm -rf .git), Bash(rm -rf prd/*), Bash(touch:*), Bash(cp:*), Bash(sed:*), Bash(test:*), Bash(ls:*), Read, Edit, Write
 argument-hint: [repo-name] [--public]
 description: Bootstrap a fresh project from this template (version 0.0.0, free postgres port, .env, new git repo on GitHub, release v0.0.1)
 ---
@@ -36,6 +36,12 @@ This step deletes the existing git history. Before touching anything, show the u
 ### 1b. Test container
 
 In `docker-compose.test.yml`, set `container_name` of `postgres-test` to `<repo-name>-postgres-test`, so test databases of several projects can run side by side.
+
+Docker Compose project names (`-p`) only allow lowercase letters, digits, `-` and `_`: if the repo name contains dots, replace them with `-` for the `-p` value.
+
+### 1c. PRDs
+
+The template's PRDs belong to the template. Delete everything inside `prd/` (`rm -rf prd/*`) and add an empty `prd/.gitkeep` so the folder survives for `/create-prd`.
 
 ### 2. Find free postgres ports
 
